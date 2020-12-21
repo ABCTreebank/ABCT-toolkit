@@ -1,0 +1,50 @@
+name:                abc-hs
+version:             0.1.0
+github:              "aslemen/abc-hs"
+license:             BSD3
+author:              "T. N. Hayashi"
+maintainer:          "net@hayashi-lin.net"
+copyright:           "2019-2020 T. N. Hayashi"
+
+# extra-source-files:
+# - README.md
+
+# Metadata used when publishing your package
+# synopsis:            Short description of your package
+# category:            Web
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description:         Please see the README on GitHub at <https://github.com/aslemen/abc-hs#readme>
+
+dependencies:
+- base >= 4.7 && < 5
+- mtl
+- text
+- parser-combinators
+- megaparsec
+- penntreebank-megaparsec
+- containers
+- optparse-applicative
+- split
+- prettyprinter
+- exceptions
+
+library:
+  source-dirs: src
+
+executables:
+  abc-relabel:
+    source-dirs:        app/Relabeling
+    main:               Main.hs
+    ghc-options:
+    - -main-is Relabeling
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    - -optl-pthread
+    - -optl-static
+    dependencies:
+    - abc-hs
+tests: {}
