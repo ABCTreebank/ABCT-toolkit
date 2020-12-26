@@ -99,8 +99,16 @@ def cmd_main(
 # === END ===
 
 import abctk.conversion.cli as cli_conv
-
 cmd_main.add_command(cli_conv.cmd_main, name = "conv")
+
+@cmd_main.command(
+    name = "dic",
+    short_help = "list special lexical entries in ABC Treebank"
+)
+def cmd_dic():
+    import abctk.dic
+    abctk.dic.dump_dic_as_csv(sys.stdout)
+# === END ===
 
 @cmd_main.command(name = "version")
 def cmd_ver():
