@@ -2,6 +2,26 @@ import typing
 
 import pathlib
 
+def create_folder_time(
+    prefix: str = "", 
+    to_make: bool = True,
+) -> pathlib.Path:
+    import datetime
+
+    dest_folder = pathlib.Path(
+        prefix + datetime.datetime.now().isoformat()
+    )
+    while dest_folder.is_dir():
+        dest_folder = pathlib.Path(
+            prefix + datetime.datetime.now().isoformat()
+        )
+    # === END WHILE ===
+
+    dest_folder.mkdir(parents = True)
+
+    return dest_folder
+# === END ===
+
 class FileList:
     """
     A Manager handling lists of paths.

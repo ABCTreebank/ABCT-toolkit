@@ -79,16 +79,7 @@ def cmd_main(
         # === END IF ===
         dest_folder = destination
     else:
-        dest_folder = pathlib.Path(
-            datetime.datetime.now().isoformat()
-        )
-        while dest_folder.is_dir():
-            dest_folder = pathlib.Path(
-                datetime.datetime.now().isoformat()
-            )
-        # === END WHILE ===
-
-        dest_folder.mkdir(parents = True)
+        dest_folder = ct.create_folder_time("result_") 
     # === END IF ===
 
     # ================
