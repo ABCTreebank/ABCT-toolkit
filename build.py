@@ -36,6 +36,10 @@ def build_ext():
         DIR_EXT_SCRIPTS / "simplify-tag.sed",
         DIR_RUNTIME / "simplify-tag.sed"
     )
+    shutil.copy(
+        DIR_EXT_SCRIPTS / "supertagger_default.jsonnet",
+        DIR_RUNTIME / "supertagger_default.jsonnet",
+    )
 
     logger.info("Preprocess the tsurgeon scripts")
     os.makedirs(DIR_RUNTIME / "tsurgeon-debug", exist_ok = True)

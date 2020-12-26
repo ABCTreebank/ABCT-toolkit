@@ -101,6 +101,9 @@ def cmd_main(
 import abctk.conversion.cli as cli_conv
 cmd_main.add_command(cli_conv.cmd_main, name = "conv")
 
+import abctk.ml.cli as cli_ml
+cmd_main.add_command(cli_ml.cmd_main, name = "ml")
+
 @cmd_main.command(
     name = "dic",
     short_help = "list special lexical entries in ABC Treebank"
