@@ -141,3 +141,25 @@ def cmd_ver():
 """
         )
     # === END TRY ===
+# === END ===
+
+def _represent_PurePath(dumper, instance: pathlib.PurePath):
+    return dumper.represent_str(str(instance))
+# === END ===
+
+@cmd_main.command(
+    name = "show-config",
+    short_help = "dump the configurations recognized by the program (for debugging)"
+)
+@click.pass_context
+def cmd_show_conf(ctx: click.Context):
+    from ruamel.yaml import YAML
+
+    yaml = YAML()
+    yaml.representer.add_multi_representer(
+        pathlib.PurePath, 
+        _represent_PurePath
+    )
+    
+    yaml.dump(ctx.obj["CONFIG"], sys.stdout)
+# === END ===
