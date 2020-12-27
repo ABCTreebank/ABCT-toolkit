@@ -37,13 +37,14 @@ depccg = "^1.1.0"
 GitPython = "^3.1.11"
 gevent = "~1.4.0"
 importlib-metadata = "^3.3.0"
+pycuda = { version = "^2020.1", optional = true }
 
 [tool.poetry.dev-dependencies]
 pylint = "^2.6.0"
 requests = "^2.25.1"
 
 [tool.poetry.extras]
-ml = ["allennlp"]
+ml = ["allennlp", "pycuda"]
 
 [tool.poetry.build]
 script = "build.py"
