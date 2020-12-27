@@ -29,6 +29,7 @@ FILES: typing.Dict[str, pathlib.Path] = {
     "train.psd":        SUBDIRS["source"] / "train.psd",
     "test.psd":         SUBDIRS["source"] / "test.psd",
     "head_tags.txt":    SUBDIRS["vocab"] / "head_tags.txt",
+    "tokens.txt":       SUBDIRS["vocab"] / "tokens.txt",
     "non_padded_ns":    SUBDIRS["vocab"] / "non_padded_namespaces.txt",
 
     "traindata":        SUBDIRS["treebank_mod/train"] / "traindata.json",
@@ -112,8 +113,40 @@ def prepare_ml_data(
     with open(
         dir_temp / FILES["non_padded_ns"],
         mode = "w"
-    ):
+    ) as _:
         pass
+    # === END WITH _ ===
+
+    with open(
+        dir_temp / SUBDIRS["treebank_mod/all"] / "words.txt",
+        mode = "r"
+    ) as h_all_tokens, open(
+        config["trainer_settings"]["model"]["text_field_embedder"]["token_embedders"]["tokens"]["pretrained_file"],
+        mode = "r"
+    ) as h_wvect, open(
+        dir_temp / FILES["tokens.txt"],
+        mode = "w"
+    ) as h_voc_tokens:
+        wbag = set(
+            map(
+                lambda x: x.split()[0],
+                h_all_tokens
+            )
+        )
+        wbag.update(
+            map(
+                lambda x: x.split()[0],
+                h_wvect,
+            )
+        )
+        
+        h_voc_tokens.write("@@UNKNOWN@@\n")
+        for w in wbag:
+            h_voc_tokens.write(w)
+            h_voc_tokens.write("\n")
+    # === END with h_tokens ===
+
+
 
     # =========================
     # 4. Make the trainer config
@@ -158,7 +191,7 @@ def prepare_ml_data(
     # ===========================
     import shutil
     for f in (
-        "head_tags.txt", "non_padded_ns",
+        "head_tags.txt", "tokens.txt", "non_padded_ns",
         "traindata", "testdata",
         "trainer_settings",
         "config_parser_abc",

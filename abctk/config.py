@@ -46,10 +46,6 @@ CONF_DEFAULT = {
     "ml": {
         "train_test_ratio": 80,
         "trainer_settings": {
-            #"vocabulary": {
-               # "directory_path": xdg.xdg_data_home() / "ABCT-toolkit/vocabulary"
-               # given dynamically
-            #},
             "dataset_reader": {
                 "type": "ja_supertagging_dataset",
                 "lazy": True,
@@ -123,7 +119,7 @@ CONF_DEFAULT = {
                     "patience": 5,
                 },
                 "validation_metric": "+harmonic_mean",
-                "grad_nom": 5,
+                "grad_norm": 5,
                 "num_epochs": 100,
                 "patience": 20,
                 "cuda_device": 0,
