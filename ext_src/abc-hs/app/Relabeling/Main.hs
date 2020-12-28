@@ -463,7 +463,8 @@ runWithOptions (Option _  isOneLine) = do
         processTree :: _ -> IO ()
         processTree tree = 
             relabel tree -- IO ABCTree
-            >>= printTree
+            >>= return . get_rid_of_ID . fmap deprive_of_features
+            >>= \tree -> if check_if_trinary tree then printTree tree else return ()
         processExecptions :: _ -> SomeException -> IO ()
         processExecptions tree e = do
             SIO.hPutStr stderr "Exception: "
@@ -474,8 +475,32 @@ runWithOptions (Option _  isOneLine) = do
                  & PDocRT.renderIO stderr
             SIO.hPutStrLn stderr ""
 
+get_rid_of_ID :: ABCTree -> ABCTree
+get_rid_of_ID Node {
+    subForest = tree:_
+} = tree
+
+check_if_trinary :: Tree a -> Bool
+check_if_trinary Node {
+    subForest = children
+} = if length children > 2 
+        then False
+        else all check_if_trinary children
+
+deprive_of_features :: CatPlus ABCCat -> CatPlus ABCCat
+deprive_of_features NonTerm { cat = c } = NonTerm {
+    cat = c
+    , index = Nothing
+    , role = None
+    , deriv = Undetermined
+    , scope = []
+    , covertArgs = []
+    , attrs = mempty
+}
+deprive_of_features a = a
+
 {-|
-    The tnery point of this program.
+    The entry point of this program.
 -}
 main :: IO ()
 main = OA.execParser optionParserInfo >>= runWithOptions

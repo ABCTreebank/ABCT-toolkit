@@ -303,7 +303,7 @@ printCatPlus
         Other dr 
             | dr == ""  -> mempty
             | otherwise -> "#deriv=" <> pretty d
-        Undetermined    -> "#deriv=" <> pretty d
+        Undetermined    -> mempty -- "#deriv=" <> pretty d
         _
             | omitD     -> mempty
             | otherwise -> "#deriv=" <> pretty d
