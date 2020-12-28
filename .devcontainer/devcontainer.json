@@ -1,0 +1,8 @@
+{
+    "name": "ABC Treebank",
+    "dockerFile": "Dockerfile",
+    "remoteUser": "vscode",
+    "extensions": [
+        "ms-python.python"
+    ]
+}
