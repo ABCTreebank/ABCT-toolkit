@@ -91,7 +91,7 @@ CAT_PPS : typing.Set[str] = {
 }
 
 CAT_NPS: typing.Set[str] = {
-    "NP", "QP", "DP" # TODO: change
+    "N", "N[s]", "NP", "NP[q]"
 }
 
 CAT_PP_LISTS_ORTHODOX_PL: typing.Set[typing.List[str]] = {
@@ -231,7 +231,7 @@ def gen_unary_rules() -> typing.List[typing.Tuple[str, str]]:
     for pp in CAT_PPS:
         res.append(
             (
-                "DP", # inner
+                "NP", # inner
                 pp,   # outer
             )
         )
@@ -244,38 +244,43 @@ def gen_unary_rules() -> typing.List[typing.Tuple[str, str]]:
 
     res.extend(
         (
-            ("NP", "DP"), # Covert Determiner
-            ("QP", "DP"), # Covert Determiner
+            ("N", "NP"), # Covert Determiner
+            ("N", "NP[q]"), # Covert Determiner
+            ("N[s]", "NP"), # Covert Determiner
+            ("N[s]", "NP[q]"), # Covert Determiner
 
             ("S[sub]", "CP[q]", ), # Covert question marker
 
             # Admoninal NPs??
             # ("NP/NP", "NP"), 
-            ("DP", "NP/NP", ), 
-            ("QP", "NP/NP", ), 
+            ("NP", "N/N", ), 
+            ("NP", "N[s]/N[s]", ), 
+            ("NP[q]", "N/N", ), 
+            ("NP[q]", "N[s]/N[s]", ), 
 
             # Adverbial NPs  (frequent ones only)
             # e.g. きょう，昨日
             # ("(S[m]\\PP[s])/(S[m]\\PP[s])", "NP"),
             # ("(S[sub]\\PP[s])/(S[sub]\\PP[s])", "NP"),
-            ("DP", "(S[m]\\PP[s])/(S[m]\\PP[s])", ),
-            ("DP", "(S[e]\\PP[s])/(S[e]\\PP[s])", ),
-            ("DP", "(S[a]\\PP[s])/(S[a]\\PP[s])", ),
-            ("DP", "(S[rel]\\PP[s])/(S[rel]\\PP[s])", ),
-            ("DP", "(CP[f]\\PP[s])/(CP[f]\\PP[s])", ),
-            ("DP", "S[sub]/S[sub]", ),
-            ("DP", "S[a]/S[a]", ),
+            ("NP", "(S[m]\\PP[s])/(S[m]\\PP[s])", ),
+            ("NP", "(S[e]\\PP[s])/(S[e]\\PP[s])", ),
+            ("NP", "(S[a]\\PP[s])/(S[a]\\PP[s])", ),
+            ("NP", "(S[rel]\\PP[s])/(S[rel]\\PP[s])", ),
+            ("NP", "(CP[f]\\PP[s])/(CP[f]\\PP[s])", ),
+            ("NP", "S[sub]/S[sub]", ),
+            ("NP", "S[a]/S[a]", ),
 
             # Adverbial QPs
-            ("QP", "(S[m]\\PP[s])/(S[m]\\PP[s])", ),
-            ("QP", "(S[a]\\PP[s])/(S[a]\\PP[s])", ),
-            ("QP", "S[m]/S[m]", ),
+            ("NP[q]", "(S[m]\\PP[s])/(S[m]\\PP[s])", ),
+            ("NP[q]", "(S[a]\\PP[s])/(S[a]\\PP[s])", ),
+            ("NP[q]", "S[m]/S[m]", ),
 
             # Peculiar Srel
             ("S[rel]", "NP/NP", ),
 
             # single NUM
-            ("NUM", "QP", ), 
+            ("NUM", "N"), 
+            ("NUM", "N[s]"), 
         )
     )
 
@@ -385,7 +390,7 @@ CAT_PPS : typing.Set[str] = {
 }
 
 CAT_NPS: typing.Set[str] = {
-    "NP", "QP", "DP"
+    "N", "N[s]", "NP[q]", "NP"
 }
 
 CAT_PP_LISTS_ORTHODOX_PL: typing.Set[typing.List[str]] = {
@@ -525,7 +530,13 @@ def gen_unary_rules() -> typing.List[typing.Tuple[str, str]]:
     for pp in CAT_PPS:
         res.append(
             (
-                "DP", # inner
+                "NP", # inner
+                pp,   # outer
+            )
+        )
+        res.append(
+            (
+                "NP[q]", # inner
                 pp,   # outer
             )
         )
@@ -538,38 +549,45 @@ def gen_unary_rules() -> typing.List[typing.Tuple[str, str]]:
 
     res.extend(
         (
-            ("NP", "DP"), # Covert Determiner
-            ("QP", "DP"), # Covert Determiner
+            ("N", "NP"), # Covert Determiner
+            ("N[s]", "NP"), # Covert Determiner
+            ("N", "NP[q]"), # Covert Determiner
+            ("N[s]", "NP[q]"), # Covert Determiner
 
             ("S[sub]", "CP[q]", ), # Covert question marker
 
             # Admoninal NPs??
             # ("NP/NP", "NP"), 
-            ("DP", "NP/NP", ), 
-            ("QP", "NP/NP", ), 
+            ("NP", "N/N"), 
+            ("NP", "N[s]/N[s]"), 
+            ("NP[q]", "N/N"), 
+            ("NP[q]", "N[s]/N[s]"), 
 
             # Adverbial NPs  (frequent ones only)
             # e.g. きょう，昨日
             # ("(S[m]\\PP[s])/(S[m]\\PP[s])", "NP"),
             # ("(S[sub]\\PP[s])/(S[sub]\\PP[s])", "NP"),
-            ("DP", "(S[m]\\PP[s])/(S[m]\\PP[s])", ),
-            ("DP", "(S[e]\\PP[s])/(S[e]\\PP[s])", ),
-            ("DP", "(S[a]\\PP[s])/(S[a]\\PP[s])", ),
-            ("DP", "(S[rel]\\PP[s])/(S[rel]\\PP[s])", ),
-            ("DP", "(CP[f]\\PP[s])/(CP[f]\\PP[s])", ),
-            ("DP", "S[sub]/S[sub]", ),
-            ("DP", "S[a]/S[a]", ),
+            ("NP", "(S[m]\\PP[s])/(S[m]\\PP[s])", ),
+            ("NP", "(S[e]\\PP[s])/(S[e]\\PP[s])", ),
+            ("NP", "(S[a]\\PP[s])/(S[a]\\PP[s])", ),
+            ("NP", "(S[rel]\\PP[s])/(S[rel]\\PP[s])", ),
+            ("NP", "(CP[f]\\PP[s])/(CP[f]\\PP[s])", ),
+            ("NP", "S[sub]/S[sub]", ),
+            ("NP", "S[a]/S[a]", ),
 
             # Adverbial QPs
-            ("QP", "(S[m]\\PP[s])/(S[m]\\PP[s])", ),
-            ("QP", "(S[a]\\PP[s])/(S[a]\\PP[s])", ),
-            ("QP", "S[m]/S[m]", ),
+            ("NP[q]", "(S[m]\\PP[s])/(S[m]\\PP[s])", ),
+            ("NP[q]", "(S[a]\\PP[s])/(S[a]\\PP[s])", ),
+            ("NP[q]", "S[m]/S[m]", ),
 
             # Peculiar Srel
             ("S[rel]", "NP/NP", ),
+            ("S[rel]", "N/N", ),
+            ("S[rel]", "N[s]/N[s]", ),
 
             # single NUM
-            ("NUM", "QP", ), 
+            ("NUM", "N", ), 
+            ("NUM", "N[s]", ), 
         )
     )
 
