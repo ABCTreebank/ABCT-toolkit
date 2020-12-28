@@ -161,7 +161,7 @@ name = "cffi"
 version = "1.14.4"
 description = "Foreign Function Interface for Python calling C code."
 category = "main"
-optional = false
+optional = true
 python-versions = "*"
 
 [package.dependencies]
@@ -169,7 +169,7 @@ pycparser = "*"
 
 [[package]]
 name = "chainer"
-version = "6.0.0"
+version = "5.4.0"
 description = "A flexible framework of neural networks"
 category = "main"
 optional = false
@@ -178,17 +178,17 @@ python-versions = "*"
 [package.dependencies]
 filelock = "*"
 numpy = ">=1.9.0"
-protobuf = ">=3.0.0,<3.8.0rc1"
+protobuf = ">=3.0.0"
 six = ">=1.9.0"
-typing = "*"
-typing_extensions = "*"
 
 [package.extras]
-appveyor = ["pytest (<4.2.0)", "mock", "pytest-timeout (<1.3.0)"]
-docs = ["sphinx (==1.8.2)", "sphinx-rtd-theme"]
-doctest = ["sphinx (==1.8.2)", "matplotlib", "theano"]
-stylecheck = ["autopep8 (>=1.4.1,<1.5)", "flake8 (>=3.7,<3.8)", "pycodestyle (>=2.5,<2.6)", "mypy"]
+appveyor = ["pytest (<4.2.0)", "mock", "pytest-timeout (<1.3.0)", "pytest-cov"]
+cuda = ["cupy (>=5.4.0,<6.0.0)"]
+docs = ["sphinx (==1.7.9)", "sphinx-rtd-theme"]
+doctest = ["sphinx (==1.7.9)", "matplotlib", "theano"]
+stylecheck = ["autopep8 (>=1.4.1,<1.5)", "flake8 (>=3.6,<3.7)", "pbr (==4.0.4)", "pycodestyle (>=2.4,<2.5)"]
 test = ["pytest (<4.2.0)", "mock"]
+travis = ["autopep8 (>=1.4.1,<1.5)", "flake8 (>=3.6,<3.7)", "pbr (==4.0.4)", "pycodestyle (>=2.4,<2.5)", "pytest (<4.2.0)", "mock", "sphinx (==1.7.9)", "sphinx-rtd-theme", "pytest-timeout (<1.3.0)", "pytest-cov (<2.6.1)", "theano", "h5py", "pillow"]
 
 [[package]]
 name = "chardet"
@@ -386,7 +386,7 @@ name = "gevent"
 version = "1.4.0"
 description = "Coroutine-based network library"
 category = "main"
-optional = false
+optional = true
 python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*"
 
 [package.dependencies]
@@ -434,7 +434,7 @@ name = "greenlet"
 version = "0.4.17"
 description = "Lightweight in-process concurrent programming"
 category = "main"
-optional = false
+optional = true
 python-versions = "*"
 
 [[package]]
@@ -783,7 +783,7 @@ cymem = ">=2.0.2,<2.1.0"
 
 [[package]]
 name = "protobuf"
-version = "3.7.1"
+version = "3.14.0"
 description = "Protocol Buffers"
 category = "main"
 optional = false
@@ -816,7 +816,7 @@ name = "pycparser"
 version = "2.20"
 description = "C parser in Python"
 category = "main"
-optional = false
+optional = true
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 
 [[package]]
@@ -1257,7 +1257,7 @@ python-versions = "*"
 
 [[package]]
 name = "tensorboardx"
-version = "1.8"
+version = "2.1"
 description = "TensorBoardX lets you watch Tensors Flow without Tensorflow"
 category = "main"
 optional = true
@@ -1265,7 +1265,7 @@ python-versions = "*"
 
 [package.dependencies]
 numpy = "*"
-protobuf = ">=3.2.0"
+protobuf = ">=3.8.0"
 six = "*"
 
 [[package]]
@@ -1344,14 +1344,6 @@ description = "a fork of Python 2 and 3 ast modules with type comment support"
 category = "dev"
 optional = false
 python-versions = "*"
-
-[[package]]
-name = "typing"
-version = "3.7.4.3"
-description = "Type Hints for Python"
-category = "main"
-optional = false
-python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 
 [[package]]
 name = "typing-extensions"
@@ -1447,12 +1439,13 @@ docs = ["sphinx", "jaraco.packaging (>=3.2)", "rst.linker (>=1.9)"]
 testing = ["pytest (>=3.5,!=3.7.3)", "pytest-checkdocs (>=1.2.3)", "pytest-flake8", "pytest-cov", "jaraco.test (>=3.2.0)", "jaraco.itertools", "func-timeout", "pytest-black (>=0.3.7)", "pytest-mypy"]
 
 [extras]
-ml = ["allennlp", "pycuda"]
+ml = ["allennlp", "gevent", "pycuda"]
+parser = ["allennlp", "gevent"]
 
 [metadata]
 lock-version = "1.1"
 python-versions = "~3.6.1"
-content-hash = "0a519554cee2c3585bfae5b682ac25fe81bc420ec4cf8ea2a14fbb4e8d7a7498"
+content-hash = "74eb7faed2f5fbd4d8cba7aa73208c38353c3628d8edcdfd34d3ab8d4186af86"
 
 [metadata.files]
 alabaster = [
@@ -1553,7 +1546,7 @@ cffi = [
     {file = "cffi-1.14.4.tar.gz", hash = "sha256:1a465cbe98a7fd391d47dce4b8f7e5b921e6cd805ef421d04f5f66ba8f06086c"},
 ]
 chainer = [
-    {file = "chainer-6.0.0.tar.gz", hash = "sha256:463bf0e3cbd50c9a83f6f74b21e13bac0ba02f709f4fe97399de6ab61afbb393"},
+    {file = "chainer-5.4.0.tar.gz", hash = "sha256:bb432e37764d8627a8ed13176a921a6cf35c5af32687268bd9ec31631918a310"},
 ]
 chardet = [
     {file = "chardet-4.0.0-py2.py3-none-any.whl", hash = "sha256:f864054d66fd9118f2e67044ac8981a54775ec5b67aed0441892edb553d21da5"},
@@ -2124,25 +2117,24 @@ preshed = [
     {file = "preshed-2.0.1.tar.gz", hash = "sha256:dae01c74313965c487e0ec839e5f28d0c7df9bfd1d978aa5bada3f72ff20a9e5"},
 ]
 protobuf = [
-    {file = "protobuf-3.7.1-cp27-cp27m-macosx_10_9_intel.macosx_10_9_x86_64.macosx_10_10_intel.macosx_10_10_x86_64.whl", hash = "sha256:bd8592cc5f8b4371d0bad92543370d4658dc41a5ccaaf105597eb5524c616291"},
-    {file = "protobuf-3.7.1-cp27-cp27mu-manylinux1_x86_64.whl", hash = "sha256:86260ecfe7a66c0e9d82d2c61f86a14aa974d340d159b829b26f35f710f615db"},
-    {file = "protobuf-3.7.1-cp34-cp34m-macosx_10_9_intel.macosx_10_9_x86_64.macosx_10_10_intel.macosx_10_10_x86_64.whl", hash = "sha256:9c7b90943e0e188394b4f068926a759e3b4f63738190d1ab3d500d53b9ce7614"},
-    {file = "protobuf-3.7.1-cp34-cp34m-manylinux1_x86_64.whl", hash = "sha256:b06a794901bf573f4b2af87e6139e5cd36ac7c91ac85d7ae3fe5b5f6fc317513"},
-    {file = "protobuf-3.7.1-cp35-cp35m-macosx_10_9_intel.macosx_10_9_x86_64.macosx_10_10_intel.macosx_10_10_x86_64.whl", hash = "sha256:67819e8e48a74c68d87f25cad9f40edfe2faf278cdba5ca73173211b9213b8c9"},
-    {file = "protobuf-3.7.1-cp35-cp35m-manylinux1_x86_64.whl", hash = "sha256:d6e88c4920660aa75c0c2c4b53407aef5efd9a6e0ca7d2fc84d79aba2ccbda3a"},
-    {file = "protobuf-3.7.1-cp35-cp35m-win32.whl", hash = "sha256:a77f217ea50b2542bae5b318f7acee50d9fc8c95dd6d3656eaeff646f7cab5ee"},
-    {file = "protobuf-3.7.1-cp35-cp35m-win_amd64.whl", hash = "sha256:7ee5b595db5abb0096e8c4755e69c20dfad38b2d0bcc9bc7bafc652d2496b471"},
-    {file = "protobuf-3.7.1-cp36-cp36m-macosx_10_9_intel.macosx_10_9_x86_64.macosx_10_10_intel.macosx_10_10_x86_64.whl", hash = "sha256:78e08371e236f193ce947712c072542ff19d0043ab5318c2ea46bbc2aaebdca6"},
-    {file = "protobuf-3.7.1-cp36-cp36m-manylinux1_x86_64.whl", hash = "sha256:cc5eb13f5ccc4b1b642cc147c2cdd121a34278b341c7a4d79e91182fff425836"},
-    {file = "protobuf-3.7.1-cp36-cp36m-win32.whl", hash = "sha256:ad589ed1d1f83db22df867b10e01fe445516a5a4d7cfa37fe3590a5f6cfc508b"},
-    {file = "protobuf-3.7.1-cp36-cp36m-win_amd64.whl", hash = "sha256:cd3b0e0ad69b74ee55e7c321f52a98effed2b4f4cc9a10f3683d869de00590d5"},
-    {file = "protobuf-3.7.1-cp37-cp37m-macosx_10_9_intel.macosx_10_9_x86_64.macosx_10_10_intel.macosx_10_10_x86_64.whl", hash = "sha256:92c77db4bd33ea4ee5f15152a835273f2338a5246b2cbb84bab5d0d7f6e9ba94"},
-    {file = "protobuf-3.7.1-cp37-cp37m-manylinux1_x86_64.whl", hash = "sha256:be48e5a6248a928ec43adf2bea037073e5da692c0b3c10b34f9904793bd63138"},
-    {file = "protobuf-3.7.1-cp37-cp37m-win32.whl", hash = "sha256:75da7d43a2c8a13b0bc7238ab3c8ae217cbfd5979d33b01e98e1f78defb2d060"},
-    {file = "protobuf-3.7.1-cp37-cp37m-win_amd64.whl", hash = "sha256:57e05e16955aee9e6a0389fcbd58d8289dd2420e47df1a1096b3a232c26eb2dd"},
-    {file = "protobuf-3.7.1-py2.7.egg", hash = "sha256:f1f5d8b8e0bc9651d81b40ad3d9fb7cdd858ea31fc116dd230393465849dbecd"},
-    {file = "protobuf-3.7.1-py2.py3-none-any.whl", hash = "sha256:ec3c49b6d247152e19110c3a53d9bb4cf917747882017f70796460728b02722e"},
-    {file = "protobuf-3.7.1.tar.gz", hash = "sha256:21e395d7959551e759d604940a115c51c6347d90a475c9baf471a1a86b5604a9"},
+    {file = "protobuf-3.14.0-cp27-cp27m-macosx_10_9_x86_64.whl", hash = "sha256:629b03fd3caae7f815b0c66b41273f6b1900a579e2ccb41ef4493a4f5fb84f3a"},
+    {file = "protobuf-3.14.0-cp27-cp27mu-manylinux1_x86_64.whl", hash = "sha256:5b7a637212cc9b2bcf85dd828b1178d19efdf74dbfe1ddf8cd1b8e01fdaaa7f5"},
+    {file = "protobuf-3.14.0-cp35-cp35m-macosx_10_9_intel.whl", hash = "sha256:43b554b9e73a07ba84ed6cf25db0ff88b1e06be610b37656e292e3cbb5437472"},
+    {file = "protobuf-3.14.0-cp35-cp35m-manylinux1_x86_64.whl", hash = "sha256:5e9806a43232a1fa0c9cf5da8dc06f6910d53e4390be1fa06f06454d888a9142"},
+    {file = "protobuf-3.14.0-cp35-cp35m-win32.whl", hash = "sha256:1c51fda1bbc9634246e7be6016d860be01747354ed7015ebe38acf4452f470d2"},
+    {file = "protobuf-3.14.0-cp35-cp35m-win_amd64.whl", hash = "sha256:4b74301b30513b1a7494d3055d95c714b560fbb630d8fb9956b6f27992c9f980"},
+    {file = "protobuf-3.14.0-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:86a75477addde4918e9a1904e5c6af8d7b691f2a3f65587d73b16100fbe4c3b2"},
+    {file = "protobuf-3.14.0-cp36-cp36m-manylinux1_x86_64.whl", hash = "sha256:ecc33531a213eee22ad60e0e2aaea6c8ba0021f0cce35dbf0ab03dee6e2a23a1"},
+    {file = "protobuf-3.14.0-cp36-cp36m-win32.whl", hash = "sha256:72230ed56f026dd664c21d73c5db73ebba50d924d7ba6b7c0d81a121e390406e"},
+    {file = "protobuf-3.14.0-cp36-cp36m-win_amd64.whl", hash = "sha256:0fc96785262042e4863b3f3b5c429d4636f10d90061e1840fce1baaf59b1a836"},
+    {file = "protobuf-3.14.0-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:4e75105c9dfe13719b7293f75bd53033108f4ba03d44e71db0ec2a0e8401eafd"},
+    {file = "protobuf-3.14.0-cp37-cp37m-manylinux1_x86_64.whl", hash = "sha256:2a7e2fe101a7ace75e9327b9c946d247749e564a267b0515cf41dfe450b69bac"},
+    {file = "protobuf-3.14.0-cp37-cp37m-win32.whl", hash = "sha256:b0d5d35faeb07e22a1ddf8dce620860c8fe145426c02d1a0ae2688c6e8ede36d"},
+    {file = "protobuf-3.14.0-cp37-cp37m-win_amd64.whl", hash = "sha256:8971c421dbd7aad930c9bd2694122f332350b6ccb5202a8b7b06f3f1a5c41ed5"},
+    {file = "protobuf-3.14.0-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:9616f0b65a30851e62f1713336c931fcd32c057202b7ff2cfbfca0fc7d5e3043"},
+    {file = "protobuf-3.14.0-cp38-cp38-manylinux1_x86_64.whl", hash = "sha256:22bcd2e284b3b1d969c12e84dc9b9a71701ec82d8ce975fdda19712e1cfd4e00"},
+    {file = "protobuf-3.14.0-py2.py3-none-any.whl", hash = "sha256:0e247612fadda953047f53301a7b0407cb0c3cb4ae25a6fde661597a04039b3c"},
+    {file = "protobuf-3.14.0.tar.gz", hash = "sha256:1d63eb389347293d8915fb47bee0951c7b5dab522a4a60118b9a18f33e21f8ce"},
 ]
 psutil = [
     {file = "psutil-5.8.0-cp27-cp27m-macosx_10_9_x86_64.whl", hash = "sha256:0066a82f7b1b37d334e68697faba68e5ad5e858279fd6351c8ca6024e8d6ba64"},
@@ -2540,8 +2532,8 @@ srsly = [
     {file = "srsly-1.0.5.tar.gz", hash = "sha256:d3dd796372367c71946d0cd6f734e49db3d99dd13a57bdac937d9eb62689fc9e"},
 ]
 tensorboardx = [
-    {file = "tensorboardX-1.8-py2.py3-none-any.whl", hash = "sha256:f52e59b38b4cdf83384f3fce067bcaf2d2847619f9f533394df0de3b5a71ab8e"},
-    {file = "tensorboardX-1.8.tar.gz", hash = "sha256:13fe0abba27f407778a7321937190eedaf12bc8c544d9a4e294fcf0ba177fd76"},
+    {file = "tensorboardX-2.1-py2.py3-none-any.whl", hash = "sha256:2d81c10d9e3225dcd9bb5fb277588610bdf45317603e7682f6953d83b5b38f6a"},
+    {file = "tensorboardX-2.1.tar.gz", hash = "sha256:9e8907cf2ab900542d6cb72bf91aa87b43005a7f0aa43126268697e3727872f9"},
 ]
 thinc = [
     {file = "thinc-7.0.8-cp27-cp27m-macosx_10_6_intel.macosx_10_9_intel.macosx_10_9_x86_64.macosx_10_10_intel.macosx_10_10_x86_64.whl", hash = "sha256:6ebf3519383b8c7ee64d0f7041818486e4f4c6119c55f1a39412e005893da11a"},
@@ -2611,10 +2603,6 @@ typed-ast = [
     {file = "typed_ast-1.4.1-cp39-cp39-win32.whl", hash = "sha256:b52ccf7cfe4ce2a1064b18594381bccf4179c2ecf7f513134ec2f993dd4ab395"},
     {file = "typed_ast-1.4.1-cp39-cp39-win_amd64.whl", hash = "sha256:3742b32cf1c6ef124d57f95be609c473d7ec4c14d0090e5a5e05a15269fb4d0c"},
     {file = "typed_ast-1.4.1.tar.gz", hash = "sha256:8c8aaad94455178e3187ab22c8b01a3837f8ee50e09cf31f1ba129eb293ec30b"},
-]
-typing = [
-    {file = "typing-3.7.4.3-py2-none-any.whl", hash = "sha256:283d868f5071ab9ad873e5e52268d611e851c870a2ba354193026f2dfb29d8b5"},
-    {file = "typing-3.7.4.3.tar.gz", hash = "sha256:1187fb9c82fd670d10aa07bbb6cfcfe4bdda42d6fab8d5134f04e8c4d0b71cc9"},
 ]
 typing-extensions = [
     {file = "typing_extensions-3.7.4.3-py2-none-any.whl", hash = "sha256:dafc7639cde7f1b6e1acc0f457842a83e722ccca8eef5270af2d74792619a89f"},
