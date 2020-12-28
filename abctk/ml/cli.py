@@ -1,4 +1,7 @@
 import typing
+import logging
+logger = logging.getLogger(__name__)
+
 import pathlib
 
 import sys
@@ -49,6 +52,7 @@ def cmd_prepare(
         temp_folder: pathlib.Path = pathlib.Path(
             tempfile.mkdtemp(prefix = "abctk.ml.cli.prepare-")
         )
+        logger.info(f"Create a temporary folder at {temp_folder}")
 
         # =========================
         # 2. Prepare the output folder
@@ -72,7 +76,9 @@ def cmd_prepare(
     finally:
         if temp_folder and temp_folder.is_dir():
             if if_leave_temp:
-                sys.stderr.write(f"Temporary file kept at {temp_folder}")
+                msg: str = f"Temporary file kept at {temp_folder}"
+                sys.stderr.write(msg)
+                logger.info(msg)
             else:
                 pass # delete tempfolder
             # === END IF ===
