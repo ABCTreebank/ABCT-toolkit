@@ -54,10 +54,11 @@ def tokenize(
         sentence = ''.join(sentence)
         tokenized = tokenizer.tokenize(sentence)
         tokens = []
+        raw_sentence = []
 
         for token in tokenized:
             pos, pos1, pos2, pos3 = token.part_of_speech.split(',')
-            token = depccg.tokens.Token(
+            token_obj = depccg.tokens.Token(
                 word=token.surface,
                 surf=token.surface,
                 pos=pos,
@@ -69,10 +70,11 @@ def tokenize(
                 reading=token.reading,
                 base=token.base_form
             )
-            tokens.append(token)
-        raw_sentence = [token.surface for token in tokenized]
+            tokens.append(token_obj)
+            raw_sentence.append(token.surface)
+        # === END FOR token ===
+
         res.append(tokens)
         raw_sentences.append(raw_sentence)
-
     return res, raw_sentences
 # === END ===

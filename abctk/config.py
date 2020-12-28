@@ -16,6 +16,7 @@ _TOKEN_INDEXERS = {
     },
     "token_characters": {
         "type": "characters",
+        "min_padding_length": 5,
         "character_tokenizer": {
             "end_tokens": [
                 "@@PADDING@@",
