@@ -229,6 +229,14 @@ relabel x /^.*$/={x}#role=h/
 ### 名詞句類 2（`Nq?`）
 #### 主要部
 ```tsurgeon
+
+N !== /#deriv=.+/
+  < (CL=x !$.. CL)
+  !< /#role=h/
+
+relabel x /^.*$/={x}#role=h/
+
+
 /^Nq?/ 
   !== /^Ns$/
   !== /^Nq?d/
@@ -279,6 +287,7 @@ relabel x /^.*$/={x}#role=c/
 #### 主要部
 主要部は最右の`CL`である．
 `CL`がない場合，pretreatmentsにより，それは，relabelingの対象外である．
+pretreatmentsにより，量化的でない`NUMCLP`は`N`に貼り替えられていることに注意．
 
 ```tsurgeon
 /^NUMCLP/ 
@@ -295,6 +304,7 @@ relabel x /^.*$/={x}#role=h/
 
 #### 補部
 主要部の左にある，然るべき要素はみな補部である．
+ここでは`NUMCLP`のみを対象にしている(`N`についてはすでに上で同様の処理を行っているため)．
 
 ```tsurgeon
 /^NUMCLP/

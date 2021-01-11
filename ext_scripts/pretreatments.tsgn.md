@@ -114,7 +114,7 @@ relabel x RRB
 ```tsurgeon
 __=xp 
   < /^CONJP/ 
-  !== /#deriv=conj/
+  !== /#deriv=/
 
 relabel xp /^.*$/={xp}#deriv=conj/
 
@@ -517,6 +517,7 @@ CLがなければ，NUMCLPはheadlessである．
 
 ```tsurgeon
 NUMCLP=numclp !< CL
+  !== /#deriv=/
 
 relabel numclp /^.*$/={numclp}#deriv=unary-CL/
 
@@ -912,7 +913,7 @@ relabel p N
 ```tsurgeon
 /^NP/=np
   <: /IP-EMB/ 
-  !== /#deriv=unary-IPEMB-headless/
+  !== /#deriv=/
 
 relabel np /^.*$/={np}#deriv=unary-IPEMB-headless/
 
@@ -955,13 +956,13 @@ relabel n Ns
 その後，全てのNPに，`*N_1`として，`Nq?`を改めて導入する：
 ```tsurgeon
 /^NP(?<!q)/=np
-  !== /#deriv=unary-NP-type-raising/
+  !== /#deriv=/
 
 adjoinH ( N@) np
 relabel np /^.*$/={np}#deriv=unary-NP-type-raising/
 
 /^NPq/=np
-  !== /#deriv=unary-NP-type-raising/
+  !== /#deriv=/
 
 adjoinH ( Nq@) np
 relabel np /^.*$/={np}#deriv=unary-NP-type-raising/
@@ -1038,7 +1039,7 @@ relabel conj P
 ```tsurgeon
 /^IP-ADV/=ip 
     >! /^PP/ 
-    >! /#deriv/
+    >! /#deriv=/
 
 adjoinF (=pp @) ip
 relabel pp /^.*$/PP#deriv=unary-IPADV/
@@ -1059,7 +1060,7 @@ TODO: 「〜ず」「〜ずに」の扱い。繰り上げるべきかどうか�
 IP-RELには、もれなく空のPを付け加えることにする。
 
 ```tsurgeon
-/IP-REL/=ip !> /#deriv/
+/IP-REL/=ip !> /#deriv=/
 
 adjoinF (=pp @) ip
 relabel pp /^.*$/PP-REL#deriv=unary-IPREL/
@@ -1944,7 +1945,7 @@ CP-QUEについて、助詞がない場合に、空のものを補う。
 
 ```tsurgeon
 /^CP-QUE/=que 
-  !== /#deriv/
+  !== /#deriv=/
   < (/^IP-SUB/=x !$ /^IP-SUB/) 
   !< P
 
@@ -1965,7 +1966,7 @@ IP-SUBまたはmulti-sentencesを単独支配するCP-THTについても、同�
 
 ```tsurgeon
 /^CP-THT/=cp 
-  !== /#deriv/
+  !== /#deriv=/
   !< P
   !< *PRO* 
 
@@ -1986,6 +1987,7 @@ relabel cp /^.*/={cp}#deriv=unary-COMP/
 ### PRN類の正規化
 ```tsurgeon
 /^(INTJP|LST|FRAG|PRN)$/=node
+  !== /#deriv=/
 
 relabel node /^.*/={node}#deriv=leave/
 
@@ -1998,8 +2000,19 @@ relabel node /^.*/={node}#deriv=leave/
 
 ```tsurgeon
 /^multi-sentence$/=ms
+  !== /#deriv=/
 
 relabel ms /^.*/={ms}#deriv=conj-multi-sentence/  
+
+```
+
+## `QUOT`の変換
+量化詞`Q`の処理を煩雑にしないため、名称を`ZIT`に変換しておく(これは最終的にrelabelで消失する）
+
+```tsurgeon
+QUOT=quot
+
+relabel quot ZIT
 
 ```
 
@@ -2019,7 +2032,7 @@ delete x
 
 ```tsurgeon
 !/^(VBS|PRN)/ 
-  !== /#deriv/
+  !== /#deriv=/
   !<2 __ 
   <1 (__=y < __ ) 
 
