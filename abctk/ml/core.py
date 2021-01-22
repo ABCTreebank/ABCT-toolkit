@@ -1,5 +1,7 @@
 import typing
 import pathlib
+import logging
+logger = logging.getLogger(__name__)
 
 from . import misc
 
@@ -44,13 +46,24 @@ def prepare_ml_data(
     dir_temp: pathlib.Path,
     dir_output: pathlib.Path,
 ) -> typing.NoReturn:
+    logger.info("The core preparation procedure `prepare_ml_data' is called")
+
     # =========================
     # 0. Prepare Subdirectories
     # =========================
 
     for fd in SUBDIRS.values():
-        (dir_temp / fd).mkdir(parents = True, exist_ok = True)
-        (dir_output / fd).mkdir(parents = True, exist_ok = True)
+        fd_temp = dir_temp / fd
+        fd_temp.mkdir(parents = True, exist_ok = True)
+        logger.debug(
+            f"The subfolder {fd} of the temporary workspace is created at {fd_temp.absolute()}"
+        )
+
+        fd_output = dir_output / fd
+        fd_output.mkdir(parents = True, exist_ok = True)
+        logger.debug(
+            f"The subfolder {fd} of the output directory is created at {fd_output.absolute()}"
+        )
     # === END FOR fd ===
 
     # =========================
@@ -63,6 +76,10 @@ def prepare_ml_data(
     ) as h_treebank_train, open(dir_temp / FILES["test.psd"],
         mode = "w"
     ) as h_treebank_test:
+        logger.debug(
+            f"The streams all.psd, train.psd and test.psd are opened at {dir_temp}"
+        )
+
         # read each tree from STDIN
         for line in source_trees:
             if _get_rand() < config["train_test_ratio"]: # TODO: rewrite
@@ -74,6 +91,9 @@ def prepare_ml_data(
             h_treebank_all.write(line)
         # === END FOR line ===
     # === END WITH h_treebank_all, h_treebank_train, h_treebank_test ===
+    logger.info(
+        "Trees have been divided into training and testing ones"
+    )
 
     # =========================
     # 2. Digest the separated treebanks and collect info
@@ -198,4 +218,6 @@ def prepare_ml_data(
     ):
         file_path = FILES[f]
         shutil.copy(dir_temp / file_path, dir_output / file_path)
+
+    logger.info("The core preparation procedure `prepare_ml_data' has ended in success")
 # === END ===

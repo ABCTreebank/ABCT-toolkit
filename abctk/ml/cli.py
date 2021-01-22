@@ -44,6 +44,7 @@ def cmd_prepare(
         The source ABCTreebank must be formatted beforehand as one-line trees
         and given to STDIN.
     """
+    logger.info("Commence the `ml prepare' command")
     try: 
         # =========================
         # 1. Prepare the intermediate temp folder
@@ -52,21 +53,30 @@ def cmd_prepare(
         temp_folder: pathlib.Path = pathlib.Path(
             tempfile.mkdtemp(prefix = "abctk.ml.cli.prepare-")
         )
-        logger.info(f"Create a temporary folder at {temp_folder}")
+        logger.info(f"A temporary folder is created at {temp_folder}")
 
         # =========================
         # 2. Prepare the output folder
         # =========================
         dest_folder_root: pathlib.Path 
         if destination:
+            logger.info(
+                f"The destination folder is found to exist at {dest_folder_root.absolute()}"
+            )
             dest_folder_root = destination
             # TODO: check if it's empty
         else:
             dest_folder_root = ct.create_folder_time(
                 "ml_prepared_", to_make = True
-            ) 
+            )
+            logger.info(
+                f"The destination folder is created anew at {dest_folder_root.absolute()}"
+            )
         # === END IF ===
 
+        logger.info(
+            f"Start the core preparation process"
+        )
         core.prepare_ml_data(
             source_trees = sys.stdin,
             config = ctx.obj["CONFIG"]["ml"],
@@ -76,9 +86,7 @@ def cmd_prepare(
     finally:
         if temp_folder and temp_folder.is_dir():
             if if_leave_temp:
-                msg: str = f"Temporary file kept at {temp_folder}"
-                sys.stderr.write(msg)
-                logger.info(msg)
+                logger.info(f"The temporary folder is kept at {temp_folder}")
             else:
                 pass # delete tempfolder
             # === END IF ===

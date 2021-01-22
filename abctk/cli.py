@@ -16,19 +16,22 @@ import abctk.config as CONF
     help = "Path to the user custom option file (in the YAML format)."
 )
 @click.option(
-    "-l", "--log-level", "log_level",
-    type = str,
+    "-l", "--root-stream-log-level", "root_stream_log_level",
+    type = click.IntRange(min = 1),
     default = logging.WARNING,
 )
 @click.option(
-    "--logfile", "logfile",
-    type = click.Path(
-        exists = False, 
-        file_okay = True,
-        dir_okay = False,
-        writable = True
+    "--logfile", "logfiles",
+    type = (
+        click.IntRange(min = 1),
+        click.Path(
+            exists = False, 
+            file_okay = True,
+            dir_okay = False,
+            writable = True
+        ),
     ),
-    default = None,
+    multiple = True,
     help = """
         Path to the log file. No output if not set.
     """
@@ -37,42 +40,31 @@ import abctk.config as CONF
 def cmd_main(
     ctx: click.Context,
     user_config: typing.TextIO,
-    log_level: typing.Union[int, str],
-    logfile: pathlib.Path
+    root_stream_log_level: int,
+    logfiles: typing.Iterable[typing.Tuple[int, pathlib.Path]],
 ):
     ctx.ensure_object(dict)
 
     # ====================
     # Configure logging
     # ====================
-    # TODO: is this working?
-    if isinstance(log_level, int):
-        if log_level > 0:
-            pass
-        else:
-            logging.error("Value not in the range for the --log-level option")
-            raise ValueError()
-        # === END IF ===
-    elif isinstance(log_level, str):
-        if log_level.isdigit:
-            log_level = int(log_level)
-        else:
-            log_level = str.upper(log_level)
-        # === END IF ===
-    else:
-        logging.error("Wrong type for the --log-level option")
-        raise TypeError()
-    # === END IF ===
+    # Adjust the root stream handler
+    logger_root = logging.getLogger()
+    logger_root.setLevel(root_stream_log_level)
+    logging.info(
+        f"The log level of the root logger is set to {logger_root.level}"
+    )
 
-    if logfile:
-        logging.basicConfig(
-            filename = logfile,
-            level = log_level,
-        )
-        logger.info("Verbose log enabled")
-    else:
-        logger.setLevel(log_level)
-    # === END IF ===
+    # Add file handlers to the root
+    for level, hpath in logfiles:
+        hd = logging.FileHandler(hpath)
+        hd.setLevel(level)
+        logger_root.addHandler(hd)
+    # === END FOR level, hpath ===
+
+    logger_root.info(
+        f"The handler(s) of the root logger is/are: {logging.root.handlers}"
+    )
 
     # ====================
     # Build config
