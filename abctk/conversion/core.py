@@ -70,7 +70,7 @@ def convert_keyaki_to_abc(
     import subprocess
 
     logger.info(
-        f"Commence the Keyaki-to-ABC conversion on the file/stream {src_name}"
+        f"Commence a Keyaki-to-ABC conversion on the file/stream {src_name}"
     )
     proc = subprocess.Popen(
         f"""
