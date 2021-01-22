@@ -2,6 +2,8 @@ import typing
 import logging
 logger = logging.getLogger(__name__)
 
+import subprocess
+
 import pathlib
 import abctk.config as CONF
 
@@ -66,9 +68,7 @@ def convert_keyaki_to_abc(
     src_name: str = "<INPUT>",
     dest_name: str = "<OUTPUT>",
     conf: typing.Dict[str, typing.Any] = CONF.CONF_DEFAULT
-) -> "subprocess.Popen":
-    import subprocess
-
+) -> int:
     logger.info(
         f"Commence a Keyaki-to-ABC conversion on the file/stream {src_name}"
     )
@@ -84,7 +84,10 @@ def convert_keyaki_to_abc(
         stdout = f_dest,
     )
     proc.wait()
-    if proc.returncode: # <> 0
+
+    return_code = proc.returncode
+
+    if return_code: # <> 0
         logger.warning(f"warning: conversion failed: {src_name}")
     else:
         logger.info(
@@ -93,20 +96,22 @@ def convert_keyaki_to_abc(
         )
     # === END IF ===
 
-    return proc
+    return return_code
 # === END ===
 
 def convert_keyaki_file_to_abc(
     src: pathlib.Path, 
     dest: pathlib.Path
-) -> typing.NoReturn:
+) -> int:
     dest_name_bare: pathlib.Path = dest.parent / dest.stem
     dest_path_abs: str = str(dest_name_bare) + "-b2psg.psd"
 
     with open(src, "r") as h_src, open(dest_path_abs, "w") as h_dest:
-        convert_keyaki_to_abc(
+        res = convert_keyaki_to_abc(
             h_src, h_dest,
             src, dest_path_abs
         )
     # === END WITH h_src, h_dest ===
+
+    return res
 # === END ===    

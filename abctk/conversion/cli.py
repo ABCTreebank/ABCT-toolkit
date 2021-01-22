@@ -117,12 +117,17 @@ def cmd_main(
                 unit_divisor = 1024
             ) as pb:
                 pb.write("Converting Keyaki trees into ABC trees:")
-                for res, src_size in jobs:
+                for _return_code, src_size in jobs:
                     pb.update(src_size)
             # === END WITH pb ===
         # === END FOR path_src, filename_res ===
     elif source_type == "stdin":
-        raise NotImplemented()
+        _ = core.convert_keyaki_to_abc(
+            f_src = sys.stdin,
+            f_dest = sys.stdout,
+            src_name = "<STDIN>",
+            dest_name = "<STDOUT>",
+        )
     else:
         logger.error(
             "Invalid CLI option: `source_type' must be either `stdin` or `filelist', "
@@ -132,7 +137,9 @@ def cmd_main(
     # === END IF ===
 # === END ===
 
-def __conv_file_wrapper(arg_tuple):
+def __conv_file_wrapper(
+    arg_tuple: typing.Tuple[pathlib.Path, pathlib.Path, int],
+) -> typing.Tuple[int, int]:
     return (
         core.convert_keyaki_file_to_abc(arg_tuple[0], arg_tuple[1]),
         arg_tuple[2]
