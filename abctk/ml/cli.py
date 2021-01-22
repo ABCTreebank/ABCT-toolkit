@@ -5,6 +5,7 @@ logger = logging.getLogger(__name__)
 import pathlib
 
 import sys
+import shutil
 import click
 
 from . import core
@@ -28,7 +29,7 @@ def cmd_main(ctx): pass
     default = False,
 )
 @click.option(
-    "--leave-temp", "if_leave_temp",
+    "--leave-temp/--no-leave-temp", "if_leave_temp",
     default = False,
 )
 @click.pass_context
@@ -88,7 +89,9 @@ def cmd_prepare(
             if if_leave_temp:
                 logger.info(f"The temporary folder is kept at {temp_folder}")
             else:
-                pass # delete tempfolder
+                # delete tempfolder
+                shutil.rmtree(temp_folder)
+                logger.info(f"The temporary folder has been deleted")
             # === END IF ===
         else:
             pass
