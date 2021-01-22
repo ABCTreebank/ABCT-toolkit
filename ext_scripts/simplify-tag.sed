@@ -17,6 +17,7 @@ s/CP-THT/CPt/g
 s/CP-QUE/CPq/g
 s/CP-FINAL/CPf/g
 s/CP-EXL/CPx/g
+s/CP\([tqfx]\)-SBJ/CP\1-sbj/g
 s/PP-SBJ/PPs/g
 s/PP-OB/PPo/g
 s/IP-[A-Z0-9]+/S/g
