@@ -11,8 +11,9 @@ import abctk.config as CONF
 
 @click.group(name = "ABC Treebank Toolkit")
 @click.option(
-    "-c", "--config", "user_config",
+    "-c", "--config", "user_configs",
     type = click.File(mode = "r"),
+    multiple = True,
     help = "Path to the user custom option file (in the YAML format)."
 )
 @click.option(
@@ -39,7 +40,7 @@ import abctk.config as CONF
 @click.pass_context
 def cmd_main(
     ctx: click.Context,
-    user_config: typing.TextIO,
+    user_configs: typing.Iterator[typing.TextIO],
     root_stream_log_level: int,
     logfiles: typing.Iterable[typing.Tuple[int, pathlib.Path]],
 ):
@@ -79,12 +80,12 @@ def cmd_main(
     path_config_user: pathlib.Path = xdg.xdg_config_home() / "ABCTreebank.yaml"
     if os.path.exists(path_config_user):
         with open(path_config_user, "r") as cu:
-            CONFIG = deepmerge(CONFIG, cu, mode = "merge")
+            CONFIG = deepmerge(CONFIG, cu, method = "merge")
         # === END WITH cu ===
     # === END IF ===
 
-    if user_config:
-        CONFIG = deepmerge(CONFIG, user_config, mode = "merge")
+    for h_cf in user_configs:
+        CONFIG = deepmerge(CONFIG, yaml.load(h_cf), method = "merge")
     # === END IF ===
 
     ctx.obj["CONFIG"] = CONFIG

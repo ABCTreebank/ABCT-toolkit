@@ -10,8 +10,10 @@ import os
 import click
 
 import abctk.cli_tool as ct
+import abctk.config as CONF
 from . import core
 
+_CONF_CONV_FILE_WRAPPER = CONF.CONF_DEFAULT
 
 @click.command()
 @click.option(
@@ -53,6 +55,8 @@ def cmd_main(
         Convert Keyaki tree(s) to ABC trees.
     """
     CONFIG = ctx.obj["CONFIG"]
+    global _CONF_CONV_FILE_WRAPPER
+    _CONF_CONV_FILE_WRAPPER = CONFIG
     
     # ================
     # Check the system runtimes
@@ -106,7 +110,7 @@ def cmd_main(
             
             jobs = pool.imap_unordered(
                 __conv_file_wrapper,
-                flist_dest_expanded
+                flist_dest_expanded,
             )
             with tqdm.tqdm(
                 total = files_total_size, 
@@ -125,6 +129,7 @@ def cmd_main(
             f_dest = sys.stdout,
             src_name = "<STDIN>",
             dest_name = "<STDOUT>",
+            conf = CONFIG,
         )
     else:
         logger.error(
@@ -139,7 +144,10 @@ def __conv_file_wrapper(
     arg_tuple: typing.Tuple[pathlib.Path, pathlib.Path, int],
 ) -> typing.Tuple[int, int]:
     return (
-        core.convert_keyaki_file_to_abc(arg_tuple[0], arg_tuple[1]),
+        core.convert_keyaki_file_to_abc(
+            arg_tuple[0], arg_tuple[1],
+            conf = _CONF_CONV_FILE_WRAPPER,
+        ),
         arg_tuple[2]
     )
 # === END ===
