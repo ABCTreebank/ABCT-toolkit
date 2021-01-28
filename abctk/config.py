@@ -35,7 +35,7 @@ CONF_DEFAULT = {
         "java": "java",
     },
     "bin-custom": {
-        "abc-relabel": DIR_RUNTIME / "abc-relabel", 
+        "abc-relabel": f"{DIR_RUNTIME / 'abc-relabel'} --oneline", 
         "tsurgeon_script": DIR_RUNTIME / "tsurgeon_script",
     },
     "runtimes": {

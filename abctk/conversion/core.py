@@ -77,7 +77,7 @@ def convert_keyaki_to_abc(
             {conf["bin-custom"]["tsurgeon_script"]} \
                         {conf["runtimes"]["pre-relabel"]} \
             | {conf["bin-sys"]["sed"]} -f {conf["runtimes"]["simplify-tag"]} \
-            | {conf["bin-custom"]["abc-relabel"]} --oneline
+            | {conf["bin-custom"]["abc-relabel"]}
         """,
         shell = True,
         stdin = f_src,
@@ -101,7 +101,8 @@ def convert_keyaki_to_abc(
 
 def convert_keyaki_file_to_abc(
     src: pathlib.Path, 
-    dest: pathlib.Path
+    dest: pathlib.Path,
+    conf: typing.Dict[str, typing.Any] = CONF.CONF_DEFAULT
 ) -> int:
     dest_name_bare: pathlib.Path = dest.parent / dest.stem
     dest_path_abs: str = str(dest_name_bare) + "-b2psg.psd"
@@ -109,7 +110,8 @@ def convert_keyaki_file_to_abc(
     with open(src, "r") as h_src, open(dest_path_abs, "w") as h_dest:
         res = convert_keyaki_to_abc(
             h_src, h_dest,
-            src, dest_path_abs
+            src, dest_path_abs,
+            conf = conf,
         )
     # === END WITH h_src, h_dest ===
 
