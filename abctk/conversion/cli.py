@@ -67,25 +67,23 @@ def cmd_main(
     # === END IF ===
 
     # ================
-    # Prepare the destination folder
-    # ================
-    dest_folder: pathlib.Path
-    if destination:
-        if destination.is_dir():
-            # Check if the folder is empty or not
-            pass
-        else:
-            destination.mkdir(parents = True)
-        # === END IF ===
-        dest_folder = destination
-    else:
-        dest_folder = ct.create_folder_time("result_") 
-    # === END IF ===
-
-    # ================
     # Conversion
     # ================
     if source_type == "filelist":
+        # Prepare the destination folder
+        dest_folder: pathlib.Path
+        if destination:
+            if destination.is_dir():
+                # Check if the folder is empty or not
+                pass
+            else:
+                destination.mkdir(parents = True)
+            # === END IF ===
+            dest_folder = destination
+        else:
+            dest_folder = ct.create_folder_time("result_") 
+        # === END IF ===
+
         flist: ct.FileList = ct.FileList.from_file_list(sys.stdin)
 
         import multiprocessing as mp
