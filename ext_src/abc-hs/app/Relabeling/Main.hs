@@ -385,12 +385,20 @@ relabelHeaded
 -- Case 3: Reached the very head
 relabelHeaded 
     newParentCandidate 
-    newParentPlus
+    _ -- newParentPlus
     (EmptyPostHeadRev finalChildList) 
-    = relabelRouting 
-        newParentCandidate 
-        newParentPlus
-        (subForest $ Relabeling.head finalChildList) 
+    = do
+        let hd = Relabeling.head finalChildList
+        case hd of
+            Node {
+                rootLabel = _ :#: attrs
+                , subForest = children
+            } -> relabelRouting 
+                    newParentCandidate 
+                    (\x -> const x <$> attrs undefined)  -- newParentPlus
+                    (subForest $ Relabeling.head finalChildList) 
+            Node { rootLabel = Term w } 
+                -> throwM $ IllegalTerminalException w
 
 -- | = Execution routines
 
