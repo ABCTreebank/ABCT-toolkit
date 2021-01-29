@@ -409,7 +409,7 @@ relabel y /^.*$/={y}#role=c/
 ```tsurgeon
 /^CP-(FINAL|THT|EXL)/ 
   !== /#deriv=.+/
-  < /^(IP-(SUB|IMP|MAT|SMC)|CP-(QUE|FINAL|EXL)|multi-sentence|INTJP|FRAG)/=x
+  < /^(IP-(SUB|IMP|MAT|SMC)|CP-(QUE|FINAL|EXL|THT)|multi-sentence|INTJP|FRAG)/=x
   < /^(P)$/=y
   !< /#role=h/
 
