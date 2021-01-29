@@ -322,6 +322,7 @@ relabel x /^.*$/={x}#role=c/
 ### ADVP
 以下はその主要部である．
 - `ADV`
+- `ADVP`
 - `WADV`
 - `ADJI`
 - `ADJN`
@@ -329,7 +330,7 @@ relabel x /^.*$/={x}#role=c/
 ```tsurgeon
 /^ADVP/
   !== /#deriv=.+/
-  < /^(ADV|WADV|ADJI|ADJN)$/=x
+  < /^(ADV|ADVP|WADV|ADJI|ADJN)$/=x
 
 relabel x /^.*$/={x}#role=h/
 
