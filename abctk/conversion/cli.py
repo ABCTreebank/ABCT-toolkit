@@ -48,7 +48,7 @@ _CONF_CONV_FILE_WRAPPER = CONF.CONF_DEFAULT
 def cmd_main(
     ctx: click.Context,
     source_type: str,
-    destination: typing.Optional[pathlib.Path],
+    destination: typing.Optional[str],
     can_overwrite: bool, 
 ) -> typing.NoReturn:
     """
@@ -77,13 +77,13 @@ def cmd_main(
         # Prepare the destination folder
         dest_folder: pathlib.Path
         if destination:
-            if destination.is_dir():
+            dest_folder = pathlib.Path(destination)
+            if dest_folder.is_dir():
                 # Check if the folder is empty or not
                 pass
             else:
-                destination.mkdir(parents = True)
+                dest_folder.mkdir(parents = True)
             # === END IF ===
-            dest_folder = destination
         else:
             dest_folder = ct.create_folder_time("result_") 
         # === END IF ===
