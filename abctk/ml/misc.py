@@ -23,7 +23,7 @@ class ModderSettings:
 # ======
 # Parser
 # ======
-def parse_mod_target_line(line: str) -> typing.Union[str]:
+def parse_mod_target_line(line: str) -> typing.Optional[str]:
     """
         Parse a line of `target.txt` 
         (the list of categories occurring in the treebank) 
@@ -94,7 +94,7 @@ CAT_NPS: typing.Set[str] = {
     "N", "N[s]", "NP", "NP[q]"
 }
 
-CAT_PP_LISTS_ORTHODOX_PL: typing.Set[typing.List[str]] = {
+CAT_PP_LISTS_ORTHODOX_PL: typing.Set[typing.Tuple[str, ...]] = {
     ("PP[s2]", "PP[s]",) ,
     
     ("PP[o1]", "PP[s]"),
@@ -119,7 +119,11 @@ CAT_PP_LISTS_SCRAMBLED: typing.Dict[tuple, typing.Set[tuple]] = {
     for ortho in CAT_PP_LISTS_ORTHODOX_PL
 }
 
-def generate_category(head: str, args: typing.List[str], is_bracketed = False) -> str:
+def generate_category(
+    head: str, 
+    args: typing.Sequence[str], 
+    is_bracketed = False
+) -> str:
     if args:
         return "{br_open}{others}\\{arg}{br_close}".format(
             br_open = "(" if is_bracketed else "",
@@ -145,7 +149,7 @@ def gen_unary_rules() -> typing.List[typing.Tuple[str, str]]:
                 and lower nodes are the first elements.
     """
 
-    res = []
+    res: typing.List[typing.Tuple[str, str]] = []
 
     # ======
     # Scramblings

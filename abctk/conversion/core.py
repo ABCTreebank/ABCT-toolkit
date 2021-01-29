@@ -65,8 +65,8 @@ def check_runtimes(
 def convert_keyaki_to_abc(
     f_src: typing.TextIO,
     f_dest: typing.TextIO,
-    src_name: str = "<INPUT>",
-    dest_name: str = "<OUTPUT>",
+    src_name: typing.Any = "<INPUT>",
+    dest_name: typing.Any = "<OUTPUT>",
     conf: typing.Dict[str, typing.Any] = CONF.CONF_DEFAULT
 ) -> int:
     logger.info(

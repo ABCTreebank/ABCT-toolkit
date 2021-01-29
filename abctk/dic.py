@@ -25,7 +25,7 @@ def print_dic_as_csv() -> str:
 
 def dump_dic_as_csv(
     stream: typing.TextIO = sys.stdout
-) -> typing.NoReturn:
+) -> None:
     for entry in generate_abc_dic():
         stream.write(convert_JanomeLexEntry_to_CSV(entry))
         stream.write("\n")
@@ -41,7 +41,7 @@ def convert_JanomeLexEntry_to_CSV(
 @functools.lru_cache(maxsize = 16)
 def generate_abc_dic(
     sysdic: typing.Optional[typing.Iterable[typing.Iterable[typing.Any]]] = None
-) -> typing.Set[JanomeLexEntry]:
+) -> typing.Iterator[JanomeLexEntry]:
     """
     Generate custom Janome lexical entries for this parser.
     Parameters
@@ -96,7 +96,7 @@ def generate_abc_dic(
 
 def _gen_abc_dic(
     sysdic: typing.Iterable[typing.Iterable[typing.Any]]
-) -> typing.Set[JanomeLexEntry]:
+) -> typing.Iterator[JanomeLexEntry]:
     """
     An internal function that actually generates custom lexical entries.
     List of custom entries:
@@ -123,7 +123,7 @@ def _gen_abc_dic(
     #       rather than iterators so that they can be made use of
     #       (possibly) multiple times.
 
-    morphemes: typing.Dict[str, typing.Tuple[JanomeLexEntry]] = {
+    morphemes: typing.Dict[str, typing.Tuple[JanomeLexEntry, ...]] = {
         # -- はず（名詞，非自立）
         "hazu": tuple(
             JanomeLexEntry(*e)
@@ -209,7 +209,7 @@ def _gen_abc_dic(
     # generating intermediate morphemes
     # ------
     # -- ません（助動詞）
-    morphemes_masen: typing.Tuple[JanomeLexEntry] = tuple(
+    morphemes_masen: typing.Tuple[JanomeLexEntry, ...] = tuple(
         head._replace(
             surface = masu.surface + head.surface,
             left_id = masu.left_id,
@@ -225,7 +225,7 @@ def _gen_abc_dic(
     )
 
     morphemes_intermediate: typing.Dict[
-        str, typing.Tuple[JanomeLexEntry]
+        str, typing.Tuple[JanomeLexEntry, ...]
     ] = {
         # -- ない・ありません（述語）
         "nai/arimasen": tuple(

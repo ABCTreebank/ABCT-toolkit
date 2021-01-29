@@ -45,7 +45,7 @@ def prepare_ml_data(
     config: typing.Dict[str, typing.Any],
     dir_temp: pathlib.Path,
     dir_output: pathlib.Path,
-) -> typing.NoReturn:
+) -> None:
     logger.info("The core preparation procedure `prepare_ml_data' is called")
 
     # =========================

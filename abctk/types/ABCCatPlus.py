@@ -67,10 +67,7 @@ class ABCCatPlus(typing.Generic[T]):
 # === END CLASS ===
 
 @parsy.generate
-def parser_ABCCatPlus_AttrVal() -> typing.Tuple[
-    str,
-    typing.Union[str, ABCDepMarking]
-]:
+def parser_ABCCatPlus_AttrVal() -> parsy.Parser:
     yield parsy.string("#")
     attr = yield parsy.regex(r"[^=\s]+")
     yield parsy.string("=")

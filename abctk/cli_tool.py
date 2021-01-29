@@ -69,14 +69,19 @@ class FileList:
         return cls(res)
     # === END ===
 
-    def iterate_absolute(self) -> typing.Iterator[typing.Tuple[pathlib.Path, pathlib.Path]]:
+    def iterate_absolute(self) -> typing.Iterator[pathlib.Path]:
         return map(lambda p: p.absolute(), self.files)
     # === END ===
 
-    def iterate_truncating_commonprefix(self) -> typing.Iterator[pathlib.PurePath]:
+    def iterate_truncating_commonprefix(self) -> typing.Iterator[
+        typing.Tuple[
+            pathlib.Path,
+            pathlib.PurePath,
+        ]
+    ]:
         files_abs: typing.List[pathlib.Path] = list(self.iterate_absolute())
 
-        parents_abs_path_parts: typing.Iterator[typing.List[str]] = map(
+        parents_abs_path_parts: typing.Iterator[typing.Tuple[str, ...]] = map(
             lambda p: p.parent.parts,
             files_abs
         )

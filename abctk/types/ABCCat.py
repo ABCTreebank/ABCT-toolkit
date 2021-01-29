@@ -64,7 +64,7 @@ parser_ABCCatBot: parsy.Parser = parsy.from_enum(ABCCatBot)
 parser_ABCCatBase: parsy.Parser = parsy.regex(r"[^/\\<>\s]+")
 
 @parsy.generate
-def parser_ABCCatFunctor_Left() -> ABCCatFunctor: 
+def parser_ABCCatFunctor_Left() -> parsy.Parser: 
     que = yield (
         parser_ABCCatBot
         | parser_ABCCatBase
@@ -85,7 +85,7 @@ def parser_ABCCatFunctor_Left() -> ABCCatFunctor:
 # === END ===
 
 @parsy.generate
-def parser_ABCCatFunctor_Right() -> ABCCatFunctor:
+def parser_ABCCatFunctor_Right() -> parsy.Parser:
     stack = yield (
         parser_ABCCatBot
         | parser_ABCCatBase
