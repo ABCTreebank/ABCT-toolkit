@@ -40,6 +40,7 @@ import qualified Data.Text as DT
 import qualified Data.Text.IO as DTIO
 import Data.Void (Void)
 import Data.Set (Set)
+import Data.Map as DMap
 import qualified Data.Set as DS
 import Data.Tree (Tree(..))
 
@@ -114,13 +115,17 @@ pattern cat :<: lex <- (matchUnaryNode -> Just (cat, lex)) where
             subForest = [child]
         }
 
-dropAnt :: [ABCCat] -> ABCCat -> ABCCat
-dropAnt
-    forbidList
-    cat@(LeftFunctor ant conseq)
-        | ant `notElem` forbidList  = dropAnt forbidList conseq
-        | otherwise                 = cat
-dropAnt _ cat = cat
+dropAnt :: [ABCCat] -> ABCCat -> (ABCCat, Int)
+dropAnt forbidList cat = go cat
+    where 
+        go :: ABCCat -> (ABCCat, Int)
+        go cat = case cat of 
+            ant :\: conseq
+                | ant `notElem` forbidList
+                    -> let (res, n) = go conseq
+                        in (res, n + 1)
+            otherwise
+                    -> (cat, 0)
 
 type RelabelFunc children 
     = ABCCat 
@@ -299,10 +304,17 @@ relabelHeaded
                     _ :<: LexNodeEmpty w
                         | w `elem` ["PRO", "T"] -> newVSST
                     otherwise
-                        -> Node {
-                            rootLabel = newParentPlus newParentCandidate
-                            , subForest = [newFirstChild, newVSST]
-                        }
+                        ->  let newParent = newParentPlus newParentCandidate
+                                newParentAttrs = CatPlus.attrs newParent 
+                            in Node {
+                                rootLabel = newParent {
+                                    attrs = DMap.insert 
+                                        "trace.deriv"
+                                        "L0"
+                                        newParentAttrs
+                                }
+                                , subForest = [newFirstChild, newVSST]
+                            }
             Term w -> throwM $ IllegalTerminalException w
 
 -- Case 1c: Pre-head, other cases (default to Head-Adjunct)
@@ -334,10 +346,18 @@ relabelHeaded
                 | w `elem` ["PRO", "T"] -> newVSST 
                     -- dropping newFirstChild (*PRO*)
             otherwise
-                -> Node {
-                    rootLabel = newParentPlus newParentCandidate
-                    , subForest = [newFirstChild, newVSST]
-                }
+                ->  let newParent = newParentPlus newParentCandidate
+                        newParentAttrs = CatPlus.attrs newParent
+                    in Node {
+                        rootLabel = newParent {
+                            attrs 
+                                = DMap.insert 
+                                    "trace.deriv"
+                                    "R0"
+                                    newParentAttrs
+                        }
+                        , subForest = [newFirstChild, newVSST]
+                    }
 
 -- Case 1x: Pre-head, unexpected terminal node
 relabelHeaded _ _ (Node {rootLabel = Term w} :~<| _)
@@ -363,8 +383,15 @@ relabelHeaded
                     (\x -> (newNonTerm x) { role = Head }) 
                     oldRestChildren 
         -- 3. Binarizationを行う
+        let newParent       = newParentPlus newParentCandidate
+            newParentAttrs  = CatPlus.attrs newParent
         return $ Node {
-            rootLabel = newParentPlus newParentCandidate
+            rootLabel = newParent {
+                attrs = DMap.insert
+                    "trace.deriv"
+                    "L0"
+                    newParentAttrs
+            }
             , subForest = [newVSST, newLastChild]
         }
 
@@ -380,7 +407,7 @@ relabelHeaded
         }
     ) = do 
         -- 1. Adjunctを変換．
-        let newLastChildCatBase = dropAnt [BaseCategory "PPs", BaseCategory "PPs2"] newParentCandidate
+        let (newLastChildCatBase, num) = dropAnt [BaseCategory "PPs", BaseCategory "PPs2"] newParentCandidate
             newLastChildCat = newLastChildCatBase :\: newLastChildCatBase
         newLastChild <- relabelRouting 
                             newLastChildCat 
@@ -393,11 +420,17 @@ relabelHeaded
                     (\x -> (newNonTerm x) { role = Head }) 
                     oldRestChildren
         -- 3. Binarizationを行う
+        let newParent       = newParentPlus newParentCandidate
+            newParentAttrs  = CatPlus.attrs newParent
         return $ Node {
-            rootLabel = newParentPlus newParentCandidate
+            rootLabel = newParent {
+                attrs = DMap.insert
+                    "trace.deriv"
+                    ("L" <> (DT.pack . show) num) 
+                    newParentAttrs
+            }
             , subForest = [newVSST, newLastChild]
         }
-        -- TODO: FCの深さについても言えるようにする．
 
 -- Case 2c: Post-head, elsewhere (default to Head-Adjunct)
 relabelHeaded 
@@ -411,8 +444,8 @@ relabelHeaded
         }
     ) = do 
         -- 1. Adjunctを変換．
-        let newLastChildCatBase = dropAnt [] newParentCandidate
-            newLastChildCat     = newLastChildCatBase :\: newLastChildCatBase
+        let (newLastChildCatBase, num) = dropAnt [] newParentCandidate
+            newLastChildCat          = newLastChildCatBase :\: newLastChildCatBase
         newLastChild <- relabelRouting
                             newLastChildCat
                             (\y -> ((const y) <$> oldLastChildLabel) { role = r })
@@ -424,8 +457,15 @@ relabelHeaded
                     (\x -> (newNonTerm x) { role = Head })  
                     oldRestChildren 
         -- 3. Binarizationを行う
+        let newParent       = newParentPlus newParentCandidate
+            newParentAttrs  = CatPlus.attrs newParent
         return $ Node {
-            rootLabel = newParentPlus newParentCandidate
+            rootLabel = newParent {
+                attrs = DMap.insert
+                    "trace.deriv"
+                    ("L" <> (DT.pack . show) num) 
+                    newParentAttrs
+            }
             , subForest = [newVSST, newLastChild]
         }
 
@@ -455,6 +495,7 @@ relabelHeaded
 data Option = Option {
     calledVersion :: Bool -- ^ Whether the version information is inquired.
     , branchOpt :: BranchPrintOption
+    , catPlusOpt :: CatPlusPrintOption
 }
 
 {-|
@@ -469,6 +510,13 @@ optionParser
         <*> (
             OA.flag Indented OneLine
                 (OA.long "oneline" <> OA.short 'w')
+        )
+        <*> (
+            OA.option catPlusPrintOptionSynonymReader (
+                OA.long "catplusstyle" 
+                <> OA.short 'c'
+                <> OA.value CatPlusPrintNormal
+            )
         )
 
 {-|
@@ -495,7 +543,7 @@ runWithOptions Option { calledVersion = True } = do
     putStr "App \"Relabeling\" in abc-hs "
     putStrLn $ showVersion version
 
-runWithOptions (Option _  branchOpt) = do
+runWithOptions (Option _  branchOpt catPlusOpt) = do
     parsedRaw <- DTIO.getContents >>= runParserT pDocument "<STDIN>"
     trees <- case parsedRaw of
         Left errors -> do
@@ -508,8 +556,7 @@ runWithOptions (Option _  branchOpt) = do
     where
         printTree :: ABCTree -> IO ()
         printTree tree = tree 
-            & printABCTree branchOpt CatPlusPrintNormal
-            -- & (if isOneLine then PDoc.group else id)
+            & printABCTree branchOpt catPlusOpt
             & (if branchOpt == OneLine
                     then (<> PDoc.line)
                     else (<> PDoc.line <> PDoc.line) 

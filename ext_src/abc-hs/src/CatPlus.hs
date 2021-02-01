@@ -6,6 +6,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# LANGUAGE DeriveFunctor #-}
+{-# LANGUAGE LambdaCase #-}
 
 {-|
     Module:     CatPlus
@@ -31,6 +32,7 @@ module CatPlus (
     , pattern CatPlusPrintNormal
     , pattern CatPlusPrintCompact
     , pattern CatPlusPrintMinimal
+    , catPlusPrintOptionSynonymReader
     , printCatPlus
     ) where
 
@@ -53,6 +55,8 @@ import Text.Megaparsec.Char.Lexer (decimal)
 import Data.Tree.Parser.Penn.Megaparsec.Char (
     UnsafelyParsableAsTerm(..)
     )
+
+import qualified Options.Applicative as OA
 
 import ABCDepMarking
 
@@ -290,6 +294,16 @@ pattern CatPlusPrintMinimal = CatPlusPrintOption {
     , omitRole = True
     , omitDerivTrace = True
 }
+
+catPlusPrintOptionSynonymReader :: OA.ReadM CatPlusPrintOption
+catPlusPrintOptionSynonymReader
+    = OA.eitherReader $ \case
+        "full"      -> Right CatPlusPrintFull
+        "normal"    -> Right CatPlusPrintNormal
+        "compact"   -> Right CatPlusPrintCompact
+        "min"       -> Right CatPlusPrintMinimal
+        "minimal"   -> Right CatPlusPrintMinimal
+        x           -> Left ("Cannot parse CatPlus printing option: " ++ x)
 
 printCatPlus :: (Pretty cat) 
     => CatPlusPrintOption
