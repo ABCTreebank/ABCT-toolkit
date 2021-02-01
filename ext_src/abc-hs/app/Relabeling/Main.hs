@@ -60,17 +60,59 @@ import ABCTree
 
 -- | == Categories
 
-matchTerminalNode :: Tree (CatPlus a) -> (Set Text) -> Bool
-matchTerminalNode (Node _ ((Node (Term w) []):[])) li 
-    = w `elem` li
-matchTerminalNode _ _
-    = False 
+matchLexNode :: Tree (CatPlus a) -> Maybe Text
+matchLexNode Node {
+    rootLabel = Term w
+    , subForest = []
+} = Just w
+matchLexNode _ = Nothing
 
-{-|
-    Tell whether a subtree contains only a terminal node 
-        that is exactly an empty category.
--}
-isKTPRO tree = matchTerminalNode tree (DS.fromList ["*PRO*", "*T*"])
+pattern LexNode :: Text -> Tree (CatPlus a)
+pattern LexNode w <- (matchLexNode -> Just w) where
+    LexNode w = Node {
+        rootLabel = Term w
+        , subForest = []
+    }
+
+matchLexNodeEmpty :: Tree (CatPlus a) -> Maybe Text
+matchLexNodeEmpty (LexNode w)
+    = case DT.stripPrefix "*" w of
+        Just "" -> Just ""
+        Just w2 -> DT.stripSuffix "*" w2
+        Nothing -> Nothing
+matchLexNodeEmpty _ = Nothing
+
+pattern LexNodeEmpty :: Text -> Tree (CatPlus a)
+pattern LexNodeEmpty w <- (matchLexNodeEmpty -> Just w) where
+    LexNodeEmpty "" = LexNode "*"
+    LexNodeEmpty w  = LexNode ("*" <> w <> "*")
+
+matchLexNodeUnaryToBe :: Tree (CatPlus a) -> Maybe Text
+matchLexNodeUnaryToBe (LexNode w)
+    = case DT.stripPrefix "__unary" w of
+        Just "" -> Just ""
+        Just w2 -> DT.stripPrefix "_" w2
+        _       -> Nothing
+
+pattern LexNodeUnaryToBe :: Text -> Tree (CatPlus a)
+pattern LexNodeUnaryToBe w <- (matchLexNodeUnaryToBe -> Just w) where
+    LexNodeUnaryToBe "" = LexNode "__unary"
+    LexNodeUnaryToBe w  = LexNode ("__unary_" <> w)
+
+matchUnaryNode :: Tree (CatPlus a) -> Maybe (CatPlus a, Tree (CatPlus a))
+matchUnaryNode Node {
+    rootLabel = a@(NonTerm {})
+    , subForest = wn:[]
+} = Just (a, wn)
+matchUnaryNode _ = Nothing
+
+pattern (:<:) :: CatPlus a -> Tree (CatPlus a) -> Tree (CatPlus a)
+pattern cat :<: lex <- (matchUnaryNode -> Just (cat, lex)) where
+    cat@(NonTerm {}) :<: child = case cat of 
+        NonTerm {} -> Node {
+            rootLabel = cat,
+            subForest = [child]
+        }
 
 dropAnt :: [ABCCat] -> ABCCat -> ABCCat
 dropAnt
@@ -115,7 +157,7 @@ getPreHead sc
         x:xs -> Right (x, (sc {preHead = xs}))
         []   -> Left sc
 
-pattern x :-|: sc       <- (getPreHead -> Right (x, sc)) 
+pattern x :~<| sc       <- (getPreHead -> Right (x, sc)) 
 pattern EmptyPreHead sc <- (getPreHead -> Left sc)
 
 getPostHeadLast :: 
@@ -126,7 +168,7 @@ getPostHeadLast sc
         y:ys -> Right ((sc {postHeadRev = ys}), y)
         [] -> Left sc
 
-pattern sc :|-: y           <- (getPostHeadLast -> Right (sc, y))
+pattern sc :~|> y           <- (getPostHeadLast -> Right (sc, y))
 pattern EmptyPostHeadRev sc <- (getPostHeadLast -> Left sc)
 
 splitChildren :: 
@@ -240,7 +282,7 @@ relabelHeaded
         oldFirstChild@Node {
             rootLabel = (oldFirstChildCat, Complement) :#||: attrs
         }
-        :-|: oldRestChildren
+        :~<| oldRestChildren
     ) = do 
         -- 1. Complementを先に変換
         newFirstChild <- relabel oldFirstChild
@@ -253,12 +295,14 @@ relabelHeaded
                             (\y -> (newNonTerm y) { role = Head })
                             oldRestChildren
                 -- 3. Binarizationを行う．もし*PRO*があるならばそれをdropする．
-                return $ if isKTPRO newFirstChild
-                    then newVSST
-                    else Node {
-                        rootLabel = newParentPlus newParentCandidate
-                        , subForest = [newFirstChild, newVSST]
-                    }
+                return $ case newFirstChild of
+                    _ :<: LexNodeEmpty w
+                        | w `elem` ["PRO", "T"] -> newVSST
+                    otherwise
+                        -> Node {
+                            rootLabel = newParentPlus newParentCandidate
+                            , subForest = [newFirstChild, newVSST]
+                        }
             Term w -> throwM $ IllegalTerminalException w
 
 -- Case 1c: Pre-head, other cases (default to Head-Adjunct)
@@ -270,7 +314,7 @@ relabelHeaded
             rootLabel = oldFirstChildLabel
             , subForest = oldFirstChildChildren
         }
-        :-|: oldRestChildren
+        :~<| oldRestChildren
     ) = do 
         -- 1. Adjunctを変換．
         let newFirstChildCat = newParentCandidate :/: newParentCandidate
@@ -285,15 +329,18 @@ relabelHeaded
                     (\x -> (newNonTerm x) { role = Head })
                     oldRestChildren 
         -- 3. Binarizationを行う
-        return $ if isKTPRO newFirstChild 
-            then newVSST -- dropping newFirstChild (*PRO*)
-            else Node {
-                rootLabel = newParentPlus newParentCandidate
-                , subForest = [newFirstChild, newVSST]
-            }
+        return $ case newFirstChild of
+            _ :<: LexNodeEmpty w 
+                | w `elem` ["PRO", "T"] -> newVSST 
+                    -- dropping newFirstChild (*PRO*)
+            otherwise
+                -> Node {
+                    rootLabel = newParentPlus newParentCandidate
+                    , subForest = [newFirstChild, newVSST]
+                }
 
 -- Case 1x: Pre-head, unexpected terminal node
-relabelHeaded _ _ (Node {rootLabel = Term w} :-|: _)
+relabelHeaded _ _ (Node {rootLabel = Term w} :~<| _)
     = throwM $ IllegalTerminalException w
 
 -- Case 2a: Post-head, Head-Complement
@@ -302,7 +349,7 @@ relabelHeaded
     newParentPlus
     (
         oldRestChildren 
-        :|-: oldLastChild@Node {
+        :~|> oldLastChild@Node {
             rootLabel = (_, Complement) :#||: attrs
         }
     ) = do 
@@ -327,7 +374,7 @@ relabelHeaded
     newParentPlus
     (
         oldRestChildren 
-        :|-: oldLastChild@Node {
+        :~|> oldLastChild@Node {
             rootLabel = oldFirstChildLabel@((_, AdjunctControl) :#||: attrs)
             , subForest = oldLastChildChildren
         }
@@ -358,7 +405,7 @@ relabelHeaded
     newParentPlus
     (
         oldRestChildren 
-        :|-: oldLastChild@Node {
+        :~|> oldLastChild@Node {
             rootLabel = oldLastChildLabel@((_, r) :#||: attrs)
             , subForest = oldLastChildChildren
         }
