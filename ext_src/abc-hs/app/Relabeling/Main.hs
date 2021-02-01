@@ -94,6 +94,7 @@ matchLexNodeUnaryToBe (LexNode w)
         Just "" -> Just ""
         Just w2 -> DT.stripPrefix "_" w2
         _       -> Nothing
+matchLexNodeUnaryToBe _ = Nothing
 
 pattern LexNodeUnaryToBe :: Text -> Tree (CatPlus a)
 pattern LexNodeUnaryToBe w <- (matchLexNodeUnaryToBe -> Just w) where
@@ -114,6 +115,8 @@ pattern cat :<: lex <- (matchUnaryNode -> Just (cat, lex)) where
             rootLabel = cat,
             subForest = [child]
         }
+
+infixr 4 :<:
 
 dropAnt :: [ABCCat] -> ABCCat -> (ABCCat, Int)
 dropAnt forbidList cat = go cat
