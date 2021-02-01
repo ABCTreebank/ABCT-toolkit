@@ -306,10 +306,21 @@ relabelHeaded
                 return $ case newFirstChild of
                     _ :<: LexNodeEmpty w
                         | w `elem` ["PRO", "T"] -> newVSST
-                    otherwise
-                        ->  let newParent = newParentPlus newParentCandidate
-                                newParentAttrs = CatPlus.attrs newParent 
-                            in Node {
+                    otherwise ->
+                        let newParent = newParentPlus newParentCandidate
+                            newParentAttrs = CatPlus.attrs newParent 
+                        in case newVSST of
+                            _ :<: LexNodeUnaryToBe u -> Node {
+                                rootLabel = newParent {
+                                    deriv = SpecialDeriv ("unary_" <> u) 
+                                    , attrs = DMap.insert 
+                                        "trace.deriv" 
+                                        ("unary_" <> u) 
+                                        newParentAttrs
+                                }
+                                , subForest = [newFirstChild]
+                            } -- TODO: (__lex_pred#role=c ように#h) のような場合をどうするか？
+                            otherwise -> Node {
                                 rootLabel = newParent {
                                     attrs = DMap.insert 
                                         "trace.deriv"
@@ -348,10 +359,21 @@ relabelHeaded
             _ :<: LexNodeEmpty w 
                 | w `elem` ["PRO", "T"] -> newVSST 
                     -- dropping newFirstChild (*PRO*)
-            otherwise
-                ->  let newParent = newParentPlus newParentCandidate
-                        newParentAttrs = CatPlus.attrs newParent
-                    in Node {
+            otherwise -> 
+                let newParent = newParentPlus newParentCandidate
+                    newParentAttrs = CatPlus.attrs newParent
+                in case newVSST of
+                    _ :<: LexNodeUnaryToBe u -> Node {
+                        rootLabel = newParent {
+                            deriv = SpecialDeriv ("unary_" <> u)
+                            , attrs = DMap.insert 
+                                "trace.deriv" 
+                                ("unary_" <> u)
+                                newParentAttrs
+                        }
+                        , subForest = [newFirstChild]
+                    }
+                    otherwise -> Node {
                         rootLabel = newParent {
                             attrs 
                                 = DMap.insert 
@@ -388,15 +410,26 @@ relabelHeaded
         -- 3. Binarizationを行う
         let newParent       = newParentPlus newParentCandidate
             newParentAttrs  = CatPlus.attrs newParent
-        return $ Node {
-            rootLabel = newParent {
-                attrs = DMap.insert
-                    "trace.deriv"
-                    "L0"
-                    newParentAttrs
+        return $ case newVSST of 
+            _ :<: LexNodeUnaryToBe u -> Node {
+                rootLabel = newParent {
+                    deriv = SpecialDeriv ("unary_" <> u)
+                    , attrs = DMap.insert 
+                        "trace.deriv" 
+                        ("unary_" <> u)
+                        newParentAttrs
+                }
+                , subForest = [newLastChild]
             }
-            , subForest = [newVSST, newLastChild]
-        }
+            otherwise -> Node {
+                rootLabel = newParent {
+                    attrs = DMap.insert
+                        "trace.deriv"
+                        "L0"
+                        newParentAttrs
+                }
+                , subForest = [newVSST, newLastChild]
+            }
 
 -- Case 2b: Post-head, Head-AdjunctControl
 relabelHeaded 
@@ -425,15 +458,26 @@ relabelHeaded
         -- 3. Binarizationを行う
         let newParent       = newParentPlus newParentCandidate
             newParentAttrs  = CatPlus.attrs newParent
-        return $ Node {
-            rootLabel = newParent {
-                attrs = DMap.insert
-                    "trace.deriv"
-                    ("L" <> (DT.pack . show) num) 
-                    newParentAttrs
+        return $ case newVSST of
+            _ :<: LexNodeUnaryToBe u -> Node {
+                rootLabel = newParent {
+                    deriv = SpecialDeriv ("unary_" <> u)
+                    , attrs = DMap.insert 
+                        "trace.deriv" 
+                        ("unary" <> u)
+                        newParentAttrs
+                }
+                , subForest = [newLastChild]
             }
-            , subForest = [newVSST, newLastChild]
-        }
+            otherwise -> Node {
+                rootLabel = newParent {
+                    attrs = DMap.insert
+                        "trace.deriv"
+                        ("L" <> (DT.pack . show) num) 
+                        newParentAttrs
+                }
+                , subForest = [newVSST, newLastChild]
+            }
     where 
         dropAntExemptList
             | role == AdjunctControl = [BaseCategory "PPs", BaseCategory "PPs2"]
