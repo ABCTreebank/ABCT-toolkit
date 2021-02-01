@@ -402,12 +402,12 @@ relabelHeaded
     (
         oldRestChildren 
         :~|> oldLastChild@Node {
-            rootLabel = oldFirstChildLabel@((_, AdjunctControl) :#||: attrs)
+            rootLabel = oldFirstChildLabel@((_, role) :#||: attrs)
             , subForest = oldLastChildChildren
         }
     ) = do 
         -- 1. Adjunctを変換．
-        let (newLastChildCatBase, num) = dropAnt [BaseCategory "PPs", BaseCategory "PPs2"] newParentCandidate
+        let (newLastChildCatBase, num) = dropAnt dropAntExemptList newParentCandidate
             newLastChildCat = newLastChildCatBase :\: newLastChildCatBase
         newLastChild <- relabelRouting 
                             newLastChildCat 
@@ -431,43 +431,10 @@ relabelHeaded
             }
             , subForest = [newVSST, newLastChild]
         }
-
--- Case 2c: Post-head, elsewhere (default to Head-Adjunct)
-relabelHeaded 
-    newParentCandidate 
-    newParentPlus
-    (
-        oldRestChildren 
-        :~|> oldLastChild@Node {
-            rootLabel = oldLastChildLabel@((_, r) :#||: attrs)
-            , subForest = oldLastChildChildren
-        }
-    ) = do 
-        -- 1. Adjunctを変換．
-        let (newLastChildCatBase, num) = dropAnt [] newParentCandidate
-            newLastChildCat          = newLastChildCatBase :\: newLastChildCatBase
-        newLastChild <- relabelRouting
-                            newLastChildCat
-                            (\y -> ((const y) <$> oldLastChildLabel) { role = r })
-                            oldLastChildChildren
-        -- 2. 同時に，Headも変換．
-        let newVSSTCat = newParentCandidate
-        newVSST <- relabelHeaded 
-                    newVSSTCat 
-                    (\x -> (newNonTerm x) { role = Head })  
-                    oldRestChildren 
-        -- 3. Binarizationを行う
-        let newParent       = newParentPlus newParentCandidate
-            newParentAttrs  = CatPlus.attrs newParent
-        return $ Node {
-            rootLabel = newParent {
-                attrs = DMap.insert
-                    "trace.deriv"
-                    ("L" <> (DT.pack . show) num) 
-                    newParentAttrs
-            }
-            , subForest = [newVSST, newLastChild]
-        }
+    where 
+        dropAntExemptList
+            | role == AdjunctControl = [BaseCategory "PPs", BaseCategory "PPs2"]
+            | otherwise              = [] -- default, including Adjunct
 
 -- Case 3: Reached the very head
 relabelHeaded 
