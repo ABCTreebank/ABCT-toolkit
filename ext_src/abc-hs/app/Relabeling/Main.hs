@@ -212,7 +212,7 @@ genABCCat = BaseCategory . DT.pack . show
 -}
 relabel :: (MonadThrow m) => KeyakiTree -> m ABCTree
 relabel Node {
-    rootLabel = nt@(NonTerm { deriv = Undetermined }) -- filter out special derivations
+    rootLabel = nt@(NonTerm { deriv = UsualDeriv }) -- filter out special derivations
     , subForest = oldTreeChildren
 } = do
     case genABCCat <$> nt of 
@@ -454,7 +454,7 @@ relabelHeaded
 -}
 data Option = Option {
     calledVersion :: Bool -- ^ Whether the version information is inquired.
-    , isOneLine :: Bool -- ^ Whether the output trees are each printed in one line.
+    , branchOpt :: BranchPrintOption
 }
 
 {-|
@@ -467,7 +467,8 @@ optionParser
             OA.switch (OA.long "version" <> OA.short 'v')
         )
         <*> (
-            OA.switch (OA.long "oneline" <> OA.short 'w')
+            OA.flag Indented OneLine
+                (OA.long "oneline" <> OA.short 'w')
         )
 
 {-|
@@ -494,7 +495,7 @@ runWithOptions Option { calledVersion = True } = do
     putStr "App \"Relabeling\" in abc-hs "
     putStrLn $ showVersion version
 
-runWithOptions (Option _  isOneLine) = do
+runWithOptions (Option _  branchOpt) = do
     parsedRaw <- DTIO.getContents >>= runParserT pDocument "<STDIN>"
     trees <- case parsedRaw of
         Left errors -> do
@@ -507,11 +508,11 @@ runWithOptions (Option _  isOneLine) = do
     where
         printTree :: ABCTree -> IO ()
         printTree tree = tree 
-            & printABCTree (PrintOption Indented Normal)
-            & (if isOneLine then PDoc.group else id)
-            & (if isOneLine   
-                    then (<> PDoc.line <> PDoc.line) 
-                    else (<> PDoc.line)
+            & printABCTree branchOpt CatPlusPrintNormal
+            -- & (if isOneLine then PDoc.group else id)
+            & (if branchOpt == OneLine
+                    then (<> PDoc.line)
+                    else (<> PDoc.line <> PDoc.line) 
                 )
             & PDoc.layoutPretty (PDoc.LayoutOptions PDoc.Unbounded)
             & PDocRT.renderIO stdout

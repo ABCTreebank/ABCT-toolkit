@@ -27,6 +27,10 @@ module CatPlus (
     , getCatRule
     -- * Printers
     , CatPlusPrintOption(..)
+    , pattern CatPlusPrintFull
+    , pattern CatPlusPrintNormal
+    , pattern CatPlusPrintCompact
+    , pattern CatPlusPrintMinimal
     , printCatPlus
     ) where
 
@@ -53,20 +57,13 @@ import Data.Tree.Parser.Penn.Megaparsec.Char (
 import ABCDepMarking
 
 data Deriv = 
-    LeftApp Int
-    | RightApp Int
-    | Other Text
-    | Undetermined
-    deriving (Eq)
+    SpecialDeriv Text
+    | UsualDeriv
+    deriving (Eq, Show)
 
-instance Show Deriv where
-    show (LeftApp 0) = "LeftApp"
-    show (LeftApp n) = "LeftApp" ++ show n
-    show (RightApp 0) = "RightApp"
-    show (RightApp n) = "RightApp" ++ show n
-    show (Other t) = unpack t
-    show Undetermined = "??"
-instance Pretty Deriv
+instance Pretty Deriv where
+    pretty (SpecialDeriv t) = pretty t
+    pretty UsualDeriv = mempty
 
 {-|
     A record structure that represents (Keyaki) tree node labels
@@ -182,7 +179,7 @@ newNonTerm cs = NonTerm {
     cat = cs 
     , index = Nothing
     , role = None
-    , deriv = Undetermined
+    , deriv = UsualDeriv
     , scope = []
     , covertArgs = []
     , attrs = DMap.empty 
@@ -224,7 +221,7 @@ instance {-# OVERLAPS #-}
                         dv <- takeWhile1P 
                                 (Just "Value of Attribute: Derivation Rule")
                                 checkCharValue 
-                        return $ kc { deriv = Other dv }
+                        return $ kc { deriv = SpecialDeriv dv }
                     "scope" -> do 
                         res <- decimal `sepBy1` single ','
                         return $ kc {
@@ -265,9 +262,33 @@ instance {-# OVERLAPS #-}
 ----------------------------------
 
 data CatPlusPrintOption = CatPlusPrintOption {
-    omitCat :: Bool
-    , omitRole :: Bool
-    , omitSelfEvidentDeriv :: Bool
+    omitCat :: Bool -- | Omit categories in printing
+    , omitRole :: Bool -- | Omit grammatical roles in printing
+    , omitDerivTrace :: Bool -- | Omit derivational traces in printing
+} deriving (Eq, Show)
+
+pattern CatPlusPrintFull = CatPlusPrintOption {
+    omitCat = False
+    , omitRole = False
+    , omitDerivTrace = False
+}
+
+pattern CatPlusPrintNormal = CatPlusPrintOption {
+    omitCat = False
+    , omitRole = False
+    , omitDerivTrace = True
+}
+
+pattern CatPlusPrintCompact = CatPlusPrintOption {
+    omitCat = False
+    , omitRole = True
+    , omitDerivTrace = True
+}
+
+pattern CatPlusPrintMinimal = CatPlusPrintOption {
+    omitCat = True
+    , omitRole = True
+    , omitDerivTrace = True
 }
 
 printCatPlus :: (Pretty cat) 
@@ -279,7 +300,7 @@ printCatPlus
     CatPlusPrintOption {
         omitCat = omitC
         , omitRole = omitR
-        , omitSelfEvidentDeriv = omitD
+        , omitDerivTrace = omitTrace
     }
     NonTerm {
         cat = c
@@ -300,13 +321,8 @@ printCatPlus
             then mempty 
             else "#role=" <> pretty r
     ) <> (case d of 
-        Other dr 
-            | dr == ""  -> mempty
-            | otherwise -> "#deriv=" <> pretty d
-        Undetermined    -> "#deriv=" <> pretty d
-        _
-            | omitD     -> mempty
-            | otherwise -> "#deriv=" <> pretty d
+        SpecialDeriv dr -> "#deriv=" <> pretty d
+        UsualDeriv      -> mempty
     ) <> (
         if s == [] then mempty
         else "#scope="
@@ -322,7 +338,10 @@ printCatPlus
         makeArg :: (Pretty cat) => (Int, cat) -> Doc a
         makeArg (i, c) = pretty i <> "^" <> pretty c <> ","
         makeAttrVal :: Text -> Text -> Text
-        makeAttrVal attr val = "#" <> attr <> "=" <> val
+        makeAttrVal (DText.stripPrefix "trace." -> Just _) _
+            | omitTrace = mempty
+        makeAttrVal attr val 
+            = "#" <> attr <> "=" <> val
 
 instance (Pretty cat) => Pretty (CatPlus cat) where
     pretty = printCatPlus (CatPlusPrintOption False False False)
