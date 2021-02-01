@@ -458,7 +458,7 @@ runWithOptions (Option _  isOneLine) = do
         Right ts -> return ts
     forM_ trees $ \tree -> processTree tree `catch` processExecptions tree
     where
-        printTree :: _ -> IO ()
+        printTree :: ABCTree -> IO ()
         printTree tree = tree 
             & printABCTree (PrintOption Indented Normal)
             & (if isOneLine then PDoc.group else id)
@@ -468,11 +468,11 @@ runWithOptions (Option _  isOneLine) = do
                 )
             & PDoc.layoutPretty (PDoc.LayoutOptions PDoc.Unbounded)
             & PDocRT.renderIO stdout
-        processTree :: _ -> IO ()
+        processTree :: KeyakiTree -> IO ()
         processTree tree = 
             relabel tree -- IO ABCTree
             >>= printTree
-        processExecptions :: _ -> SomeException -> IO ()
+        processExecptions :: Tree (CatPlus KeyakiCat) -> SomeException -> IO ()
         processExecptions tree e = do
             SIO.hPutStr stderr "Exception: "
             SIO.hPutStrLn stderr $ show e
