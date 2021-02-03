@@ -19,14 +19,14 @@ _CONF_CONV_FILE_WRAPPER = CONF.CONF_DEFAULT
 @click.option(
     "-i", "--input", "--source", "source_type",
     type = click.Choice(
-        choices = ("stdin", "filelist"),
+        choices = ("rawtrees", "filelist"),
         case_sensitive = False
     ),
-    default = "stdin",
+    default = "rawtrees",
     help = """
         \b
         Designating your data source. 
-        - `stdin' means that input Keyaki trees are provided directry from STDIN.
+        - `rawtrees' means that input Keyaki trees are provided directry from STDIN.
         - `filelist' indicates that STDIN provides a list of paths to Keyaki tree files.
         Default to `stdin'. Case insensitive.
     """
@@ -123,7 +123,7 @@ def cmd_main(
                     pb.update(src_size)
             # === END WITH pb ===
         # === END FOR path_src, filename_res ===
-    elif source_type == "stdin":
+    elif source_type == "rawtrees":
         _ = core.convert_keyaki_to_abc(
             f_src = sys.stdin,
             f_dest = sys.stdout,
