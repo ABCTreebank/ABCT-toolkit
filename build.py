@@ -48,8 +48,7 @@ def build_ext():
             ./lit \
                 --input "{DIR_EXT_SCRIPTS}/*.tsgn.md" \
                 --output "{DIR_RUNTIME}/tsurgeon-debug/" \
-                --pattern "tsurgeon" \
-                --before "%"; \
+                --pattern "tsurgeon"; \
             cat \
                 {DIR_EXT_SCRIPTS}/pretreatments.tsgn.md \
                 {DIR_EXT_SCRIPTS}/dependency.tsgn.md \

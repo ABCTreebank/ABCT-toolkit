@@ -40,6 +40,9 @@ CONF_DEFAULT = {
     },
     "runtimes": {
         "pre-relabel": DIR_RUNTIME / "pre-relabel.tsgn",
+        "pretreatments": DIR_RUNTIME / "tsurgeon-debug/pretreatments.tsgn",
+        "dependency": DIR_RUNTIME / "tsurgeon-debug/dependency.tsgn",
+        "dependency-post": DIR_RUNTIME / "tsurgeon-debug/dependency-post.tsgn",
         "simplify-tag": DIR_RUNTIME / "simplify-tag.sed",
         "tregex": DIR_RUNTIME / "stanford-tregex.jar",
     },

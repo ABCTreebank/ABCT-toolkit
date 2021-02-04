@@ -1,25 +1,41 @@
 import typing
 
+import datetime
 import pathlib
 
-def create_folder_time(
-    prefix: str = "", 
+def create_folder_time(prefix: str, to_make: bool = True):
+    return create_folder_time_multiple(
+        prefixes = (prefix, ), to_make = to_make
+    )[prefix]
+# === END ===
+
+def create_folder_time_multiple(
+    prefixes: typing.Iterable[str],
     to_make: bool = True,
-) -> pathlib.Path:
-    import datetime
+) -> typing.Dict[str, pathlib.Path]:
+    prefixes_set = set(prefixes)
 
-    dest_folder = pathlib.Path(
-        prefix + datetime.datetime.now().isoformat()
+    dt_now = datetime.datetime.now()
+    dest_folders = dict(
+        (pfx, pathlib.Path(pfx + dt_now.isoformat())) 
+        for pfx in prefixes_set
     )
-    while dest_folder.is_dir():
-        dest_folder = pathlib.Path(
-            prefix + datetime.datetime.now().isoformat()
+    dest_folders_vals = dest_folders.values()
+
+    while all(f.is_dir() for f in dest_folders_vals):
+        dt_now = datetime.datetime.now()
+        dest_folders = dict(
+            (pfx, pathlib.Path(pfx + dt_now.isoformat())) 
+            for pfx in prefixes_set
         )
+        dest_folders_vals = dest_folders.values()
     # === END WHILE ===
+    
+    for f in dest_folders_vals:
+        f.mkdir(parents = True)
+    # === END FOR f ===
 
-    dest_folder.mkdir(parents = True)
-
-    return dest_folder
+    return dest_folders
 # === END ===
 
 class FileList:

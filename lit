@@ -108,7 +108,7 @@ configure_awk_command() {
   local awk_command
   # if there's no delimiter, jump to next line for Markdown content
   if [ -z "${before}" ]; then
-    markdown_action="next;"
+    markdown_action='{print "\n"};'
   # if a delimiter is provided in the --before flag, comment out Markdown content
   else
     # if there's no --after flag, use a line comment
