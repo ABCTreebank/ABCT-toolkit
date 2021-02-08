@@ -523,6 +523,31 @@ relabel numclp /^.*$/={numclp}#deriv=unary-CL/
 
 ```
 
+## とりたて助詞＋格助詞を含むPPの処理
+名詞ととりたて助詞をまず1つの構成素PPとし，その後格助詞とともにさらなるPPを投射させる（PPの2階建て）．
+この際，とりたて助詞は名詞に対するadjunct，格助詞は中間PPをcomplementとするheadとする．
+これは最終的にとりたて助詞に`NP\NP,` 格助詞に`NP\PP`というカテゴリを振ることを目的とする処理である．
+
+```tsurgeon
+/^PP.*$/=pp
+  <1 __=fst 
+  < (/^NP/=np 
+     !< /role/
+     $. (/^P$/=optr 
+        !< role
+         < は|も|さえ|でも|すら|まで|だけ|ばかり|のみ|しか|こそ|など|なんか|なんて|くらい
+         $. (/^P/=role  < を|に|の|へ|が|と|から|で|より|まで)
+        )
+    )
+
+createSubtree PP=intm fst optr
+relabel np /^.*$/={np}#role=h/
+relabel optr /^.*$/={optr}#role=a/
+relabel intm /^.*$/PP#role=c/
+
+```
+
+
 ## NPの正規化
 ### 前提
 Keyakiにおいて、投射されていないN（あるいはQ、あるいはそれに類するもの）があってはならない。
