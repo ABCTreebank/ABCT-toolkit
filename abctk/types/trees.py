@@ -46,6 +46,26 @@ class Tree_with_ID():
         return cls(id_got, tree_got)
     # === END ===
 
+    def __str__(self):
+        return str(self.to_Tree())
+    # === END ===
+
+    def pprint(self, **kwargs):
+        return self.to_Tree().pprint(**kwargs)
+    # === END ===
+
+    def to_Tree(self):
+        return Tree(
+            "",
+            (
+                self.content,
+                Tree(
+                    "ID",
+                    (self.ID, )
+                ),
+            )
+        )
+    # === END ===
 
     def to_jigg(
         self, 
@@ -313,12 +333,10 @@ def parser_Tree_with_ID(
     return _parser
 # === END ===
 
-def parse_Tree_with_ID(
-    text: str, 
+def parser_Tree_Maybe_with_ID(
     parser_non_terminal: parsy.Parser = parsy.regex(r".*"),
     parser_terminal: parsy.Parser = parsy.regex(r".*"),
-) -> Tree_with_ID:
-    text_lexed: typing.List[str] = lexer_Tree.parse(text)
+) -> parsy.Parser:
     return (
         parser_Tree_with_ID(parser_non_terminal, parser_terminal)
         | parser_Tree(parser_non_terminal, parser_terminal).map(
@@ -327,5 +345,30 @@ def parse_Tree_with_ID(
                 content = tree,
             )
         )
+    )
+# === END ===
+
+def parse_Tree_Maybe_with_ID(
+    text: str, 
+    parser_non_terminal: parsy.Parser = parsy.regex(r".*"),
+    parser_terminal: parsy.Parser = parsy.regex(r".*"),
+) -> Tree_with_ID:
+    text_lexed: typing.List[str] = lexer_Tree.parse(text)
+    return parser_Tree_Maybe_with_ID(
+        parser_non_terminal,
+        parser_terminal
     ).parse(text_lexed)
+# === END ===
+
+def parse_ManyTrees_Maybe_with_ID(
+    text: str, 
+    parser_non_terminal: parsy.Parser = parsy.regex(r".*"),
+    parser_terminal: parsy.Parser = parsy.regex(r".*"),
+) -> typing.Iterable[Tree_with_ID]:
+    text_lexed: typing.List[str] = lexer_Tree.parse(text)
+
+    return parser_Tree_Maybe_with_ID(
+        parser_non_terminal,
+        parser_terminal,
+    ).many().parse(text_lexed)
 # === END ===
