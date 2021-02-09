@@ -284,6 +284,12 @@ def parser_Tree_with_ID(
     @parsy.generate
     def _parser(): 
         yield parsy.match_item(TreeParen.OPEN)
+
+        yield parsy.test_item(
+            lambda s: isinstance(s, str), 
+            "The root label skipped"
+        ).optional()
+
         tree = yield parser_Tree(
             parser_non_terminal = parser_non_terminal,
             parser_terminal = parser_terminal,
