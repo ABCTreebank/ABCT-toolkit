@@ -106,6 +106,12 @@ cmd_main.add_command(
     name = "trans-Keyaki",
 )
 
+import abctk.transform_ABC.cli as cli_trans_ABC
+cmd_main.add_command(
+    cli_trans_ABC.cmd_main,
+    name = "trans-ABC"
+)
+
 @cmd_main.command(
     name = "dic",
     short_help = "list special lexical entries in ABC Treebank"
