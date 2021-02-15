@@ -59,8 +59,16 @@ class ABCCatPlus(typing.Generic[T]):
         others = "".join(
             f"#{k}={v}"
             for k, v in self.__dict__.items()
-            if k not in ["role", "deriv"]
+            if k not in ["role", "deriv", "cat"]
         )
+        role = (
+            f"#role={self.role.value}" 
+            if self.role != ABCDepMarking.NONE else ""
+        )
+        deriv = f"#deriv={self.deriv}" if self.deriv else ""
+        
+        return f"{self.cat}{role}{deriv}{others}"
+    # === END ===
 
         return f"{self.cat}#role={self.role.value}#deriv={self.deriv}{others}"
     # === END ===
