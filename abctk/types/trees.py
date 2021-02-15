@@ -11,6 +11,20 @@ from nltk.tree import Tree
 import lxml.etree as le
 from . import jigg
 
+def print_tree_oneline(t: typing.Union[Tree, str]) -> str:
+    if isinstance(t, Tree):
+        label_printer = getattr(t, "print_oneline", None)
+        if not callable(label_printer):
+            label_printer = str
+        children = " ".join(
+            map(print_tree_oneline, t)
+        )
+        return f"({label_printer(t.label())} {children})"
+    else:
+        return str(t)
+    # === END IF ===
+# === END ===
+
 @attr.s(
     auto_attribs = True, # Unnecessary in newer version of Python
     frozen = True,
@@ -50,6 +64,9 @@ class Tree_with_ID():
         return str(self.to_Tree())
     # === END ===
 
+    def print_oneline(self):
+        return f"({print_tree_oneline(self.content)} (ID {self.ID}))"
+        
     def pprint(self, **kwargs):
         return self.to_Tree().pprint(**kwargs)
     # === END ===

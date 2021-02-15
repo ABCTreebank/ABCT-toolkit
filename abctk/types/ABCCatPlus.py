@@ -70,7 +70,8 @@ class ABCCatPlus(typing.Generic[T]):
         return f"{self.cat}{role}{deriv}{others}"
     # === END ===
 
-        return f"{self.cat}#role={self.role.value}#deriv={self.deriv}{others}"
+    def print_oneline(self) -> str:
+        return str(self)
     # === END ===
 # === END CLASS ===
 
