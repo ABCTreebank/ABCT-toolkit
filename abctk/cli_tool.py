@@ -4,12 +4,29 @@ import datetime
 import functools
 import logging
 logger = logging.getLogger(__name__)
+import multiprocessing as mp
+import os
 import pathlib
 import sys
+import tqdm
 
 import click
 
-def create_folder_time(prefix: str, to_make: bool = True):
+def create_folder_time(
+    prefix: str, 
+    to_make: bool = True
+) -> pathlib.Path:
+    """Create a single folder named with 
+
+    Arguments
+    ---------
+    prefix: str
+    
+    Returns
+    -------
+    path: pathlib.Path
+
+    """
     return create_folder_time_multiple(
         prefixes = (prefix, ), to_make = to_make
     )[prefix]
@@ -19,6 +36,16 @@ def create_folder_time_multiple(
     prefixes: typing.Iterable[str],
     to_make: bool = True,
 ) -> typing.Dict[str, pathlib.Path]:
+    """Create more than one folder named with THE SAME timestamp.
+
+    Arguments
+    ---------
+    prefixes: iterable of str
+
+    Returns
+    -------
+    folders: dict of str to pathlib.Path
+    """
     prefixes_set = set(prefixes)
 
     if prefixes_set:
@@ -136,19 +163,47 @@ class FileList:
     # === END ===
 # === END CLASS ===
 
-BATCH_PROCESS_ON_TREE = typing.Callable[
-    [
-        click.Context,
-        str, # source_type
-        typing.Optional[str], # destination
-        bool, # can_overwrite
-        bool, # if_gen_intermediate
-        typing.Optional[str] # intermediate_dir
-    ],
-    None
-]
-
 class CmdTemplate_Batch_Process_on_Tree(click.Command):
+    """A template of Click commands 
+        that deal with both STDIN inputs 
+        and a file list to be batch processed in the same way.
+
+    Attributes
+    ----------
+    name: str
+        The name of the command.
+
+    logger_orig: logging.Logger,
+        The logger that belongs to the command.
+
+    folder_prefix: str,
+        A prefix attached to folders to be created.
+
+    with_intermediate: bool,
+        True if the command has intermediate traces to be dumped out.
+        If true, a set of command options pertaning to these will be added.
+
+    callback_preprocessing: typing.Callable, optional
+        * conf: dict
+
+    callback_process_file: typing.Callable, optional
+        A callback function for the filelist mode.
+        The function is expected to 
+            take the following arguments with the exact names:
+        * conf: dict
+        * src: pathlib.Path
+        * dest: pathlib.Path
+        * log_prefix: str or pathlib.Path, optional
+
+    callback_process_rawtrees: typing Callable, optional
+        * conf: dict
+        * f_src: typing.TextIO
+        * f_dest: typing.TextIO
+        * src_name: str
+        * dest_name: str
+        * log_prefix: str or pathlib.Path, optional
+    """
+
     OPTIONS_NORMAL: typing.Tuple[click.Option, ...] = (
         click.Option(
             param_decls = [
@@ -220,7 +275,7 @@ unless the `--intermediate' flag is set on.""",
 #            typing.Callable[[dict, typing.Any], int]
             typing.Callable
         ],
-        callback_process_filelist: typing.Optional[
+        callback_process_file: typing.Optional[
             typing.Callable
 #            typing.Callable[
 #                [
@@ -250,7 +305,7 @@ unless the `--intermediate' flag is set on.""",
         self.logger_orig = logger_orig
         self.folder_prefix = folder_prefix
         self.callback_preprocessing = callback_preprocessing
-        self.callback_process_filelist = callback_process_filelist
+        self.callback_process_file = callback_process_file
         self.callback_process_rawtrees = callback_process_rawtrees
 
         if with_intermediate:
@@ -278,17 +333,19 @@ unless the `--intermediate' flag is set on.""",
         intermediate_dir: typing.Optional[str],
         **kwargs,
     ) -> None:
+        _self_name: str = self.__class__.__name__
+
         logger.info(
-            "Command template invoked; "
-            f"Template class: {self.__class__.__name__}, "
-            f"Command name: {self.name}"
+            f"The command {self.name} is generated "
+            f"by the command template {_self_name}"
         )
         ctx = click.get_current_context()
         CONFIG = ctx.obj["CONFIG"]
 
         if self.callback_preprocessing:
             logger.info(
-                "Command template is calling the preprocessing callback"
+                f"The command template {_self_name} "
+                "is calling the preprocessing callback"
             )
             res_code: int = self.callback_preprocessing(CONFIG, **kwargs)
 
@@ -305,14 +362,22 @@ unless the `--intermediate' flag is set on.""",
         # === END IF ===
 
         if source_type == "filelist":
-            logger.info(
+            self.logger_orig.info(
                 "The type of source: filelist"
             )
 
-            if not self.callback_process_filelist:
-                return
+            if not self.callback_process_file:
+                logger.info(
+                    "No callback for the filelist mode is given. "
+                    "Nothing done "
+                    "and the program is ended with vacuous success."
+                )
+                ctx.exit(0)
             # === END IF ===
 
+            # ------------------------
+            # Create result & intermediate folders
+            # ------------------------
             dir_prefix_result: str = f"result_{self.folder_prefix}_"
             dir_prefix_log: str = f"log_{self.folder_prefix}_"
 
@@ -359,29 +424,85 @@ unless the `--intermediate' flag is set on.""",
                 pass
             # === END IF ===
 
-            logger.info(
+            self.logger_orig.info(
                 "The destination folders are created; "
                 f"Path to result files: {res_folders.get(dir_prefix_result, 'N/A')}, "
                 f"Path to intermediate files: {res_folders.get(dir_prefix_log, 'N/A')}"
             )
             # === END IF ===
 
+            # ------------------------
+            # Work out the output file paths
+            # ------------------------
             flist: FileList = FileList.from_file_list(sys.stdin)
 
             # ------------------------
-            # Execute the callback
+            # Invoke multiprocess conversion
             # ------------------------
-            res_code = self.callback_process_filelist(
-                CONFIG, 
-                res_folders[dir_prefix_result],
-                res_folders.get(dir_prefix_log),
-                flist,
-                **kwargs,
-            )
+            proc_num: int = CONFIG["max_process_num"]
+            with mp.Pool(processes = proc_num) as pool:
+                self.logger_orig.info(f"Number of processes: {proc_num}")
+                
+                # Work out files to be processed
+                flist_dest_expanded: tuple
+                if if_gen_intermediate:
+                    flist_dest_expanded = tuple(
+                        FileConversionArgs(
+                            src = src,
+                            dest = res_folders[dir_prefix_result] / fn,
+                            file_size = os.path.getsize(src),
+                            log_prefix = res_folders[dir_prefix_log]
+                        )
+                        for src, fn
+                        in flist.iterate_truncating_commonprefix()
+                    )
+                else:
+                    flist_dest_expanded = tuple(
+                        FileConversionArgs(
+                            src = src,
+                            dest = res_folders[dir_prefix_result] / fn,
+                            file_size = os.path.getsize(src),
+                            log_prefix = None,
+                        )
+                        for src, fn
+                        in flist.iterate_truncating_commonprefix()
+                    )
+                # === END IF ===
 
-            if res_code:
-                ctx.exit(res_code)
-            # === END IF ===
+                # Get the sum of the input files
+                files_total_size: int = sum(
+                    map(lambda x: x[2], flist_dest_expanded)
+                )
+                self.logger_orig.info(
+                    f"# of the files to be processed: {len(flist_dest_expanded)}, "
+                    f"The total size of the files to be processed: {files_total_size}"
+                )
+                
+                # Create jobs
+                jobs = pool.imap_unordered(
+                    functools.partial(
+                        _conv_file_wrapper,
+                        f = self.callback_process_file,
+                        conf = CONFIG,
+                        **kwargs,
+                    ),
+                    flist_dest_expanded,
+                )
+                # Execute the callback per file
+                with tqdm.tqdm(
+                    total = files_total_size, 
+                    unit = "B",
+                    unit_scale = True,
+                    unit_divisor = 1024
+                ) as pb:
+                    pb.write("Converting Keyaki trees into ABC trees:") 
+                    # TODO: customize the message
+                    for _return_code, src_size in jobs:
+                        pb.update(src_size)
+                # === END WITH pb ===
+            # === END FOR path_src, filename_res ===
+
+            ctx.exit(0)
         elif source_type == "rawtrees":
             # ------------------------
             # Skip if no callback
@@ -417,7 +538,11 @@ unless the `--intermediate' flag is set on.""",
             # ------------------------
             res_code = self.callback_process_rawtrees(
                 conf = CONFIG,
-                dir_log = log_pfx,
+                f_src = sys.stdin,
+                f_dest = sys.stdout,
+                src_name = "<STDIN>",
+                dest_name = "<STDOUT>",
+                log_prefix = log_pfx,
                 **kwargs
             )
 
@@ -432,3 +557,28 @@ unless the `--intermediate' flag is set on.""",
             raise ValueError()
         # === END IF ===
     # === END ===
+
+class FileConversionArgs(typing.NamedTuple):
+    src: pathlib.Path
+    dest: pathlib.Path
+    file_size: int
+    log_prefix: typing.Union[str, pathlib.Path, None]
+# === END CLASS ===
+
+def _conv_file_wrapper(
+    args: FileConversionArgs,
+    f: typing.Callable,
+    conf: dict,
+    **kwargs,
+) -> typing.Tuple[int, int]:
+    return (
+        f(
+            conf = conf, 
+            src = args.src, 
+            dest = args.dest,
+            log_prefix = args.log_prefix,
+            **kwargs,
+        ),
+        args.file_size,
+    )
+# === END ===

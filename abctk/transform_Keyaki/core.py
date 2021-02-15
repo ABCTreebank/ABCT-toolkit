@@ -42,8 +42,6 @@ def obfuscate_stream(
     dest_name: typing.Any = "<OUTPUT>",
     matcher: typing.Pattern[str] = re.compile(r"closed"),
     **kwargs
-    #conf: typing.Dict[str, typing.Any] = CONF.CONF_DEFAULT,
-    #log_prefix: typing.Union[None, str, pathlib.Path] = None,
 ) -> int:
     trees_Maybe_wID: typing.Iterable[at.Tree_with_ID] = at.parse_ManyTrees_Maybe_with_ID(f_src.read())
 
@@ -64,6 +62,7 @@ def obfuscate_stream(
 def obfuscate_file(
     src: pathlib.Path, 
     dest: pathlib.Path,
+    **kwargs
 ) -> int:
     try:
         with open(src, "r") as h_src, open(dest, "w") as h_dest:

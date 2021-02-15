@@ -100,6 +100,12 @@ cmd_main.add_command(cli_ml.cmd_main, name = "ml")
 import abctk.parsing.cli as cli_parse
 cmd_main.add_command(cli_parse.cmd_main, name = "parse")
 
+import abctk.transform_Keyaki.cli as cli_trans_Keyaki
+cmd_main.add_command(
+    cli_trans_Keyaki.cmd_main, 
+    name = "trans-Keyaki",
+)
+
 @cmd_main.command(
     name = "dic",
     short_help = "list special lexical entries in ABC Treebank"

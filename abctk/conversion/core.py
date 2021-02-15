@@ -69,6 +69,7 @@ def convert_keyaki_to_abc(
     dest_name: typing.Any = "<OUTPUT>",
     conf: typing.Dict[str, typing.Any] = CONF.CONF_DEFAULT,
     log_prefix: typing.Union[None, str, pathlib.Path] = None,
+    **kwargs
 ) -> int:
     logger.info(
         f"Commence a Keyaki-to-ABC conversion on the file/stream {src_name}"
@@ -129,6 +130,7 @@ def convert_keyaki_file_to_abc(
     dest: pathlib.Path,
     conf: typing.Dict[str, typing.Any] = CONF.CONF_DEFAULT,
     log_prefix: typing.Union[None, str, pathlib.Path] = None,
+    **kwargs
 ) -> int:
     dest_name_bare: pathlib.Path = dest.parent / dest.stem
     dest_path_abs: str = str(dest_name_bare) + "-b2psg.psd"
@@ -139,6 +141,7 @@ def convert_keyaki_file_to_abc(
             src, dest_path_abs,
             conf = conf,
             log_prefix = log_prefix,
+            **kwargs
         )
     # === END WITH h_src, h_dest ===
 
