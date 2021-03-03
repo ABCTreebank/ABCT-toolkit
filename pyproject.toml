@@ -44,6 +44,7 @@ lxml = "^4.6.2"
 pylint = "^2.6.0"
 requests = "^2.25.1"
 mypy = "^0.790"
+pytest = "^6.2.2"
 
 [tool.poetry.extras]
 parser = ["allennlp", "gevent"]
@@ -56,3 +57,9 @@ generate-setup-file = false
 [build-system]
 requires = ["poetry-core>=1.0.0", "requests", "xdg", "tqdm"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+testpaths = [
+    "tests"
+]
