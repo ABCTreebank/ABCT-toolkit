@@ -132,7 +132,8 @@ def convert_keyaki_file_to_abc(
     log_prefix: typing.Union[None, str, pathlib.Path] = None,
     **kwargs
 ) -> int:
-    dest_name_bare: pathlib.Path = dest.parent / dest.stem
+    dest_file_name_bare = dest.stem
+    dest_name_bare: pathlib.Path = dest.parent / dest_file_name_bare
     dest_path_abs: str = str(dest_name_bare) + "-b2psg.psd"
 
     with open(src, "r") as h_src, open(dest_path_abs, "w") as h_dest:
@@ -140,7 +141,7 @@ def convert_keyaki_file_to_abc(
             h_src, h_dest,
             src, dest_path_abs,
             conf = conf,
-            log_prefix = log_prefix,
+            log_prefix = f"{log_prefix}/{dest_file_name_bare}",
             **kwargs
         )
     # === END WITH h_src, h_dest ===
