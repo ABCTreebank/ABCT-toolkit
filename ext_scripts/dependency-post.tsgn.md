@@ -433,3 +433,12 @@ move punc >-1 ancestoradj
 relabel punc /^.*$/\%{pCat}\%{pPreRole}#role=a\%{pPostRole}/
 
 ```
+
+
+## 等位接続
+等位接続構造(NP#deriv=conj (NP (N ...)) ...)の中の，中間NPを削除する．
+```tsurgeon
+/^NP.*#deriv=conj/  < (/^NP.*deriv=unary-NP-type-raising/=x <: /^N/) !< /^NPq/
+
+excise x x
+```
