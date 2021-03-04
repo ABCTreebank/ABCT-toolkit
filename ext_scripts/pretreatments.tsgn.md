@@ -1683,7 +1683,7 @@ relabel smc IP-SMC
 RNRなどにより、埋め込みIPにheadがない場合がある。それを復元する。
 ```tsurgeon
 /^IP/=x
-    !< /^(VB|ADJI|ADJN|AX|CAUS|VBP|.*-PRD)$/
+    !< /^(VB|ADJI|ADJN|AX|CAUS|VBP|.*-PRD.*)$/
     !< (ADVP [   $. (AX|MD !$,, AX) 
           | . だろう 
           | . (だろ . う)
@@ -1709,6 +1709,14 @@ relabel vh /^.*$/VB#role=h/
 ```
 
 NOTE: `PRD`を述語だとここでは扱っている．
+
+句読点や記号との順番を調節しておく．
+```tsurgeon
+__=x < /__lex_pred/ $, SYM|PU|RRB=y
+
+move x $+ y
+
+```
 
 ## IPの正規化 5：量化詞の抜き出し
 量化詞には，前節のところで，すでに添え字`#index=...`を振ってある．
