@@ -51,7 +51,6 @@ relabel x /^(.*)$/={x}__cat_SCR/
 relabel x /^(.*)$/={x}__cat_SCR/
 
 ```
-NOTE: /OB1/ $.. /SBJ2/のケースについてはKeyakiの分析から見直す必要あり？
 
 
 ### SBJ
@@ -381,7 +380,6 @@ __=left
 move punc >-1 left
 
 ```
-TODO: `LRB`の扱い？これも繰り上げたほうがよい？
 
 例：
 ```
