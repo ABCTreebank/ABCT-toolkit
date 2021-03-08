@@ -45,17 +45,25 @@ def obfuscate_stream(
 ) -> int:
     trees_Maybe_wID: typing.Iterable[at.Tree_with_ID] = at.parse_ManyTrees_Maybe_with_ID(f_src.read())
 
-    for tree_wID in trees_Maybe_wID:
+    def _obf(tree_wID: at.Tree_with_ID) -> at.Tree_with_ID:
         tree_id = tree_wID.ID
         if matcher.search(tree_id):
-            res = attr.evolve(
-                tree_wID, 
+            return attr.evolve(
+                tree_wID,
                 content = obfuscate_tree(tree_wID.content, tree_id),
             )
-            res.pprint(stream = f_dest)
         else:
-            tree_wID.pprint(stream = f_dest)
+            return tree_wID
+        # === END IF ===
+    # === END ===
+
+    buf = "\n".join(
+        at.print_tree_oneline(_obf(tree).to_Tree()) 
+        for tree in trees_Maybe_wID
+    )
+    f_dest.write(buf)
     # === END FOR tree_wID ===
+
     return 0
 # === END ===
 

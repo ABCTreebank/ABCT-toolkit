@@ -141,7 +141,10 @@ def convert_keyaki_file_to_abc(
             h_src, h_dest,
             src, dest_path_abs,
             conf = conf,
-            log_prefix = f"{log_prefix}/{dest_file_name_bare}",
+            log_prefix = (
+                f"{log_prefix}/{dest_file_name_bare}"
+                if log_prefix else None
+            ),
             **kwargs
         )
     # === END WITH h_src, h_dest ===

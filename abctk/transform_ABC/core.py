@@ -18,13 +18,13 @@ __re_P_PU = re.compile(r"^(P|PU|CONJ)$")
 
 def __binarize_internal(
     root_cat: at.ABCCat,
-    children: typing.Iterator[typing.Callable[[at.ABCCat], at.Tree]],
+    children_rev: typing.Iterator[typing.Callable[[at.ABCCat], at.Tree]],
 ) -> typing.Optional[at.Tree]:
-    conjunct_1 = next(children, None)
+    conjunct_1 = next(children_rev, None)
     if conjunct_1 is None:
         return None
     else:
-        conjunct_2 = next(children, None)
+        conjunct_2 = next(children_rev, None)
         if conjunct_2 is None:
             return conjunct_1(root_cat)
         else:
@@ -44,8 +44,8 @@ def __binarize_internal(
                     ),
                     __binarize_internal(
                         root_cat,
-                        itertools.chain((conjunct_2, ), children)
-                    )
+                        itertools.chain((conjunct_2, ), children_rev)
+                    ),
                 ]
             )
         # === END IF ===
@@ -189,13 +189,9 @@ def binarize_conj_tree(
         if subtree.height() > 2 and tree_label.deriv.startswith("conj"):
             tree_new_children = __binarize_internal(
                 tree_label.cat,
-                reversed(
-                    tuple(
-                        map(
-                            lambda args: __binarize_conjunct(*args),
-                            __chop_children(iter(subtree)),
-                        )
-                    )
+                map(
+                    lambda args: __binarize_conjunct(*args),
+                    __chop_children(iter(subtree)),
                 )
             )
             
