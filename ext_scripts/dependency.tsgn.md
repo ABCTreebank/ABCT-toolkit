@@ -452,20 +452,35 @@ relabel x /^.*$/={x}#role=h/
 - `IP-ADV`
 - `IP-NML`
 - `DP` （`NP`, `NPd`, `NPq`, `NPdq`は，PPの元にはないはずだが，一応付けておく）
-- `PP-%{roles}`
 - `CP`類，`multi-sentence`
 
 ```tsurgeon
 /^PP/ 
   !== /#deriv=.+/
   !< /#role=/ 
-  < /^(IP-(ADV|NML)|DP|NPd?q?|PP-(SCON|CONJ|CND)|multi-sentence|CP)/=x
+  < /^(IP-(ADV|NML)|DP|NPd?q?|multi-sentence|CP)/=x
 
 relabel x /^.*$/={x}#role=c/
 
 ```
 
 #### 主要部
+PP-(SCON|CONJ|CND)と，とりたて助詞の構造（特に，「～しても」のようなもの）に関しては，
+補文節を主要部として，とりたて詞を，補文節を修飾するようなもの（すなわち，adjunct）だとする．
+
+```tsurgeon
+/^PP.*$/
+  !== /#deriv=.+/
+  !< /#role=h/
+  < (
+    /^PP-(SCON|CONJ|CND)/=x
+    $.. /^P/
+  )
+
+relabel x /^.*$/={x}#role=h/
+
+```
+
 最左の`P`が主要部である．
 ただし，格助詞にとりたて助詞が先行する構造の場合は，
 格助詞を主要部とする(pretreatmentsで処理)．
