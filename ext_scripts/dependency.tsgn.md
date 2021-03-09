@@ -21,8 +21,6 @@ CP補文（但し，副詞節を除く）もまた補部である．
 ```
 /^IP/ -> /(CP-THT|CP-QUE)/$#role=c ...
 ```
-NOTE: CP-THT-OB1とマークされたり、CP-THTとマークされたりして、
-  まちまちであるのて、手修正が必要になるだろう。
 
 さらに，`IP-SMC`も明らかに補部である．
 
@@ -548,4 +546,4 @@ __
 relabel child /^.*$/={child}#role=a/
 
 ```
-NOTE: at this point every node should be marked either #role=h, #role=c or #role=a. No further change.
+NOTE: At this point every node should be marked either with #role=h, #role=c or #role=a. 
