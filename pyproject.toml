@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "abctk"
-version = "0.1.0"
+version = "0.1.1"
 description = ""
 authors = ["Nori Hayashi <net@hayashi-lin.net>"]
 maintainers = ["Nori Hayashi <net@hayashi-lin.net>"]
