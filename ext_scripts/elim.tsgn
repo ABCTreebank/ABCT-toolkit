@@ -1,0 +1,11 @@
+__=root 
+    !> __ 
+    <2 ID=id
+
+delete id
+excise root root
+
+/#/=label
+
+relabel label /^(.*)(#.*)$/$1/
+
