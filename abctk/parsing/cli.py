@@ -17,13 +17,23 @@ from . import core
     short_help = "parse sentences",
 )
 @click.option(
+    "--parser-json", "-p",
+    "parser_json",
+    type = click.Path(
+        exists = True,
+        file_okay = True,
+        dir_okay = False,
+    ),
+    default = "./config_parser_abc.json",
+    metavar = "<parser_json>",
+    help = "path to the parser setting JSON file",
+)
+@click.option(
     "--model", "-m",
     type = click.Path(
         exists = True,
-        file_okay = False,
-        dir_okay = True,
     ),
-    #default = "/...",
+    default = "./model.tar.gz",
     metavar = "<user_model>",
     help = "path to a user model"
 )
@@ -62,6 +72,7 @@ from . import core
 @click.pass_context
 def cmd_main(
     ctx: click.Context,
+    parser_json: str,
     model: str,
     batch_size: int,
     is_to_tokenize: bool,
@@ -72,7 +83,8 @@ def cmd_main(
     """
     parsed_trees, doc_tagged = core.parse_doc(
         doc = sys.stdin, 
-        model_path = model,
+        json_input = parser_json,
+        tagger_model = model,
         is_to_tokenize = is_to_tokenize,
         batchsize = batch_size
     )

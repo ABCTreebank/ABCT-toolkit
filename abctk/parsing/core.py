@@ -10,8 +10,8 @@ from . import tokenizer
 parser: "depccg.parser.JapaneseCCGParser" = None
 
 def generate_parser(
-    model_path: typing.Union[str, pathlib.Path] = None
-    # pathlib.PurePosixPath("/...")
+    json_input: str,
+    tagger_model: typing.Optional[str] = None,
 ) -> "depccg.parser.JapaneseCCGParser" :
     from depccg.combinator import (
         HeadfinalCombinator,
@@ -78,11 +78,9 @@ def generate_parser(
     )
 
     # 設定ファイルとallennlpのモデルからパーザを初期化
-    model_path_str: str = str(model_path)
-
     parser = JapaneseCCGParser.from_json(
-        model_path_str + "/config_parser_abc.json", 
-        model_path_str + "/model",
+        json_input,
+        tagger_model,
         **kwargs
     )
 
@@ -91,7 +89,8 @@ def generate_parser(
 
 def parse_doc(
     doc: typing.Iterable[str],
-    model_path: typing.Union[str, pathlib.Path] = None, 
+    json_input: str,
+    tagger_model: typing.Optional[str] = None,
     is_to_tokenize: bool = False,
     batchsize: int = 16,
 ) -> typing.Tuple["parsed_trees", typing.Iterator[typing.Iterable[typing.Any]]]:
@@ -100,7 +99,7 @@ def parse_doc(
     global parser
 
     if not parser:
-        parser = generate_parser(model_path)
+        parser = generate_parser(json_input, tagger_model)
     # === END IF ===
     
     doc_stripped: typing.Iterator[str] = filter(
