@@ -1,0 +1,60 @@
+import sys
+PY_VER = sys.version_info
+
+if PY_VER >= (3, 7):
+    import importlib.resources as imp_res
+else:
+    import importlib_resources as imp_res
+
+import fs
+import pytest
+import abctk.types.core as core
+
+@pytest.fixture(scope = "module")
+def sample_trees_folder():
+    with imp_res.path("tests.resources", "trees") as folder:
+        return folder
+
+@pytest.fixture(scope = "module")
+def sample_single_tree_raw():
+    return imp_res.read_text("tests.resources.trees", "test_single.psd")
+
+@pytest.fixture(scope = "module")
+def sample_multiple_trees_raw():
+    return imp_res.read_text("tests.resources.trees", "test_multiple.psd")
+
+def test_parse_single_tree(sample_single_tree_raw):
+    assert isinstance(
+        core.TypedTree.from_PTB(sample_single_tree_raw),
+        core.TypedTree,
+    )
+
+def test_parse_multiple_trees_with_ID(sample_multiple_trees_raw):
+    res = core.TypedTreebank.from_PTB(
+        sample_multiple_trees_raw,
+        name = "test",
+        version = None,
+        container_version = None,
+    )
+    assert isinstance(res, core.TypedTreebank)
+
+def test_load_trees(sample_trees_folder):
+    with fs.open_fs(str(sample_trees_folder)) as tb:
+        res = core.TypedTreebank.from_PTB_FS(
+            tb,
+        )
+        assert isinstance(res.index["1_misc_TOPTEN;1a;JP"], core.TypedTree)
+
+def test_dump_trees(sample_trees_folder):
+    with fs.open_fs(str(sample_trees_folder)) as tb:
+        res = core.TypedTreebank.from_PTB_FS(
+            tb,
+        )
+
+        with fs.open_fs("mem://", writeable = True) as mem:
+            res.to_PTB_FS(mem)
+
+            mem.isfile("/untitled.psd")
+
+            with mem.open("/untitled.psd") as f:
+                print(f.read())
