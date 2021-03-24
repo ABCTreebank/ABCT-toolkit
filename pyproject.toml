@@ -45,6 +45,8 @@ pylint = "^2.6.0"
 requests = "^2.25.1"
 mypy = "^0.790"
 pytest = "^6.2.2"
+Sphinx = "^3.5.3"
+sphinx-rtd-theme = "^0.5.1"
 
 [tool.poetry.extras]
 parser = ["allennlp", "gevent"]
