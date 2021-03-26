@@ -2,9 +2,9 @@ import sys
 PY_VER = sys.version_info
 
 if PY_VER >= (3, 7):
-    import importlib.resources as imp_res
+    import importlib.resources as imp_res # type: ignore
 else:
-    import importlib_resources as imp_res
+    import importlib_resources as imp_res # type: ignore
 
 import fs
 import pytest
@@ -56,5 +56,24 @@ def test_dump_trees(sample_trees_folder):
 
             mem.isfile("/untitled.psd")
 
-            with mem.open("/untitled.psd") as f:
-                print(f.read())
+def test_load_disamb_trees_and_dumped_equals_original(sample_trees_folder):
+    with fs.open_fs(str(sample_trees_folder)) as tb_raw:
+        tb = core.TypedTreebank.from_PTB_FS(
+            tb_raw,
+            name = "test",
+            disambiguate_IDs_by_path = True,
+        )
+
+        with fs.open_fs("mem://", writeable = True) as mem:
+            tb.to_PTB_FS(
+                mem,
+                path_maker = core.treeIDstr_to_path_default,
+            )
+
+            tb_again = core.TypedTreebank.from_PTB_FS(
+                mem,
+                name = "test",
+                disambiguate_IDs_by_path = True,
+            )
+
+            assert tb == tb_again

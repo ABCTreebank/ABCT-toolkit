@@ -3,6 +3,7 @@ import collections
 import functools
 import itertools
 import random
+import re
 import string
 from packaging.version import Version
 import pathlib
@@ -250,13 +251,13 @@ class TypedTreebank(
             name,
             version,
             container_version,
-            index = typing.cast(
+            index = typing.cast(  # type: ignore
                 TypedTreeIndex[str, str, str],
                 get_TypedTree_LarkParser().parse(
                     source,
                     start = "tree_maybe_with_id_list"
                 )
-            )
+            ) 
         )
     # === END ===
 
@@ -283,7 +284,7 @@ class TypedTreebank(
                         TypedTreeIndex[str, str, str],
                         typing.cast(
                             lark.Lark,
-                            get_TypedTree_LarkParser()
+                            get_TypedTree_LarkParser() # type: ignore
                         ).parse(
                             f.read(),
                             start = "tree_maybe_with_id_list"
@@ -348,11 +349,26 @@ class TypedTreebank(
             )
         )
 
+_treeID_path_matcher = re.compile(r"^(.*)?/(.*)$")
+
+def treeIDstr_to_path_default(ID: str) -> typing.Tuple[str, str]:
+    ID_str = str(ID)
+    res = _treeID_path_matcher.match(ID_str)
+    if res is None:
+        return ("", ID_str)
+    else:
+        return typing.cast(
+            typing.Tuple[str, str],
+            res.group(1, 2),
+        )
+    # === END ===
+# === END ===
+
 # ======
 # Lark Parsers
 # ======
 
-TypedTree_lark_grammar = r"""
+larkgramamr_TypedTree = r"""
 %import common.WS
 %ignore WS
 
@@ -466,7 +482,7 @@ class TypedTree_lark_Transformer(lark.Transformer):
 @functools.lru_cache()
 def get_TypedTree_LarkParser() -> lark.Lark:
     return lark.Lark(
-        grammar = TypedTree_lark_grammar,
+        grammar = larkgramamr_TypedTree,
         transformer = TypedTree_lark_Transformer(),
         start = ["tree", "tree_maybe_with_id", "tree_maybe_with_id_list"],
         parser = "lalr",
