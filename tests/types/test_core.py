@@ -10,18 +10,21 @@ import fs
 import pytest
 import abctk.types.core as core
 
+module_trees = "tests.resources.trees"
+module_trees_devised = "tests.resources.trees.devised"
+
 @pytest.fixture(scope = "module")
 def sample_trees_folder():
-    with imp_res.path("tests.resources", "trees") as folder:
+    with imp_res.path(module_trees, "devised") as folder:
         return folder
 
 @pytest.fixture(scope = "module")
 def sample_single_tree_raw():
-    return imp_res.read_text("tests.resources.trees", "test_single.psd")
+    return imp_res.read_text(module_trees_devised, "test_single.psd")
 
 @pytest.fixture(scope = "module")
 def sample_multiple_trees_raw():
-    return imp_res.read_text("tests.resources.trees", "test_multiple.psd")
+    return imp_res.read_text(module_trees_devised, "test_multiple.psd")
 
 def test_parse_single_tree(sample_single_tree_raw):
     assert isinstance(
