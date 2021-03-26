@@ -12,7 +12,7 @@ Part of the functionalities are implemented by other langauges but all wrapped w
     - Java JRE (the version requirement aligns with that of [Stanford Tregex 4.2.0](https://nlp.stanford.edu/software/tregex.shtml))
     - m4
     - sed
-    - Python (tested with 3.6.12) and that required packages listed in `pyproject.toml`
+    - Python (currently working only with 3.6, tested with 3.6.12) and that required packages listed in `pyproject.toml`
 - Automatically prepared in building the python bdist
     - [Stanford Tregex](https://nlp.stanford.edu/software/tregex.shtml) (tested with 4.2.0)
 - Optional dependencies:
@@ -29,6 +29,37 @@ are also required.
 ## Installation & Usage
 ### As a user
 A wheel package is provided for every release in the release page.
+
+#### Using pip
+Here is the tranditional way of installation using [pip](https://pip.pypa.io)
+First, make sure that you are using version 20.3 or later, which is compatible with [PEP 600](https://www.python.org/dev/peps/pep-0600/):
+```sh
+pip --version
+```
+
+And just install from a wheel package:
+```sh
+pip install <package>.whl
+```
+
+For the parsing support:
+```sh 
+pip install '<package>.whl[parser]'
+```
+
+For the trainer support:
+```sh 
+pip install '<package>.whl[parser, ml]'
+```
+#### Using pip & venv
+```sh
+python -m venv .venv
+.venv/bin/activate
+pip install --upgrade pip
+pip install '<package>.whl[extras]'
+```
+
+#### Using pipx
 Using [pipx](https://pipxproject.github.io/pipx/) is recommended 
     so that the running environment can be isolated,
     avoiding to affect other Python packages.
@@ -39,6 +70,7 @@ pipx install <package>.whl
 # invoke the CLI
 abctk --help
 ```
+NOTE: It only works when the global Python is 3.6.
 
 ### As a developer
 This repository is organized with [Poetry](https://python-poetry.org/).
@@ -67,4 +99,4 @@ This package reuses the following codes:
     [wrapper of Tsurgeon](http://npcmj.ninjal.ac.jp/interfaces/tsurgeon_script) 
     (included in Standford Tregex)
 - [Prof. Yoshikawa Masashi's](https://masashi-y.github.io/) python scripts for AllenNLP model training and parsing
-- [Mr. Vijith Assar]'s [lit](https://github.com/vijithassar/lit)
+- [Mr. Vijith Assar](https://www.vijithassar.com/)'s [lit](https://github.com/vijithassar/lit)
