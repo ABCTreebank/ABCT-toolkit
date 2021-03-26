@@ -56,7 +56,9 @@ pip install '<package>.whl[parser, ml]'
 python -m venv .venv
 .venv/bin/activate
 pip install --upgrade pip
-pip install '<package>.whl[extras]'
+pip install '<package>.whl[parser, ml]'
+# change the name and the extras 
+# according to the package version you get and what you need from extras
 ```
 
 #### Using pipx
@@ -65,12 +67,14 @@ Using [pipx](https://pipxproject.github.io/pipx/) is recommended
     avoiding to affect other Python packages.
 
 ```sh 
-pipx install <package>.whl
+pipx install './<package>.whl[extras]' --python python3.X
+# fill in the blanks to meet your need
 
 # invoke the CLI
 abctk --help
 ```
-NOTE: It only works when the global Python is 3.6.
+NOTE: the path prefix "./" is essential, without which pipx won't work.
+See [this Github issue](https://github.com/pipxproject/pipx/issues/641#issuecomment-789168582).
 
 ### As a developer
 This repository is organized with [Poetry](https://python-poetry.org/).
