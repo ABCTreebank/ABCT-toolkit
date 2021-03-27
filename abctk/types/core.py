@@ -1,7 +1,12 @@
 from abc import ABC, abstractmethod
 import collections
+import concurrent.futures as cf
 import functools
 import itertools
+import logging
+logger = logging.getLogger(__name__)
+import multiprocessing as mp
+import os
 import random
 import re
 import string
@@ -11,7 +16,11 @@ import typing
 
 import attr
 import fs
+import humanize
 import lark
+import tqdm
+
+import abctk.config
 
 class IPrettyPrintable(ABC):
     """
@@ -227,6 +236,46 @@ def sample_from_TypedTreeIndex(
         k = k,
     )
 
+def _load_file(
+    args: typing.Tuple[str, int, str],
+    disambiguate_IDs_by_path: bool,
+    uniformly_with_ID: bool,
+) -> typing.Tuple[
+    str, # path
+    int, # size
+    int, # status
+    typing.Tuple[typing.Tuple[str, TypedTree[str, str]]],
+]:
+    path, size, content = args
+    res = tuple(
+        (
+            f"{path}/{k}"
+                if disambiguate_IDs_by_path
+                else k,
+            v,
+        )
+        for k, v in typing.cast(
+            typing.Iterable[
+                typing.Tuple[
+                    str, TypedTree[str, str],
+                ]
+            ],
+            typing.cast(
+                lark.Lark,
+                get_TypedTree_LarkParser() # type: ignore
+            ).parse(
+                content,
+                start = (
+                    "tree_with_id_list" if uniformly_with_ID
+                    else "tree_maybe_with_id_list"
+                )
+            )
+        )
+    )
+
+    return path, size, 0, res
+# === END ===
+
 @attr.s(
     auto_attribs = True,
     # slots = True, -- error in Python 3.6, see https://github.com/python-attrs/attrs/issues/313
@@ -246,6 +295,7 @@ class TypedTreebank(
         name: str,
         version: Version = Version("0.0.0"),
         container_version: Version = Version("0.0.0"),
+        uniformly_with_ID: bool = True,
     ):
         return cls(
             name,
@@ -255,7 +305,10 @@ class TypedTreebank(
                 TypedTreeIndex[str, str, str],
                 get_TypedTree_LarkParser().parse(
                     source,
-                    start = "tree_maybe_with_id_list"
+                    start = (
+                        "tree_with_id_list" if uniformly_with_ID
+                        else "tree_maybe_with_id_list"
+                    )
                 )
             ) 
         )
@@ -265,42 +318,83 @@ class TypedTreebank(
     def from_PTB_FS(
         cls,
         filesys: "fs.base.FS",
-        name: typing.Optional[str] = None,
-        glob_str: str = "**/*.psd",
-        disambiguate_IDs_by_path: bool = False,
-        version: Version = Version("0.0.0"),
-        container_version: Version = Version("0.0.0"),
+        name: typing.Optional[str]      = None,
+        glob_str: str                   = "**/*.psd",
+        disambiguate_IDs_by_path: bool  = False,
+        version: Version                = Version("0.0.0"),
+        container_version: Version      = Version("0.0.0"),
+        process_num: int                = typing.cast(int, abctk.config.CONF_DEFAULT["max_process_num"]),
+        tqdm_buffer: typing.Optional[typing.TextIO] = None,
+        uniformly_with_ID: bool = True,
     ):
-        def _yielder(match: fs.glob.GlobMatch):
-            with filesys.open(match.path) as f:
-                return (
-                    (
-                        f"{match.path}/{k}"
-                            if disambiguate_IDs_by_path
-                            else k,
-                        v,
+        # ------------
+        # 1. Collect files and their info
+        # ------------
+        glob_matches = filesys.glob(glob_str)
+        file_paths = tuple(
+            match.path for match in glob_matches
+        )
+        file_sizes = tuple(
+            filesys.getinfo(path, ("details", )).size
+            for path in file_paths  
+        )
+        file_num = len(file_paths)
+        file_size_sum = sum(file_sizes)
+        logger.info(
+            f"# of files to be loaded: {file_num}, "
+            f"the total size: {humanize.naturalsize(file_size_sum)}"
+        )
+
+        # ------------
+        # 2. Making a file reading iterator
+        # ------------
+        def _read_file(filesys: "fs.base.FS", path: str):
+            with filesys.open(path, "r") as f:
+                return f.read()
+        # === END ===
+
+        file_contents = (
+            _read_file(filesys, path) 
+            for path in file_paths
+        ) # As iterator, actual IO made delayed
+
+        # ------------
+        # 3. Launch a multiprocessing context
+        # -----------
+        result_tree_iters = list()
+        with cf.ProcessPoolExecutor(
+            max_workers = process_num
+        ) as executor:
+            logger.info(f"Multiprocessing pool created, number of processes: {process_num}")
+
+            with tqdm.tqdm(
+                total = file_size_sum,
+                desc = "Reading & parsing treebank files",
+                unit = "B",
+                unit_scale = True,
+                file = tqdm_buffer,
+                disable = tqdm_buffer is None,
+            ) as bar:
+                for _, size, _, trees in executor.map(
+                    functools.partial(
+                        _load_file,
+                        disambiguate_IDs_by_path = disambiguate_IDs_by_path,
+                        uniformly_with_ID = uniformly_with_ID,
+                    ),
+                    zip(
+                        file_paths,
+                        file_sizes,
+                        file_contents,
                     )
-                    for k, v in typing.cast(
-                        TypedTreeIndex[str, str, str],
-                        typing.cast(
-                            lark.Lark,
-                            get_TypedTree_LarkParser() # type: ignore
-                        ).parse(
-                            f.read(),
-                            start = "tree_maybe_with_id_list"
-                        )
-                    ).items()
-                )
-        
+                ):
+                    bar.update(size)
+                    result_tree_iters.append(trees)
+
         return cls(
             name if name is not None else str(filesys),
             version,
             container_version,
-            index = dict(
-                itertools.chain.from_iterable(
-                    map(_yielder, filesys.glob(glob_str))
-                )
-            )
+            index = dict(itertools.chain.from_iterable(result_tree_iters))
         )
     # === END ===
 
@@ -377,9 +471,9 @@ label: NONTERM?
 tree_complex: "(" label tree* ")"
 tree: tree_simple | tree_complex
 
-tree_with_id: "(" tree_complex "(" "ID" /[^\s()]+/ ")" ")"
-tree_maybe_with_id: tree_with_id | tree
-tree_maybe_with_id_list: tree_maybe_with_id*
+tree_list: tree*
+tree_with_id_list: tree*
+tree_maybe_with_id_list: tree*
 
 NONTERM: /[^\s()]+/
 TERM: /[^\s()]+/
@@ -413,70 +507,46 @@ class TypedTree_lark_Transformer(lark.Transformer):
     ) -> TypedTree[str, str]:
         return args[0]
 
-    def tree_with_id(
+    def tree_list(
         self,
-        args: typing.List[typing.Any],
-    ) -> typing.Tuple[str, TypedTree[str, str]]:
-        return (args[1], args[0])
-    # === END ===
+        args: typing.List[TypedTree[str, str]],
+    ) -> typing.List[TypedTree[str, str]]:
+        return args
 
-    def tree_maybe_with_id(
+    def tree_with_id_list(
         self,
-        args: typing.List[typing.Any]
-    ) -> typing.Tuple[
-        typing.Optional[str],
-        TypedTree[str, str],
-    ]:
-        ret = args[0]
-        if isinstance(ret, tuple):
-            return typing.cast(
-                typing.Tuple[str, TypedTree[str, str]],
-                ret,
-            )
-        elif isinstance(ret, TypedTree):
-            return None, typing.cast(TypedTree[str, str], ret)
-        else:
-            raise TypeError
-        # === END IF ===
+        args: typing.List[TypedTree[str, str]]
+    ) -> typing.Iterator[typing.Tuple[str, TypedTree[str, str]]]:
+        def _extract_ID(tree: TypedTree[str, str]):
+            content, ID_node = tree.children
+            assert ID_node.root == "ID"
+            return ID_node.children[0].root, content
+        # === END ===
+        return map(_extract_ID, args)
     # === END ===
-
+    
     def tree_maybe_with_id_list(
         self,
-        args: typing.Iterable[
-            typing.Tuple[
-                typing.Optional[str],
-                TypedTree[str, str],
-            ]
-        ],
-    ) -> TypedTreeIndex[str, str, str]:
-        set_keys: typing.Set[str] = set()
-
-        def _decide_key(
-            pair: typing.Tuple[
-                typing.Optional[str],
-                TypedTree[str, str]
-            ],
-            set_keys: typing.Set[str]
-        ) -> typing.Tuple[
-            str,
-            TypedTree[str, str],
-        ]:
-            key = pair[0]
-            if key is None:
-                key = gen_random_ID_of_str_against_TypedTreeIndex(
-                    keys = set_keys,
-                )
-            
-            set_keys.add(key)
-            return (key, pair[1])
-        # === END ==
-
-        return dict(
-            map(
-                lambda pr: _decide_key(pr, set_keys),
-                args
-            )
-        )
+        args: typing.List[TypedTree[str, str]]
+    ) -> typing.Iterator[
+        typing.Tuple[
+            typing.Optional[str],
+            TypedTree[str, str]
+        ]
+    ]:
+        def _extract_ID(tree: TypedTree[str, str]):
+            if len(tree.children) == 2:
+                content, ID_node = tree.children
+                if ID_node.root == "ID" and len(tree.children) == 1:
+                    ID = ID_node.children[0].root
+                    return ID, content
+                else:
+                    return None, content
+            else:
+                return None, content
+            # === END IF ===
+        # === END ===
+        return map(_extract_ID, args)
     # === END ===
 
 @functools.lru_cache()
@@ -484,7 +554,12 @@ def get_TypedTree_LarkParser() -> lark.Lark:
     return lark.Lark(
         grammar = larkgramamr_TypedTree,
         transformer = TypedTree_lark_Transformer(),
-        start = ["tree", "tree_maybe_with_id", "tree_maybe_with_id_list"],
+        start = [
+            "tree", 
+            "tree_list",
+            "tree_with_id_list", 
+            "tree_maybe_with_id_list"
+        ],
         parser = "lalr",
         cache = True,
     )
