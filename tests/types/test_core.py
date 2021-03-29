@@ -19,22 +19,22 @@ def sample_trees_folder():
         return folder
 
 @pytest.fixture(scope = "module")
-def sample_single_tree_raw():
-    return imp_res.read_text(module_trees_devised, "test_single.psd")
+def sample_single_tree_stream():
+    return imp_res.open_text(module_trees_devised, "test_single.psd")
 
 @pytest.fixture(scope = "module")
-def sample_multiple_trees_raw():
-    return imp_res.read_text(module_trees_devised, "test_multiple.psd")
+def sample_multiple_trees_stream():
+    return imp_res.open_text(module_trees_devised, "test_multiple.psd")
 
-def test_parse_single_tree(sample_single_tree_raw):
+def test_parse_single_tree(sample_single_tree_stream):
     assert isinstance(
-        core.TypedTree.from_PTB(sample_single_tree_raw),
+        core.TypedTree.from_PTB_stream(sample_single_tree_stream),
         core.TypedTree,
     )
 
-def test_parse_multiple_trees_with_ID(sample_multiple_trees_raw):
-    res = core.TypedTreebank.from_PTB(
-        sample_multiple_trees_raw,
+def test_parse_multiple_trees_with_ID(sample_multiple_trees_stream):
+    res = core.TypedTreebank.from_PTB_stream(
+        sample_multiple_trees_stream,
         name = "test",
         version = None,
         container_version = None,

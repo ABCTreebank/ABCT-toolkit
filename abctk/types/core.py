@@ -1,8 +1,10 @@
 from abc import ABC, abstractmethod
 import collections
 import concurrent.futures as cf
+import enum
 import functools
 import itertools
+import io
 import logging
 logger = logging.getLogger(__name__)
 import multiprocessing as mp
@@ -17,7 +19,7 @@ import typing
 import attr
 import fs
 import humanize
-import lark
+import more_itertools
 import tqdm
 
 import abctk.config
@@ -198,19 +200,363 @@ class TypedTree(
     def __str__(self) -> str: 
         return self.pprint(is_oneline = True)
 
-    @staticmethod
-    def from_PTB(source: str):
-        return typing.cast(
-            TypedTree[str, str],
-            get_TypedTree_LarkParser().parse(
+    _PTB_tokenizer: typing.ClassVar[typing.Pattern] = re.compile(r"([()]|\s+)")
+    _PTB_token_WS: typing.ClassVar[typing.Pattern]  = re.compile(r"^\s*$")
+
+    class _PTB_Parser_State(enum.Enum):
+        SENTENCE = 0
+        SENTENCE_SIMP = 10
+        SENTENCE_COMP = 11
+        CHILDREN = 20
+        YIELD_SENTENCE = 30
+        YIELD_MANY_SENTENCES = 31
+    # === END CLASS ===
+    
+    @classmethod
+    def from_PTB_stream(
+        cls,
+        source: typing.TextIO
+    ) -> "TypedTree[str, str]":
+        """
+        Take one tree from a given stream.
+        The rest of the stream is left unconsumed.
+        """
+        return next(
+            cls._parse_PTB_stream(
                 source,
-                start = "tree",
+                many = False,
+                need_EOF = False,
             )
         )
+    # === END ===
+
+    @classmethod
+    def _parse_PTB_stream(
+        cls,
+        source: typing.TextIO,
+        many: bool = False,
+        need_EOF: bool = False,
+    ) -> typing.Iterator[
+        "TypedTree[str, str]"
+    ]:
+        """
+        An LL(1) parser of penn treebank trees.
+        """
+        # 1. Tokenization
+        tokens = more_itertools.peekable(
+            itertools.filterfalse(
+                cls._PTB_token_WS.match,
+                itertools.chain.from_iterable(
+                    map(cls._PTB_tokenizer.split, source)
+                )
+            )
+        )
+
+        # 2. Parsing
+        state_stack: typing.List[
+            typing.Tuple["TypedTree._PTB_Parser_State", int]
+        ] = [
+            (
+                (
+                    cls._PTB_Parser_State.YIELD_MANY_SENTENCES
+                    if many else cls._PTB_Parser_State.YIELD_SENTENCE
+                ),
+                0
+            ),
+        ]
+        return_stack: typing.List[
+            typing.Union[
+                str,
+                TypedTree[str, str],
+                typing.Sequence[TypedTree[str, str]],
+            ]
+        ] = []
+        current_token: str
+
+        try:
+            while True:
+                # print(f"state_stack: {state_stack}\nreturn_stack: {return_stack}")
+                #print(f"latest state_stack: {state_stack[-3:]}\nlatest return_stack: {return_stack[-3:]}")
+                #next_token = tokens.peek(None)
+                #print(f"next_token: {next_token}")
+                #print(f"--------")
+
+                # read a token
+                # if it reaches EOF, it will raise an IndexErrorException
+                current_state, current_resume_pos = state_stack.pop()
+                
+                if current_state == cls._PTB_Parser_State.YIELD_MANY_SENTENCES:
+                    # YIELD_MANY_SENTENCES -> SENTENCE YIELD_MANY_SENTENCES 
+                    #                       | EOF
+                    if current_resume_pos == 0:
+                        # MANY_SENTENCE -> ★0 SENTENCE [1] MANY_SENTENCE [-]
+                        #                | ★0 EOF [-]
+                        
+                        # no token consumption
+                        next_token = tokens.peek(None)
+                        if next_token:
+                            # greedily construct a next tree
+                            # if it meets an unexpected EOF, an exception will be raised. The consumed inputs is lost, so the producer should take responsibility for keeping them.
+                            # if the stream is not yet complete, it hangs up and waits for next.
+                            state_stack.extend(
+                                (
+                                    (cls._PTB_Parser_State.YIELD_MANY_SENTENCES, 1),
+                                    (cls._PTB_Parser_State.SENTENCE, 0),
+                                )
+                            )
+                        else:
+                            # EOF
+                            # do nothing 
+                            pass
+                        # === END IF ===
+                    elif current_resume_pos == 1:
+                        # MANY_SENTENCE -> [0] SENTENCE ★1 MANY_SENTENCE [-]
+                        #                | [0] EOF [-]
+                        yield typing.cast(
+                            TypedTree[str, str],
+                            return_stack.pop()
+                        )
+                        
+                        state_stack.append(
+                            (cls._PTB_Parser_State.YIELD_MANY_SENTENCES, 0)
+                        )
+                    else:
+                        raise RuntimeError("Illegal state")
+                    # === END IF current_resume_pos ===
+                elif current_state == cls._PTB_Parser_State.YIELD_SENTENCE:
+                    # YIELD_SENTENCE -> SENTENCE 
+                    if current_resume_pos == 0:
+                        # YIELD_SENTENCE -> ★0 SENTENCE [1]
+                        state_stack.extend(
+                            (
+                                (cls._PTB_Parser_State.YIELD_SENTENCE, 1),
+                                (cls._PTB_Parser_State.SENTENCE, 0),
+                            )
+                        )
+                    elif current_resume_pos == 1:
+                        # YIELD_SENTENCE -> [0] SENTENCE ★1
+                        yield typing.cast(
+                            TypedTree[str, str],
+                            return_stack.pop()
+                        )
+                    else:
+                        raise RuntimeError("Illegal state")
+                elif current_state == cls._PTB_Parser_State.SENTENCE:
+                    # SENTENCE -> SENTENCE_COMP
+                    #           | SENTENCE_SIMP
+                    if current_resume_pos == 0:
+                        # SENTENCE -> ★0 SENTENCE_COMP [-]
+                        #           | ★0 SENTENCE_SIMP [-]
+                        # no token consumption
+                        next_token = tokens.peek()
+                        if next_token == "(":
+                            state_stack.append(
+                                (cls._PTB_Parser_State.SENTENCE_COMP, 0)
+                            )
+                        elif next_token == ")":
+                            raise ValueError("Extra ')'!")
+                        else:
+                            state_stack.append(
+                                (cls._PTB_Parser_State.SENTENCE_SIMP, 0)
+                            )
+                        # === END IF next_token ===
+                    else:
+                        raise RuntimeError("Illegal state")
+                    # === END IF current_resume_pos ===
+                elif current_state == cls._PTB_Parser_State.SENTENCE_SIMP:
+                    # SENTENCE_SIMP -> word
+                    current_token = next(tokens) # consumption
+                    return_stack.append(
+                        TypedTree(
+                            root = current_token,
+                            children = []
+                        )
+                    )
+                elif current_state == cls._PTB_Parser_State.SENTENCE_COMP:
+                    # SENTENCE_COMP -> "(" root? CHILDREN ")"
+                    if current_resume_pos == 0:
+                        # SENTENCE_COMP -> ★0 "(" root? CHILDREN [1] ")" [-]
+
+                        # "("
+                        current_token = next(tokens) # consumption
+                        if current_token == "(": # validate and skip
+                            pass
+                        else:
+                            raise ValueError(
+                                f"Wrong token: found: {current_token}, "
+                                "expected: )"
+                            )
+                        # === END IF ===
+
+                        # root?
+                        next_token = tokens.peek()
+
+                        if next_token == "(" or next_token == ")":
+                            # no label
+                            subtree_label = ""
+                        else:
+                            # consume that token 
+                            current_token = next(tokens)
+                            # and take it as the label
+                            # return a subtree
+                            subtree_label = current_token
+                        # === END IF ===
+
+                        # Keep the intermediate product
+                        return_stack.append(subtree_label)
+                        
+                        # Go to the next
+                        state_stack.extend(
+                            (
+                                (cls._PTB_Parser_State.SENTENCE_COMP, 1),
+                                (cls._PTB_Parser_State.CHILDREN, 0),
+                            )
+                        )
+                    elif current_resume_pos == 1: 
+                        # SENTENCE_COMP -> [0] "(" root? CHILDREN ★1 ")" [-]
+
+                        children = typing.cast(
+                            typing.Sequence[TypedTree[str, str]],
+                            return_stack.pop()
+                        )
+
+                        label = typing.cast(
+                            str,
+                            return_stack.pop()
+                        )
+
+                        # ")"
+                        current_token = next(tokens) # consumption
+                        if current_token == ")": # validate and skip
+                            pass
+                        else:
+                            raise ValueError(
+                                f"Wrong token: found: {current_token}, "
+                                "expected: )"
+                            )
+                        # === END IF ===
+
+                        return_stack.append(
+                            TypedTree(
+                                root = label,
+                                children = list(children),
+                            )
+                        )
+                    else:
+                        raise RuntimeError("Illegal state")
+                    # === END IF current_resume_pos ===
+                elif current_state == cls._PTB_Parser_State.CHILDREN:
+                    # CHILDREN -> ")" | SENTENCE CHILDREN
+                    if current_resume_pos == 0:
+                        # CHILDREN -> ★0 ")" 
+                        #           | ★0 SENTENCE [1] CHILDREN [2]
+
+                        # peak next token to tell if it's the end
+                        next_token = tokens.peek()
+                        
+                        if next_token == ")":
+                            # no more children
+                            # give a deque
+                            return_stack.append(collections.deque())
+                            # convert the queue to a list
+                            #return_stack[-1] = list(
+                            #    typing.cast(
+                            #        typing.Sequence[TypedTree[str, str]],
+                            #        return_stack[-1]
+                            #    )
+                            #)
+                        else: 
+                            # require one or more child:
+                            state_stack.extend(
+                                (
+                                    (cls._PTB_Parser_State.CHILDREN, 1),
+                                    (cls._PTB_Parser_State.SENTENCE, 0),
+                                )
+                            )
+                        # === END IF ===
+                    elif current_resume_pos == 1:
+                        # CHILDREN -> [0] ")" 
+                        #           | [0] SENTENCE ★1 CHILDREN [2]
+
+                        # keep the created child
+                        state_stack.extend(
+                            (
+                                (cls._PTB_Parser_State.CHILDREN, 2),
+                                (cls._PTB_Parser_State.CHILDREN, 0),
+                            )
+                        )
+                    elif current_resume_pos == 2:
+                        # CHILDREN -> [0] ")" 
+                        #           | [0] SENTENCE ★1 CHILDREN [2]
+                        
+                        # merge children
+                        latest_child = typing.cast(
+                            TypedTree[str, str],
+                            return_stack.pop(-2)
+                        )
+                        typing.cast(
+                            typing.Deque[TypedTree[str, str]],
+                            return_stack[-1]
+                        ).appendleft(latest_child)
+                else:
+                    raise RuntimeError(f"Unexpected state: {current_state}")
+                # === END IF ===
+                
+        except StopIteration:
+            # End of stream
+            raise EOFError
+        except IndexError as e:
+            if not state_stack:
+                # End of parsing
+
+                # Check if it reaches EOF
+                if need_EOF:
+                    next_token = tokens.peek(None)
+                    if next_token is None:
+                        pass
+                    else:
+                        raise ValueError("trailing tokens")
+                    # === END IF ===
+                # === END IF ==
+
+                # Check if there is no more state remaining
+                if state_stack:
+                    raise ValueError("trailing tree")
+                else:
+                    pass
+                # === END IF ===
+            else:
+                raise e
+        # === END TRY ===
 # === ENE CLASS ===
 
 I = typing.TypeVar("I", str, typing.Hashable)
 TypedTreeIndex = typing.Mapping[I, TypedTree[NT, T]]
+
+def get_ID_from_TypedTree(
+    tree: TypedTree[str, T]
+) -> typing.Tuple[T, TypedTree[str, T]]:
+    content, ID_node = tree.children
+    ID_node = typing.cast(TypedTree[str, T], ID_node)
+    assert ID_node.root == "ID"
+    ID_ID_node, = ID_node.children
+    return (ID_ID_node.root, content)
+# === END ===
+
+def get_ID_maybe_from_TypedTree(
+    tree: TypedTree[str, T]
+) -> typing.Tuple[typing.Optional[T], TypedTree[str, T]]:
+    children = tree.children
+    if len(children) == 2:
+        content, ID_node = children
+        ID_node = typing.cast(TypedTree[str, T], ID_node)
+        if ID_node.root == "ID" and len(ID_node.children) == 1:
+            return (ID_node.children[0].root, content)
+        else:
+            return (None, tree)
+    else:
+        return (None, tree)
+# === END ===
 
 def gen_random_ID_of_str_against_TypedTreeIndex(
     keys: typing.Iterable[str],
@@ -254,21 +600,15 @@ def _load_file(
                 else k,
             v,
         )
-        for k, v in typing.cast(
-            typing.Iterable[
-                typing.Tuple[
-                    str, TypedTree[str, str],
-                ]
-            ],
-            typing.cast(
-                lark.Lark,
-                get_TypedTree_LarkParser() # type: ignore
-            ).parse(
-                content,
-                start = (
-                    "tree_with_id_list" if uniformly_with_ID
-                    else "tree_maybe_with_id_list"
-                )
+        for k, v in map(
+            (
+                get_ID_from_TypedTree 
+                if uniformly_with_ID else get_ID_maybe_from_TypedTree
+            ),
+            TypedTree._parse_PTB_stream(
+                io.StringIO(content),
+                many = True,
+                need_EOF = True,
             )
         )
     )
@@ -289,9 +629,9 @@ class TypedTreebank(
     index: TypedTreeIndex[I, NT, T]
 
     @classmethod
-    def from_PTB(
+    def from_PTB_stream(
         cls,
-        source: str,
+        source: typing.TextIO,
         name: str,
         version: Version = Version("0.0.0"),
         container_version: Version = Version("0.0.0"),
@@ -301,16 +641,20 @@ class TypedTreebank(
             name,
             version,
             container_version,
-            index = typing.cast(  # type: ignore
-                TypedTreeIndex[str, str, str],
-                get_TypedTree_LarkParser().parse(
-                    source,
-                    start = (
-                        "tree_with_id_list" if uniformly_with_ID
-                        else "tree_maybe_with_id_list"
+            index = dict(
+                map(
+                    (
+                        get_ID_from_TypedTree 
+                        if uniformly_with_ID 
+                        else get_ID_maybe_from_TypedTree
+                    ),
+                    TypedTree._parse_PTB_stream(
+                        source,
+                        many = True,
+                        need_EOF = True,
                     )
-                )
-            ) 
+                ),
+            ),
         )
     # === END ===
 
@@ -457,109 +801,3 @@ def treeIDstr_to_path_default(ID: str) -> typing.Tuple[str, str]:
         )
     # === END ===
 # === END ===
-
-# ======
-# Lark Parsers
-# ======
-
-larkgramamr_TypedTree = r"""
-%import common.WS
-%ignore WS
-
-tree_simple: TERM
-label: NONTERM?
-tree_complex: "(" label tree* ")"
-tree: tree_simple | tree_complex
-
-tree_list: tree*
-tree_with_id_list: tree*
-tree_maybe_with_id_list: tree*
-
-NONTERM: /[^\s()]+/
-TERM: /[^\s()]+/
-"""
-
-class TypedTree_lark_Transformer(lark.Transformer):
-    def tree_simple(
-        self, 
-        args: typing.List[lark.Token]
-    ) -> TypedTree[str, str]:
-        return TypedTree(
-            root = " ".join(i.value for i in args),
-        )
-
-    def label(self, args: typing.List[lark.Token]) -> str:
-        return " ".join(i.value for i in args)
-
-    def tree_complex(
-        self, 
-        args: typing.List[TypedTree[str, str]]
-    ) -> TypedTree[str, str]:
-        res = TypedTree(
-            root = args[0],
-            children = args[1:],
-        )
-        return res
-
-    def tree(
-        self,
-        args: typing.List[TypedTree[str, str]],
-    ) -> TypedTree[str, str]:
-        return args[0]
-
-    def tree_list(
-        self,
-        args: typing.List[TypedTree[str, str]],
-    ) -> typing.List[TypedTree[str, str]]:
-        return args
-
-    def tree_with_id_list(
-        self,
-        args: typing.List[TypedTree[str, str]]
-    ) -> typing.Iterator[typing.Tuple[str, TypedTree[str, str]]]:
-        def _extract_ID(tree: TypedTree[str, str]):
-            content, ID_node = tree.children
-            assert ID_node.root == "ID"
-            return ID_node.children[0].root, content
-        # === END ===
-        return map(_extract_ID, args)
-    # === END ===
-    
-    def tree_maybe_with_id_list(
-        self,
-        args: typing.List[TypedTree[str, str]]
-    ) -> typing.Iterator[
-        typing.Tuple[
-            typing.Optional[str],
-            TypedTree[str, str]
-        ]
-    ]:
-        def _extract_ID(tree: TypedTree[str, str]):
-            if len(tree.children) == 2:
-                content, ID_node = tree.children
-                if ID_node.root == "ID" and len(tree.children) == 1:
-                    ID = ID_node.children[0].root
-                    return ID, content
-                else:
-                    return None, content
-            else:
-                return None, content
-            # === END IF ===
-        # === END ===
-        return map(_extract_ID, args)
-    # === END ===
-
-@functools.lru_cache()
-def get_TypedTree_LarkParser() -> lark.Lark:
-    return lark.Lark(
-        grammar = larkgramamr_TypedTree,
-        transformer = TypedTree_lark_Transformer(),
-        start = [
-            "tree", 
-            "tree_list",
-            "tree_with_id_list", 
-            "tree_maybe_with_id_list"
-        ],
-        parser = "lalr",
-        cache = True,
-    )
