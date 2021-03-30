@@ -28,12 +28,12 @@ def sample_multiple_trees_stream():
 
 def test_parse_single_tree(sample_single_tree_stream):
     assert isinstance(
-        core.TypedTree.from_PTB_stream(sample_single_tree_stream),
+        core.TypedTree.take_one_PTB_basic_from_stream(sample_single_tree_stream),
         core.TypedTree,
     )
 
 def test_parse_multiple_trees_with_ID(sample_multiple_trees_stream):
-    res = core.TypedTreebank.from_PTB_stream(
+    res = core.TypedTreebank.from_PTB_basic_stream(
         sample_multiple_trees_stream,
         name = "test",
         version = None,
@@ -43,14 +43,14 @@ def test_parse_multiple_trees_with_ID(sample_multiple_trees_stream):
 
 def test_load_trees(sample_trees_folder):
     with fs.open_fs(str(sample_trees_folder)) as tb:
-        res = core.TypedTreebank.from_PTB_FS(
+        res = core.TypedTreebank.from_PTB_basic_FS(
             tb,
         )
         assert isinstance(res.index["1_misc_TOPTEN;1a;JP"], core.TypedTree)
 
 def test_dump_trees(sample_trees_folder):
     with fs.open_fs(str(sample_trees_folder)) as tb:
-        res = core.TypedTreebank.from_PTB_FS(
+        res = core.TypedTreebank.from_PTB_basic_FS(
             tb,
         )
 
@@ -61,7 +61,7 @@ def test_dump_trees(sample_trees_folder):
 
 def test_load_disamb_trees_and_dumped_equals_original(sample_trees_folder):
     with fs.open_fs(str(sample_trees_folder)) as tb_raw:
-        tb = core.TypedTreebank.from_PTB_FS(
+        tb = core.TypedTreebank.from_PTB_basic_FS(
             tb_raw,
             name = "test",
             disambiguate_IDs_by_path = True,
@@ -73,7 +73,7 @@ def test_load_disamb_trees_and_dumped_equals_original(sample_trees_folder):
                 path_maker = core.treeIDstr_to_path_default,
             )
 
-            tb_again = core.TypedTreebank.from_PTB_FS(
+            tb_again = core.TypedTreebank.from_PTB_basic_FS(
                 mem,
                 name = "test",
                 disambiguate_IDs_by_path = True,

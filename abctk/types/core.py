@@ -213,7 +213,7 @@ class TypedTree(
     # === END CLASS ===
     
     @classmethod
-    def from_PTB_stream(
+    def take_one_PTB_basic_from_stream(
         cls,
         source: typing.TextIO
     ) -> "TypedTree[str, str]":
@@ -629,7 +629,7 @@ class TypedTreebank(
     index: TypedTreeIndex[I, NT, T]
 
     @classmethod
-    def from_PTB_stream(
+    def from_PTB_basic_stream(
         cls,
         source: typing.TextIO,
         name: str,
@@ -659,7 +659,7 @@ class TypedTreebank(
     # === END ===
 
     @classmethod
-    def from_PTB_FS(
+    def from_PTB_basic_FS(
         cls,
         filesys: "fs.base.FS",
         name: typing.Optional[str]      = None,
