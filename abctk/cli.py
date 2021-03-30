@@ -123,32 +123,8 @@ def cmd_dic():
 
 @cmd_main.command(name = "version")
 def cmd_ver():
-    import abctk
-    sys.stdout.writelines(
-        (
-            abctk.__version__,
-            "\n\n"
-        )
-    )
-
-    import git
-    try:
-        repo = git.Repo(
-            pathlib.Path(__file__).parent / ".."
-        )
-    except git.InvalidGitRepositoryError:
-        pass
-    else:
-        is_modified: str = "Yes" if repo.is_dirty() else "No"
-        r_head = repo.head
-        sys.stdout.write(
-            rf"""Git Dev Info:
-- Location: {r_head.abspath}
-- Head: {r_head.ref}@{r_head.commit.hexsha}
-- Modified: {is_modified}
-"""
-        )
-    # === END TRY ===
+    from abctk.version import pprint_version_info
+    sys.stdout.write(pprint_version_info())
 # === END ===
 
 def _represent_PurePath(dumper, instance: pathlib.PurePath):
