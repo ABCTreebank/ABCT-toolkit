@@ -282,7 +282,7 @@ parser_ABCCat: parsy.Parser = (
 _path_ID_matcher = re.compile(
     r"^(?P<ID>[0-9]+)"
     r"_(?P<category>[^;_]+)"
-    r"_(?P<file_name>[^;])"
+    r"_(?P<file_name>[^;]+)"
     r";"
 )
 
