@@ -97,8 +97,8 @@ class TypedTree(
         self,
         include_term: bool = True,
     ) -> typing.Iterator[NT_or_T]:
-        yield self.root
         if include_term or not self.is_terminal():
+            yield self.root
             yield from itertools.chain.from_iterable(
                 c.iter_df_topdown(include_term)
                 for c in self.children
