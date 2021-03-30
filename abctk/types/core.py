@@ -128,16 +128,28 @@ class TypedTree(
 
     def fmap(
         self,
-        func_nonterm: typing.Callable[[NT_or_T], _NT_new],
-        func_term: typing.Callable[[NT_or_T], _T_new],
+        func_nonterm: typing.Optional[typing.Callable[[NT_or_T], _NT_new]] = None,
+        func_term: typing.Optional[typing.Callable[[NT_or_T], _T_new]] = None,
     ) -> "TypedTree[_NT_new, _T_new]":
+        """
+        Transform each non-terminal and terminal node by a given function.
+        It is the TypedTree counterpart of `map` (or Haskell's 'fmap').
+        
+        .. note::
+            It creates a new instance.
+        """
         root = self.root
         root_new: typing.Union[_NT_new, _T_new]
-        if self.is_terminal():
+        if self.is_terminal() and func_term:
             root_new = func_term(root)
-        else:
+        elif func_nonterm:
             root_new = func_nonterm(root)
-        
+        else:
+            # do nothing 
+            pass
+        # === END IF ===
+
+        # Creating a new instance
         return TypedTree(
             root = root_new,
             children = tuple(
