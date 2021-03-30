@@ -53,10 +53,10 @@ _X = typing.TypeVar("_X")
 _X1 = typing.TypeVar("_X1")
 _X2 = typing.TypeVar("_X2")
 
-NT = typing.TypeVar("NT", str, IPrettyPrintable)
-_NT_new = typing.TypeVar("_NT_new", str, IPrettyPrintable)
-T       = typing.TypeVar("T", str, IPrettyPrintable)
-_T_new  = typing.TypeVar("_T_new", str, IPrettyPrintable)
+NT = typing.TypeVar("NT", bound = typing.Union[str, IPrettyPrintable])
+_NT_new = typing.TypeVar("_NT_new", bound = typing.Union[str, IPrettyPrintable])
+T       = typing.TypeVar("T", bound = typing.Union[str, IPrettyPrintable])
+_T_new  = typing.TypeVar("_T_new", bound = typing.Union[str, IPrettyPrintable])
 NT_or_T = typing.Union[NT, T]
 
 @attr.s(
@@ -530,7 +530,7 @@ class TypedTree(
         # === END TRY ===
 # === ENE CLASS ===
 
-I = typing.TypeVar("I", str, typing.Hashable)
+I = typing.TypeVar("I", bound = typing.Hashable)
 TypedTreeIndex = typing.Mapping[I, TypedTree[NT, T]]
 
 def get_ID_from_TypedTree(
@@ -590,7 +590,7 @@ def _load_file(
     str, # path
     int, # size
     int, # status
-    typing.Tuple[typing.Tuple[str, TypedTree[str, str]]],
+    typing.Tuple[typing.Tuple[str, TypedTree[str, str]], ...],
 ]:
     path, size, content = args
     res = tuple(
