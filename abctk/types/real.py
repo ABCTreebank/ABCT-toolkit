@@ -163,6 +163,8 @@ class ABCCatFunctorMode(enum.Enum):
     auto_attribs = True, # Unnecessary in newer version of Python
     frozen = True,
     slots = True,
+    eq = False, # Implemented manually
+    hash = True, # Implemented automatically
 )
 class ABCCatFunctor(
     core.IPrettyPrintable
@@ -199,6 +201,74 @@ class ABCCatFunctor(
     def __str__(self) -> str:
         return self.pprint()
     # === END ===
+
+    def __eq__(self, other):
+        if isinstance(other, ABCCatFunctor):
+            return (
+                self.mode == other.mode
+                and self.ant == other.ant
+                and self.conseq == other.conseq
+            )
+        elif isinstance(other, (str, ABCCatBot)):
+            return False
+        else:
+            return NotImplemented
+    
+    def __lt__(self, other):
+        if isinstance(other, ABCCatFunctor): 
+            return (
+                self.ant < other.ant
+                and self.ant < other.conseq
+                and self.conseq < other.ant
+                and self.conseq < other.conseq
+            )
+        elif isinstance(other, (str, ABCCatBot)):
+            # Functor < str/⊥
+            return False
+        else:
+            return NotImplemented
+
+    def __le__(self, other):
+        if isinstance(other, ABCCatFunctor): 
+            return (
+                self.ant <= other.ant
+                and self.ant <= other.conseq
+                and self.conseq <= other.ant
+                and self.conseq <= other.conseq
+            )
+        elif isinstance(other, (str, ABCCatBot)):
+            # Functor <= str/⊥
+            return False
+        else:
+            return NotImplemented
+    
+    def __gt__(self, other):
+        if isinstance(other, ABCCatFunctor): 
+            return (
+                self.ant > other.ant
+                or self.ant > other.conseq
+                or self.conseq > other.ant
+                or self.conseq > other.conseq
+            )
+        elif isinstance(other, (str, ABCCatBot)):
+            # Functor > str/⊥
+            return True
+        else:
+            return NotImplemented
+    
+    def __ge__(self, other):
+        if isinstance(other, ABCCatFunctor): 
+            return self == other or (
+                self.ant > other.ant
+                or self.ant > other.conseq
+                or self.conseq > other.ant
+                or self.conseq > other.conseq
+            )
+        elif isinstance(other, (str, ABCCatBot)):
+            # Functor >= str/⊥
+            return True
+        else:
+            return NotImplemented
 # === END CLASS ===
 
 ABCCat = typing.Union[
