@@ -11,27 +11,26 @@ import sys
 import attr
 
 import abctk.config as CONF
-import abctk.types.trees as at
+import abctk.types as at
 
 def obfuscate_tree(
-    subtree: at.Tree, 
+    subtree: at.KeyakiTree, 
     Id: str = ""
-) -> at.Tree:
-    if isinstance(subtree, at.Tree):
-        return at.Tree(
-            subtree.label(),
-            map(
-                functools.partial(obfuscate_tree, Id = Id),
-                subtree
-            )
-        )
-    elif isinstance(subtree, str):
-        if subtree.startswith("*") or subtree.startswith("__"):
+) -> at.KeyakiTree:
+    if subtree.is_terminal():
+        word: str = subtree.root
+        if word.startswith("*") or word.startswith("__"):
             return subtree
         else:
-            return "⛔" * len(subtree)
+            return attr.evolve(
+                subtree,
+                root = "⛔" * len(word)
+            )
     else:
-        raise ValueError(f"Ill-formed Tree, ID: {Id}")
+        return attr.evolve(
+            subtree,
+            children = [obfuscate_tree(child, Id) for child in subtree.children]
+        )
     # === END IF ===
 # === END ===
 
@@ -43,25 +42,29 @@ def obfuscate_stream(
     matcher: typing.Pattern[str] = re.compile(r"closed"),
     **kwargs
 ) -> int:
-    trees_Maybe_wID: typing.Iterable[at.Tree_with_ID] = at.parse_ManyTrees_Maybe_with_ID(f_src.read())
+    trees_Maybe_wID = at.TypedTreebank.from_PTB_basic_stream(
+        source = f_src,
+        name = src_name,
+        uniformly_with_ID = True,
+    )
 
-    def _obf(tree_wID: at.Tree_with_ID) -> at.Tree_with_ID:
-        tree_id = tree_wID.ID
-        if matcher.search(tree_id):
-            return attr.evolve(
-                tree_wID,
-                content = obfuscate_tree(tree_wID.content, tree_id),
-            )
+    def _obf(Id: str, tree) -> at.TypedTree[str, str]:
+        if matcher.search(Id):
+            return obfuscate_tree(tree, Id)
         else:
-            return tree_wID
+            return tree
         # === END IF ===
     # === END ===
 
-    buf = "\n".join(
-        at.print_tree_oneline(_obf(tree).to_Tree()) 
-        for tree in trees_Maybe_wID
+    tb_res = attr.evolve(
+        trees_Maybe_wID,
+        index = {
+            k:_obf(Id = k, tree = v)
+            for k, v in trees_Maybe_wID.index.items()
+        }
     )
-    f_dest.write(buf)
+
+    tb_res.to_PTB_single_stream(f_dest)
     # === END FOR tree_wID ===
 
     return 0

@@ -106,3 +106,11 @@ def test_load_ABCTB_and_dumped_equals_original(sample_ABCTreebank):
             assert tb.index["1_misc_BUFFALO;TSOGD_1a;JP"] == tb_again.index["1_misc_BUFFALO;TSOGD_1a;JP"]
             #assert tb == tb_again
 # === END ===
+
+def test_ABCCatPlus_from_str():
+    raw = r"NP#role=h#deriv="
+    catplus = real.ABCCatPlus.from_str(source = raw)
+    import attr
+    assert catplus.cat == "NP"
+    assert catplus.role == real.ABCDepMarking.HEAD
+    assert catplus.deriv == ""

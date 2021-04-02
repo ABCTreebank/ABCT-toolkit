@@ -75,6 +75,12 @@ class TypedTree(
         return len(self.children) == 0
     # === END ===
 
+    def is_holding_only_terminals(self):
+        return (
+            not self.is_terminal() 
+            and all(child.is_terminal() for child in self.children)
+        )
+
     def is_root_type_rigid(self):
         return isinstance(
             self.root,
@@ -799,7 +805,7 @@ class TypedTreebank(
     ) -> None:
         stream.write(
             "\n".join(
-                f"({tree.pprint(is_oneline = True)} (ID {ID}))"
+                f"( {tree.pprint(is_oneline = True)} (ID {ID}))"
                 for ID, tree in self.index.items()
             )
         )

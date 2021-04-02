@@ -22,7 +22,10 @@ _X = typing.TypeVar("_X")
 _X1 = typing.TypeVar("_X1")
 _X2 = typing.TypeVar("_X2")
 
-NT = typing.TypeVar("NT", str, core.IPrettyPrintable)
+NT = typing.TypeVar(
+    "NT",
+    bound = typing.Union[str, core.IPrettyPrintable]
+)
 
 class ABCDepMarking(enum.Enum):
     """
