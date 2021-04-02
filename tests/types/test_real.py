@@ -71,9 +71,10 @@ def test_load_ABCTB_and_dumped_equals_original(sample_ABCTreebank):
         )
         tb.index = {
             k:v.fmap(
-                func_nonterm = real.parser_ABCCatPlus(
-                    parser_cat = real.parser_ABCCat
-                ).parse
+                func_nonterm = lambda src: real.ABCCatPlus.from_str(
+                    src,
+                    cat_parser = real.parser_ABCCat.parse_partial
+                )
             )
             for k, v in tb.index.items()
         }
@@ -95,9 +96,10 @@ def test_load_ABCTB_and_dumped_equals_original(sample_ABCTreebank):
             )
             tb_again.index = {
                 k:v.fmap(
-                    func_nonterm = real.parser_ABCCatPlus(
-                        parser_cat = real.parser_ABCCat
-                    ).parse
+                    func_nonterm = lambda src: real.ABCCatPlus.from_str(
+                        src,
+                        cat_parser = real.parser_ABCCat.parse_partial
+                    )
                 )
                 for k, v in tb_again.index.items()
             }

@@ -66,6 +66,13 @@ class ABCDepMarking(enum.Enum):
     """
 # === END CLASS ===
 
+_ABCCatPlus_cat_basic_matcher = re.compile(r"^([^#]*)")
+def _ABCCatPlus_split_cat_basic(source: str) -> typing.Tuple[str, str]:
+    _, cat, remainder = _ABCCatPlus_cat_basic_matcher.split(source, maxsplit = 1)
+    return cat, remainder
+    
+_ABCCatPlus_feat_matcher = re.compile(r"#(?P<key>[^=]+)=(?P<val>[^#]*)")
+
 @attr.s(
     auto_attribs = True,
 )
@@ -99,53 +106,47 @@ class ABCCatPlus(
     def __str__(self) -> str:
         return self.pprint()
 
+    @classmethod
+    def from_str(
+        cls,
+        source: str,
+        cat_parser: typing.Callable[
+            [str],
+            typing.Tuple[NT, str]
+        ] = _ABCCatPlus_split_cat_basic,
+    ):
+        cat, residue = cat_parser(source)
+        feats = {
+            m.group("key"):m.group("val")
+            for m in _ABCCatPlus_feat_matcher.finditer(residue)
+        }
+        role_raw: typing.Optional[str] = feats.get("role", None)
+        role: ABCDepMarking
+        if role_raw is None:
+            role = ABCDepMarking.NONE
+        else:
+            role = ABCDepMarking(role_raw)
+        # === END IF ===
+        
+        res = cls(
+            cat = cat,
+            role = role,
+            deriv = feats.get("deriv", ""),
+        )
+
+        for key, val in itertools.filterfalse(
+            lambda pair: pair[0] in ("role", "deriv"),
+            feats.items()
+        ):
+            setattr(res, key, val)
+        # === END FOR key val ===
+
+        return res
+    # === END ===
 # === END CLASS ===
 
 KeyakiCat = str
 KeyakiCat_ABCCatPlus = ABCCatPlus[KeyakiCat] # type: ignore
-
-
-@parsy.generate
-def parser_ABCCatPlus_AttrVal() -> parsy.Parser:
-    yield parsy.string("#")
-    attr = yield parsy.regex(r"[^=\s]+")
-    yield parsy.string("=")
-    if attr == "role":
-        val = yield parsy.from_enum(ABCDepMarking)
-    else:
-        val = yield parsy.regex(r"[^#\s]*")
-    # === END IF ===
-    
-    return (attr, val)
-# === END ===
-
-@functools.lru_cache()
-def parser_ABCCatPlus(
-    parser_cat: parsy.Parser = parsy.regex(r"[^#\s]*")
-) -> parsy.Parser:
-    @parsy.generate
-    def _parser():
-        cat = yield parser_cat
-        attrvals = yield parser_ABCCatPlus_AttrVal.many().map(dict)
-
-        role: ABCDepMarking = attrvals.pop("role", ABCDepMarking.NONE)
-        deriv: str = attrvals.pop("deriv", "")
-
-        res: ABCCatPlus = ABCCatPlus(
-            cat = cat,
-            role = role,
-            deriv = deriv,
-        )
-        
-        for key, val in attrvals.items():
-            setattr(res, key, val)
-        # === END FOR key, val ===
-    
-        return res
-    # === END ===
-
-    return _parser
-# === END ===
 
 class ABCCatBot(enum.Enum):
     """
