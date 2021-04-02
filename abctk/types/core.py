@@ -140,13 +140,18 @@ class TypedTree(
         """
         root = self.root
         root_new: typing.Union[_NT_new, _T_new]
-        if self.is_terminal() and func_term:
-            root_new = func_term(root)
-        elif func_nonterm:
-            root_new = func_nonterm(root)
+        if self.is_terminal():
+            if func_term:
+                root_new = func_term(root)
+            else:
+                root_new = root
+            # === END IF ===
         else:
-            # do nothing 
-            pass
+            if func_nonterm:
+                root_new = func_nonterm(root)
+            else:
+                root_new = root
+            # === END IF ===
         # === END IF ===
 
         # Creating a new instance
