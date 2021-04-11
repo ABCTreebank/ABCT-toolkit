@@ -8,7 +8,7 @@ import click
 
 import abctk.cli_tool as ct 
 import abctk.config as CONF
-import abctk.types.trees as at
+import abctk.types as at
 
 from . import core
 

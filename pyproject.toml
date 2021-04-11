@@ -39,12 +39,22 @@ importlib-metadata = "^3.3.0"
 pycuda = { version = "^2020.1", optional = true }
 attrs = "^20.3.0"
 lxml = "^4.6.2"
+typing-extensions = {version = "^3.7.4", python = ">=3.4 <3.7"}
+lark-parser = "^0.11.2"
+importlib-resources = {version = "^5.1.2", python = "<3.7"}
+fs = "^2.4.12"
+humanize = "^3.3.0"
+more-itertools = "^8.7.0"
 
 [tool.poetry.dev-dependencies]
 pylint = "^2.6.0"
 requests = "^2.25.1"
 mypy = "^0.790"
 pytest = "^6.2.2"
+Sphinx = "^3.5.3"
+sphinx-rtd-theme = "^0.5.1"
+ipykernel = "^5.5.0"
+pandas = "~1.1"
 
 [tool.poetry.extras]
 parser = ["allennlp", "gevent"]

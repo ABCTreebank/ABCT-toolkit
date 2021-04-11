@@ -14,18 +14,24 @@ import attr
 import abctk.config as CONF
 import abctk.types as at
 
-__re_P_PU = re.compile(r"^(P|PU|CONJ)$")
-
-def __binarize_internal(
-    root_cat: at.ABCCat,
-    children_rev: typing.Iterator[typing.Callable[[at.ABCCat], at.Tree]],
-) -> typing.Optional[at.Tree]:
-    conjunct_1 = next(children_rev, None)
-    if conjunct_1 is None:
-        return None
-    else:
+def __chaining_conjuncts(
+    root: at.ABCCat_ABCCatPlus,
+    children_rev: typing.Iterator[
+        typing.Callable[
+            [at.ABCCat],
+            at.ABCTree_ABCCatPlus,
+        ],
+    ]
+) -> at.ABCTree_ABCCatPlus:
+    def __internal(
+        root_cat,
+        conjunct_1,
+        children_remaining,
+    ):
         conjunct_2 = next(children_rev, None)
+
         if conjunct_2 is None:
+            # conjunct_1 is the rightmost child
             return conjunct_1(root_cat)
         else:
             intermediate_label_new = at.ABCCatPlus(
@@ -33,197 +39,212 @@ def __binarize_internal(
             )
             setattr(intermediate_label_new, "trace.binconj", "interm")
 
-            return at.Tree(
-                intermediate_label_new,
-                [
+            return at.TypedTree(
+                root = intermediate_label_new,
+                children = [ # a binary tree
                     conjunct_1(
                         at.ABCCatFunctor.make_adjunct(
                             mode = at.ABCCatFunctorMode.RIGHT,
                             cat = root_cat
-                        )
-                    ),
-                    __binarize_internal(
+                        ) # <root_cat/root_cat>
+                    ), # left
+                    __internal( # right
                         root_cat,
-                        itertools.chain((conjunct_2, ), children_rev)
-                    ),
+                        conjunct_2,
+                        children_remaining,
+                    )
                 ]
             )
-        # === END IF ===
-    # === END IF ===
+        #== END IF ===
+    # === END ===
+
+    conjunct_leftmost = next(children_rev) # take the first child
+    res =  __internal(
+        root.cat,
+        conjunct_leftmost,
+        children_rev,
+    )
+    # Mark the root
+
+    tree_label_new = attr.evolve(
+        root,
+        deriv = ""
+    )
+    setattr(tree_label_new, "trace.binconj", "root")
+
+    return attr.evolve(
+        res,
+        root = tree_label_new,
+    )
 # === END ===
 
-def __chop_children(
-    children: typing.Iterator[at.Tree]
-) -> typing.Iterator[
-    typing.Tuple[
-        typing.Optional[at.Tree],
-        typing.Optional[at.Tree],
-    ]
-]:
-    pt: typing.Optional[at.Tree]
-    pt2: typing.Optional[at.Tree]
+_re_P_PU = re.compile(r"^(P|PU|CONJ)$")
 
-    pt = next(children, None)
+class _ConjunctSpan(typing.NamedTuple):
+    """
+    [Internal] represents a pair of conjunct (e.g. NP) and a conjunctor (e.g. P, CONJ, PU).
+    """
+    conj: typing.Optional[at.ABCTree_ABCCatPlus]
+    p:    typing.Optional[at.ABCTree_ABCCatPlus]
 
-    if not isinstance(pt, at.Tree):
-        # end of iter
-        return
-    else:
-        pt_label_cat: at.ABCCat = pt.label().cat
 
-        if isinstance(pt_label_cat, str) and __re_P_PU.match(pt_label_cat):
-            # Orphan P
-            yield (None, pt)
-            yield from __chop_children(children)
-        else:
-            pt2 = next(children, None)
-            if pt2 is None:
-                # unary conjunct, end
-                yield (pt, None)
-                return
-            else:
-                pt2_label_cat: at.ABCCat = pt2.label().cat
+    def to_TypedTree_radical(
+        self,
+        surrounding_cat: at.ABCCat,
+    ) -> at.ABCTree_ABCCatPlus:
+        """
+        Convert this into a radical of an (at most binary) `TypedTree`
+        which completes what `ABCCat` it assumes as a whole.
+        """
+        if self.conj is not None and self.p is not None:
+            # Binary conjunct
+            entire_label = at.ABCCatPlus(
+                cat = surrounding_cat,
+            )
+            setattr(entire_label, "trace.binconj", "conjunctor")
 
-                if isinstance(pt2_label_cat, str) and __re_P_PU.match(pt2_label_cat):
-                    # binary conjunct
-                    yield (pt, pt2)
-                    yield from __chop_children(children)
-                else:
-                    # unary conjunct + extra
-                    yield (pt, None)
-                    yield from __chop_children(
-                        itertools.chain(
-                            (pt2, ), # pushing back pt2
-                            children
+            return at.TypedTree(
+                root = entire_label,
+                children = [
+                    # conjunct
+                    self.conj,
+                    # conjunctor
+                    attr.evolve(
+                        self.p,
+                        root = at.ABCCatPlus(
+                            cat = at.ABCCatFunctor(
+                                mode = at.ABCCatFunctorMode.LEFT,
+                                ant = self.conj.root.cat,
+                                conseq = surrounding_cat
+                            )
                         )
                     )
+                ]
+            )
+        elif self.conj is not None: 
+            # unary conjunct
+            entire_label = at.ABCCatPlus(
+                cat = surrounding_cat,
+                deriv = "unary-binconj-conjunctor",
+            )
+            setattr(entire_label, "trace.binconj", "conjunctor")
+
+            return at.TypedTree(
+                root = entire_label,
+                children = [self.conj],
+            )
+        elif self.p is not None:
+            entire_label = attr.evolve(
+                self.p.root,
+                cat = surrounding_cat,
+            )
+            setattr(entire_label, "trace.binconj", "orphan-conjunctor")
+
+            return attr.evolve(
+                self.p,
+                root = entire_label,
+            )
+        else:
+            raise ValueError(f"Meets a vacuous conjunct span")
+        # === END IF ===
+    # === END ===
+
+    @classmethod
+    def chop_children(
+        cls,
+        children: typing.Iterator[at.ABCTree_ABCCatPlus]
+    ) -> typing.Iterator["_ConjunctSpan"]:
+        pt: typing.Optional[at.ABCTree_ABCCatPlus]
+        pt2: typing.Optional[at.ABCTree_ABCCatPlus]
+
+        pt = next(children, None)
+
+        if pt is None:
+            # end of iter
+            return
+        else:
+            pt_label_cat: at.ABCCat = pt.root.cat
+
+            if isinstance(pt_label_cat, str) and _re_P_PU.match(pt_label_cat):
+                # Orphan P
+                yield _ConjunctSpan(
+                    conj = None,
+                    p = pt,
+                )
+                yield from cls.chop_children(children)
+            else:
+                pt2 = next(children, None)
+                if pt2 is None:
+                    # unary conjunct, end
+                    yield _ConjunctSpan(
+                        conj = pt,
+                        p = None,
+                    )
+                    return
+                else:
+                    pt2_label_cat: at.ABCCat = pt2.root.cat
+
+                    if isinstance(pt2_label_cat, str) and _re_P_PU.match(pt2_label_cat):
+                        # binary conjunct
+                        yield _ConjunctSpan(
+                            conj = pt, 
+                            p = pt2
+                        )
+                        yield from cls.chop_children(children)
+                    else:
+                        # unary conjunct + extra
+                        yield _ConjunctSpan(
+                            conj = pt, 
+                            p = None
+                        )
+                        yield from cls.chop_children(
+                            itertools.chain(
+                                (pt2, ), # pushing back pt2
+                                children
+                            )
+                        )
+                # === END IF ===
             # === END IF ===
         # === END IF ===
-    # === END IF ===
-# === END ===
-
-def __binarize_conjunct(
-    conjunctee: typing.Optional[at.Tree],
-    conjunctor: typing.Optional[at.Tree],
-) -> typing.Callable[[at.ABCCat], at.Tree]:
-    if conjunctor is None:
-        if conjunctee is None:
-            raise ValueError
-        else:
-            # unary conjunct
-            def __factory(c: at.ABCCat): #-> at.ABCCatPlus[at.ABCCat]:
-                res_cat = at.ABCCatPlus(
-                    cat = c,
-                    deriv = "unary-binconj-conjunctor"
-                )
-                setattr(res_cat, "trace.binconj", "conjunctor")
-                return res_cat
-            # === END ===
-
-            return lambda c: at.Tree(
-                __factory(c),
-                [conjunctee],
-            )
-        # === END IF ===
-    else:
-        if conjunctee is None:
-            # Orphan P
-            def __factory(c: at.ABCCat):
-                res_label = at.ABCCatPlus(
-                    cat = c,
-                )
-                setattr(res_label, "trace.binconj", "orphan-conjunctor")
-                return res_label
-            # === END ===
-
-            return lambda c: at.Tree(
-                __factory(c),
-                conjunctor
-            )
-        else:
-            # Binary conjunct
-            def __factory_conjunctor(parent: at.ABCCat, left: at.ABCCat): 
-                #-> at.ABCCatPlus[at.ABCCat]:
-                res_cat = at.ABCCatPlus(
-                    cat = at.ABCCatFunctor(
-                        mode = at.ABCCatFunctorMode.LEFT,
-                        ant = left,
-                        conseq = parent
-                    )
-                )
-                return res_cat
-            # === END ===
-
-            def __factory_conjunct(c: at.ABCCat):
-                res_cat = at.ABCCatPlus(
-                    cat = c
-                ) 
-                setattr(res_cat, "trace.binconj", "conjunctor")
-                return res_cat
-            # === END ===
-
-            return lambda c: at.Tree(
-                __factory_conjunct(c),
-                [
-                    conjunctee,
-                    at.Tree(
-                        __factory_conjunctor(
-                            parent = c,
-                            left = conjunctee.label().cat
-                        ),
-                        conjunctor
-                    )
-                ]
-            )
-        # === END IF ===
-    # === END IF ===
-# === END ===
+    # === END ===
+# === END CLASS ===
 
 def binarize_conj_tree(
-    subtree: at.Tree, 
+    subtree: at.ABCTree_ABCCatPlus, 
     Id: str = ""
-) -> at.Tree:
-    if isinstance(subtree, at.Tree):
-        tree_label: at.ABCCatPlus[at.ABCCat] = subtree.label()
+) -> at.ABCTree_ABCCatPlus:
+    """
+    Given a tree, binarize recursively its parts that is marked as a conjunction phrase.
+    """
+    if not subtree.is_terminal():
+        tree_label: at.ABCCat_ABCCatPlus = subtree.root
 
-        if subtree.height() > 2 and tree_label.deriv.startswith("conj"):
-            tree_new_children = __binarize_internal(
-                tree_label.cat,
-                map(
-                    lambda args: __binarize_conjunct(*args),
-                    __chop_children(iter(subtree)),
+        if (
+            not subtree.is_holding_only_terminals()
+            and tree_label.deriv.startswith("conj")
+        ):
+            tree_binarized = __chaining_conjuncts(
+                root = tree_label,
+                children_rev = (
+                    span.to_TypedTree_radical
+                    for span in _ConjunctSpan.chop_children(
+                        iter(subtree.children)
+                    )
                 )
             )
-            
-            if tree_new_children is None:
-                raise ValueError(
-                    f"Failed CONJ binarization at the node {subtree} "
-                    f"of the tree {Id}"
-                )
-            # === END IF ===
 
-            tree_label_new = attr.evolve(tree_label, deriv = "")
-            setattr(tree_label_new, "trace.binconj", "root")
-
-            return at.Tree(
-                tree_label_new,
-                map(
-                    functools.partial(binarize_conj_tree, Id = Id),
-                    tree_new_children
-                )
-            )
+            return binarize_conj_tree(tree_binarized)
         else:
-            return at.Tree(
-                tree_label,
-                map(
-                    functools.partial(binarize_conj_tree, Id = Id),
-                    subtree
-                )
+            return attr.evolve(
+                subtree,
+                children = list(
+                    binarize_conj_tree(child, Id) 
+                    for child in subtree.children
+                ),
             )
-    elif isinstance(subtree, str):
-        return subtree
     else:
-        raise ValueError(f"Ill-formed Tree, ID: {Id}")
+        # meet a ternimal node
+        return subtree
     # === END IF ===
 # === END ===
 
@@ -235,25 +256,31 @@ def binarize_conj_stream(
     matcher: typing.Pattern[str] = re.compile(r"closed"),
     **kwargs
 ) -> int:
-    trees_Maybe_wID: typing.Iterable[at.Tree_with_ID] = at.parse_ManyTrees_Maybe_with_ID(
-            f_src.read(),
-            parser_non_terminal = at.parser_ABCCatPlus(),
-        )
-
-    def __func(tree_wID: at.Tree_with_ID):
-        return attr.evolve(
-            tree_wID,
-            content = binarize_conj_tree(tree_wID.content, tree_wID.ID)
-        )
-    # === END ===
-
-    trees_converted = map(__func, trees_Maybe_wID)
-
-    f_dest.write(
-        "\n".join(
-            map(lambda t: t.print_oneline(), trees_converted)
-        )
+    treebank: at.TypedTreebank[str, str, str] = at.TypedTreebank.from_PTB_basic_stream(
+        source = f_src,
+        name = "",
     )
+    
+    treebank_conv: at.TypedTreebank[
+        str,
+        at.ABCCat_ABCCatPlus, str
+    ] = attr.evolve(
+        treebank, # type: ignore
+        index = {
+            ID:binarize_conj_tree(
+                tree.fmap(
+                    func_nonterm = lambda label: at.ABCCatPlus.from_str(
+                        label,
+                        cat_parser = at.parser_ABCCat.parse_partial,
+                    )
+                ),
+                Id = ID,
+            )
+            for ID, tree in treebank.index.items()
+        }
+    )
+
+    treebank_conv.to_PTB_single_stream(f_dest)
     return 0
 # === END ===
 
