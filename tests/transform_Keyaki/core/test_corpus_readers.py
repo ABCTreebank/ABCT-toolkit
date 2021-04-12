@@ -64,9 +64,8 @@ class Test_Mainichi95_Keyval:
             == ("T2", "１９９２年。")
         )
 
-class Test_Mainichi95_Sentence:
-    def test_iterate_from_stream(self, sample_Mainichi95):
-        assert (
-            len(tuple(cr.Mainichi95_Sentence.iterate_from_stream(sample_Mainichi95)))
-            == 34
-        )
+def test_extract_sentences_from_Mainichi95(sample_Mainichi95):
+    assert (
+        len(tuple(cr.extract_sentences_from_Mainichi95(sample_Mainichi95)))
+        == 34
+    )

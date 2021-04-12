@@ -3,6 +3,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 import re
+import sys
 
 import click
 
@@ -11,6 +12,14 @@ import abctk.config as CONF
 import abctk.types as at
 
 from . import core
+from . import corpus_readers
+
+@click.group(
+    short_help = "tweak Keyaki trees",
+)
+@click.pass_context
+def cmd_main(ctx):
+    pass
 
 cmd_obfuscate = ct.CmdTemplate_Batch_Process_on_Tree(
     name = "trans_obfuscate",
@@ -54,15 +63,60 @@ Default to /closed/."""
     )
 )
 
-@click.group(
-    short_help = "tweak Keyaki trees",
-)
-@click.pass_context
-def cmd_main(ctx):
-    pass
-
 cmd_main.add_command(
     cmd_obfuscate, 
     name = "obfuscate",
 )
 
+cmd_decrypt = ct.CmdTemplate_Batch_Process_on_Tree(
+    name = "trans_decrypt",
+    logger_orig = logger,
+    folder_prefix = "trans_deobfuscate",
+    with_intermediate = False,
+    callback_preprocessing = None,
+    callback_process_file = core.decrypt_file,
+    callback_process_rawtrees = core.decrypt_stream,
+    short_help = "decrypt trees"
+)
+
+cmd_decrypt.params.append(
+    click.Argument(
+        param_decls = ["corpora_tsv"],
+        type = click.File(),
+        #short_help = "The path to a TSV file made beforehand"
+    )
+)
+
+cmd_main.add_command(
+    cmd_decrypt, 
+    name = "decrypt",
+)
+
+@cmd_main.command(
+    name = "extract_from_corpora",
+    short_help = "extract data from proprietary corpora"
+)
+@click.pass_context
+def cmd_extract_from_corpora(ctx):
+    """ 
+    Extract data from proprietary corpora 
+    so that the Keyaki/ABC Treebank gets decrypted.
+    
+    The corpora mentioned above are:
+    - Mainichi Shimbun '95
+    - BCCWJ
+    - CSJ
+    - SIDB
+    Paths to them are to be specified via the CONFIG file.
+
+    Extracted sentences will be printed in the TSV format to STDOUT.
+    """
+    path_corpora = ctx.obj["CONFIG"]["corpora"]
+
+    sys.stdout.writelines(
+        ident.to_tsv_line_with_sentence(sent)
+        for ident, sent
+        in corpus_readers.extract_from_corpora(
+            corpus_Mai95 = path_corpora["Mainichi95"]
+        )
+    )
