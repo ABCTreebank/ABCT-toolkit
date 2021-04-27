@@ -1,9 +1,21 @@
 import psutil
-import pathlib
 
-import xdg 
+import sys
 
-DIR_RUNTIME = pathlib.Path(__file__).parent / "runtime"
+PY_VER = sys.version_info
+if PY_VER >= (3, 7):
+    import importlib.resources as imp_res # type: ignore
+else:
+    import importlib_resources as imp_res # type: ignore
+# === END IF ===
+
+import xdg
+
+with imp_res.path("abctk", "runtime") as runtime_path:
+    DIR_RUNTIME = runtime_path
+
+DIR_SHARE = xdg.xdg_data_home() / "ABCT-toolkit"
+DIR_CACHE = xdg.xdg_cache_home() / "ABCT-toolkit"
 
 _TOKEN_EMBEDDING_DIM = 200
 _CHAR_EMBEDDING_DIM = 50
