@@ -14,12 +14,23 @@ import abctk.config as CONF
     "-c", "--config", "user_configs",
     type = click.File(mode = "r"),
     multiple = True,
-    help = "Path to the user custom option file (in the YAML format)."
+    help = """
+        Path to a configuration file in the YAML format.
+        More than one configuration file can be specified.
+        Latter ones override former ones.
+    """
 )
 @click.option(
     "-l", "--root-stream-log-level", "root_stream_log_level",
     type = click.IntRange(min = 1),
     default = logging.WARNING,
+    help = """
+        The log level of the root logger, which is directed to STDERR.
+
+        The level is specified by a positive integer.
+        Refer to the following doc to find the correspondent numbers of log levels:
+        https://docs.python.org/3/howto/logging.html#logging-levels
+    """
 )
 @click.option(
     "--logfile", "logfiles",
@@ -34,7 +45,8 @@ import abctk.config as CONF
     ),
     multiple = True,
     help = """
-        Path to the log file. No output if not set.
+        Additional log handler set to INTEGER RANGE level which is directed to FILE.
+        Multiple handlers are allowed.
     """
 )
 @click.pass_context
@@ -44,6 +56,20 @@ def cmd_main(
     root_stream_log_level: int,
     logfiles: typing.Iterable[typing.Tuple[int, pathlib.Path]],
 ):
+    """A CLI toolkit to generate and manupilate the ABC Treebank.
+    \f
+
+    :param ctx: The context argument that is used by Click.
+    :param user_configs:
+        List of streams of configuration files. 
+        Each file is opened beforehand 
+        and will be closed properly by Click.
+    :param root_stream_log_level:
+        The log level for the root logger. Specified in integer.
+    :param logfiles:
+        List of additional log handlers.
+        Each item consists of a tuple of a log level and an output path.
+    """
     ctx.ensure_object(dict)
 
     # ====================
