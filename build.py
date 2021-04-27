@@ -36,6 +36,20 @@ def build_ext():
         DIR_EXT_SCRIPTS / "simplify-tag.sed",
         DIR_RUNTIME / "simplify-tag.sed"
     )
+
+    # Clean the decrypt folder
+    DIR_RUNTIME_DECRYPT = pathlib.Path(DIR_RUNTIME / "decrypt")
+    if DIR_RUNTIME_DECRYPT.exists():
+        if DIR_RUNTIME_DECRYPT.is_dir():
+            shutil.rmtree(DIR_RUNTIME_DECRYPT)
+        else:
+            raise FileExistsError
+    # === END IF ===
+    shutil.copytree(
+        DIR_EXT_SCRIPTS / "decrypt",
+        DIR_RUNTIME_DECRYPT,
+    )
+
     shutil.copy(
         DIR_EXT_SCRIPTS / "supertagger_default.jsonnet",
         DIR_RUNTIME / "supertagger_default.jsonnet",
@@ -59,9 +73,6 @@ def build_ext():
         shell = True
     ).check_returncode()
 
-        #fr"""
-        #    
-        #""",
     logger.info("Build abs-hs (via stack)")
     res_stack = subprocess.Popen(
         (

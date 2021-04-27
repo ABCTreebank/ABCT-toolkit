@@ -1,9 +1,20 @@
-import typing 
+import typing
 import logging
 logger = logging.getLogger(__name__)
 
+import os
+import pathlib
 import re
+import shutil
+import subprocess
 import sys
+import tempfile
+
+PY_VER = sys.version_info
+if PY_VER >= (3, 7):
+    import importlib.resources as imp_res # type: ignore
+else:
+    import importlib_resources as imp_res # type: ignore
 
 import click
 
@@ -68,6 +79,96 @@ cmd_main.add_command(
     name = "obfuscate",
 )
 
+@cmd_main.command(
+    name = "decrypt-legacy"
+)
+@click.argument(
+    "source_dir",
+    metavar = "SOURCE",
+    type = click.Path(
+        exists = True,
+        file_okay = False,
+        dir_okay = True,
+    ),
+)
+@click.argument(
+    "dest_dir",
+    metavar = "DEST",
+    type = click.Path(
+        file_okay = False,
+        dir_okay = True,
+    ),
+)
+@click.pass_context
+def cmd_decrypt_legacy(
+    ctx: click.Context,
+    source_dir: str,
+    dest_dir: str,
+):
+    """
+    An legacy program to decrypt some of the closed part of the ABC Treebank.
+
+    \b
+    This decrypts the part that is originated from the following corpora:
+    - BCCWJ
+    - CSJ
+    - SIDB
+    For the Mainichi 95', use `abctk trans-Keyaki decrypt-Mai`.
+
+    The paths to them are to be specified in a config file.
+    Either deploy these corpora to the default paths, or alter the default by user configs.
+
+    Runtime requirements: gawk, xslproc, xmllint, Java runtime
+    \f
+
+    .. seealso::
+        `The Keyaki Treebank <https://github.com/ajb129/KeyakiTreebank>`_
+            The scripts come from there. 
+    """
+    CONF: typing.Dict[str, typing.Any] = ctx.obj["CONFIG"]
+
+    dest_dir_path = pathlib.Path(dest_dir)
+    if dest_dir_path.exists():
+        if dest_dir_path.is_dir():
+            pass
+        else:
+            raise FileExistsError
+    else:
+        os.mkdir(dest_dir_path)
+
+    with tempfile.TemporaryDirectory(
+    ) as ws, imp_res.path(
+        "abctk.runtime", "decrypt"
+    ) as dec_script_path:
+        links = (
+            (pathlib.Path(source_dir).absolute(), f"{ws}/closed", True),
+            (pathlib.Path(dest_dir).absolute(), f"{ws}/treebank", True),
+            (CONF["runtimes"]["tregex"], f"{ws}/stanford-tregex.jar", False),
+        )
+        for src, link, is_dir in links:
+            os.symlink(src, link, target_is_directory = is_dir)
+
+        shutil.copytree(
+            dec_script_path,
+            f"{ws}/scripts",
+        )
+
+        procs = tuple(
+            subprocess.Popen(
+                [
+                    f"{ws}/scripts/integrate_{corpus}_characters",
+                    "--source",
+                    CONF['corpora'][corpus],
+                ]   
+            )
+            for corpus in ("CSJ", "BCCWJ", "SIDB")
+        )
+        procs_result = tuple(proc.wait() for proc in procs)
+
+        for res in procs_result:
+            if res:
+                raise RuntimeError(res)
+
 cmd_decrypt = ct.CmdTemplate_Batch_Process_on_Tree(
     name = "trans_decrypt",
     logger_orig = logger,
@@ -89,7 +190,7 @@ cmd_decrypt.params.append(
 
 cmd_main.add_command(
     cmd_decrypt, 
-    name = "decrypt",
+    name = "decrypt-Mai",
 )
 
 @cmd_main.command(
@@ -102,11 +203,11 @@ def cmd_extract_from_corpora(ctx):
     Extract data from proprietary corpora 
     so that the Keyaki/ABC Treebank gets decrypted.
     
-    The corpora mentioned above are:
+    The corpora that are relevant here are:
     - Mainichi Shimbun '95
-    - BCCWJ
-    - CSJ
-    - SIDB
+    - (BCCWJ) not supported yet
+    - (CSJ) not supported yet
+    - (SIDB) not supported yet
     Paths to them are to be specified via the CONFIG file.
 
     Extracted sentences will be printed in the TSV format to STDOUT.

@@ -42,7 +42,7 @@ _TOKEN_INDEXERS = {
 
 CONF_DEFAULT = {
     "bin-sys": {
-        "m4": "m4", #"m4",
+        "m4": "m4",
         "sed": "sed",
         "java": "java",
     },
@@ -57,6 +57,12 @@ CONF_DEFAULT = {
         "dependency-post": DIR_RUNTIME / "tsurgeon-debug/dependency-post.tsgn",
         "simplify-tag": DIR_RUNTIME / "simplify-tag.sed",
         "tregex": DIR_RUNTIME / "stanford-tregex.jar",
+    },
+    "corpora": {
+        "Mainichi95": DIR_SHARE / "corpora/MAI95.TXT",
+        "CSJ": DIR_SHARE / "corpora/csj",
+        "BCCWJ": DIR_SHARE / "corpora/bccwj",
+        "SIDB": DIR_SHARE / "corpora/sidb",
     },
     "max_process_num": len(psutil.Process().cpu_affinity()),
     "ml": {
