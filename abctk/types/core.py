@@ -66,22 +66,39 @@ class TypedTree(
     typing.Generic[NT, T],
     IPrettyPrintable,
 ):
+    """
+    A Python representation of rose (sub)trees with type signatures.
+
+    :param root: The root label of this (sub)tree.
+    :param children: The children. If empty, this (sub)tree represents a terminal node.
+    """
     root: NT_or_T
     children: typing.Sequence["TypedTree[NT, T]"] = attr.ib(
         factory = list
     )
 
     def is_terminal(self):
+        """
+        Check if this (sub)tree is a terminal node (i.e. it has no children)
+        """
         return len(self.children) == 0
     # === END ===
 
     def is_holding_only_terminals(self):
+        """
+        Check if this (subtree) contains only one child that is a terminal node.
+        """
         return (
             not self.is_terminal() 
             and all(child.is_terminal() for child in self.children)
         )
 
     def is_root_type_rigid(self):
+        """
+        Check if the whole tree is well typed.
+        All non-terminal labels should be of type `NT`
+        and all terminals of type `T`.
+        """
         return isinstance(
             self.root,
             T if self.is_terminal() else NT
@@ -92,6 +109,9 @@ class TypedTree(
         self,
         include_term: bool = True,
     ) -> typing.Iterator[NT_or_T]:
+        """
+        Iterate nodes in a depth-first, bottom-up (children before parents) way.
+        """
         if include_term or not self.is_terminal():
             yield from itertools.chain.from_iterable(
                 c.iter_df_bottomup(include_term)
@@ -103,16 +123,26 @@ class TypedTree(
         self,
         include_term: bool = True,
     ) -> typing.Iterator[NT_or_T]:
+        """
+        Iterate nodes in a depth-first, top-down (parents before children) way.
+        """
         if include_term or not self.is_terminal():
             yield self.root
             yield from itertools.chain.from_iterable(
                 c.iter_df_topdown(include_term)
                 for c in self.children
             )
+
     def iter_nonterms(self) -> typing.Iterator[NT_or_T]:
+        """ 
+        Iterate non-terminal nodes in a depth-first, top-down way.
+        """
         return self.iter_df_topdown(include_term = False)
 
     def iter_terms(self) -> typing.Iterator[NT_or_T]:
+        """
+        Iterate terminal nodes, left to right.
+        """
         if self.is_terminal():
             yield self.root
         else:
