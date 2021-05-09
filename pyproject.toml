@@ -46,6 +46,7 @@ fs = "^2.4.12"
 humanize = "^3.3.0"
 more-itertools = "^8.7.0"
 jaconv = "^0.3"
+pykakasi = "^2.1.0"
 
 [tool.poetry.dev-dependencies]
 pylint = "^2.6.0"

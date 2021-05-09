@@ -221,3 +221,19 @@ def cmd_extract_from_corpora(ctx):
             corpus_Mai95 = path_corpora["Mainichi95"]
         )
     )
+
+cmd_kakasi = ct.CmdTemplate_Batch_Process_on_Tree(
+    name = "trans_kakasi",
+    logger_orig = logger,
+    folder_prefix = "trans_kakasi",
+    with_intermediate = False,
+    callback_preprocessing = None,
+    callback_process_file = core.kakasi_file,
+    callback_process_rawtrees = core.kakasi_stream,
+    short_help = "romanize words via pykakasi"
+)
+
+cmd_main.add_command(
+    cmd_kakasi, 
+    name = "kakasi",
+)
