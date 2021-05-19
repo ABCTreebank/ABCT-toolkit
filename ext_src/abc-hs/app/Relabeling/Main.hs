@@ -4,7 +4,6 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE ViewPatterns #-}
 
-
 {- |
     Module      : Relabeling
     Copyright   : Copyright (c) 2018-2020 Noritsugu Hayashi
@@ -501,6 +500,124 @@ relabelHeaded
             Node { rootLabel = Term w } 
                 -> throwM $ IllegalTerminalException w
 
+-- | = Punctuation Binarization
+
+isPunc :: KeyakiTree -> Bool
+isPunc ((KeyakiCat (cat:_) :#: _) :<: _) = cat `elem` ["PU", "LRB", "RRB"]
+isPunc _         = False
+
+data SeparatedPuncList 
+    = SeparatedPuncList {
+        prePuncs    :: [KeyakiTree]
+        , mid       :: [KeyakiTree]
+        , postPuncs :: [KeyakiTree]
+    }
+
+mapSeparatedPuncList :: 
+    (KeyakiTree -> KeyakiTree) 
+    -> SeparatedPuncList -> SeparatedPuncList
+mapSeparatedPuncList func (SeparatedPuncList pre mid post) 
+    = SeparatedPuncList {
+        prePuncs = func <$> pre
+        , mid = func <$> mid
+        , postPuncs = func <$> post
+    }
+
+getTailPuncList :: 
+    KeyakiTree 
+    -> ([KeyakiTree], [KeyakiTree]) 
+    -> ([KeyakiTree], [KeyakiTree])
+getTailPuncList tree ([], end)
+    | isPunc tree = ([], tree:end)
+    | otherwise = (tree:[], end)
+getTailPuncList tree (preMid, end) = (tree:preMid, end)
+
+splitPuncList :: [KeyakiTree] -> SeparatedPuncList
+splitPuncList children 
+    = case Prelude.foldr getTailPuncList ([], []) children of
+        (preMid, end) -> case span isPunc preMid of
+            (pre, mid) -> SeparatedPuncList {
+                prePuncs = pre
+                , mid = mid
+                , postPuncs = end
+            }
+
+binPunc :: (MonadThrow m) 
+    => KeyakiTree -> m KeyakiTree
+binPunc (Node root children) = do
+    childrenBined <- mapM binPunc children
+    let childList = splitPuncList childrenBined
+    binPuncInternal root childList
+
+binPuncInternal :: (MonadThrow m) => 
+    CatPlus KeyakiCat -> SeparatedPuncList -> m KeyakiTree
+binPuncInternal root list = case list of 
+    SeparatedPuncList [] mid [] 
+        -> return Node {
+            rootLabel = root
+            , subForest = mid
+        }
+    SeparatedPuncList (puncTree:pre) _ _
+        -> do -- (root head''a (root''h ...))
+            let remainderList = list { prePuncs = pre }
+            puncTreeMod <- case rootLabel puncTree of
+                label@(NonTerm {})
+                    -> return puncTree {
+                        rootLabel = label {
+                            role = Adjunct 
+                            -- , deriv = UsualDeriv
+                        }
+                    }
+                Term w -> throwM $ IllegalTerminalException w
+            remainderTree <- binPuncInternal root remainderList
+            remainderTreeMod <- case rootLabel remainderTree of
+                label@(NonTerm {})
+                    -> return remainderTree {
+                        rootLabel = label {
+                            role = Head
+                            -- , deriv = UsualDeriv
+                        }
+                    }  
+                Term w -> throwM $ IllegalTerminalException w
+            return Node {
+                rootLabel = root { deriv = UsualDeriv }
+                , subForest = [puncTreeMod, remainderTreeMod]
+            }
+    SeparatedPuncList [] mid post
+        -> let midTree = case mid of 
+                onlychild:[]    -> onlychild
+                otherwise       -> Node { rootLabel = root, subForest = mid }
+        in binPuncInternalPost root midTree (reverse post)
+
+binPuncInternalPost :: (MonadThrow m) =>
+    CatPlus KeyakiCat 
+    -> KeyakiTree -> [KeyakiTree] 
+    -> m KeyakiTree
+binPuncInternalPost _ midTreeBined [] = return midTreeBined
+binPuncInternalPost root midTreeBined (lastTree:postReved) = do
+    remainderTree <- binPuncInternalPost root midTreeBined postReved
+    remainderTreeMod <- case rootLabel remainderTree of
+        label@(NonTerm {}) -> return remainderTree {
+            rootLabel = label {
+                role = Head
+                -- , deriv = UsualDeriv
+            }
+        }
+        Term w -> throwM $ IllegalTerminalException w
+    lastTreeMod <- case rootLabel lastTree of
+        label@(NonTerm {}) -> return lastTree {
+            rootLabel = label {
+                role = Adjunct
+                -- , deriv = UsualDeriv
+            }
+        }
+        Term w -> throwM $ IllegalTerminalException w
+    let labelRoot = if postReved == [] then root else root { deriv = UsualDeriv }
+    return Node {
+        rootLabel = labelRoot
+        , subForest = [remainderTreeMod, lastTreeMod]
+    }
+
 -- | = Execution routines
 
 {-|
@@ -578,8 +695,9 @@ runWithOptions (Option _  branchOpt catPlusOpt) = do
             & PDoc.layoutPretty (PDoc.LayoutOptions PDoc.Unbounded)
             & PDocRT.renderIO stdout
         processTree :: KeyakiTree -> IO ()
-        processTree tree = 
-            relabel tree -- IO ABCTree
+        processTree tree =
+            binPunc tree
+            >>= relabel -- IO ABCTree
             >>= printTree
         processExecptions :: Tree (CatPlus KeyakiCat) -> SomeException -> IO ()
         processExecptions tree e = do

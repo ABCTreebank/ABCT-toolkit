@@ -28,7 +28,7 @@ import Data.Tree.Parser.Penn.Megaparsec.Char (
 {-|
     Record structure that represents simple Keyaki categories.
 -}
-newtype KeyakiCat = KeyakiCat { unwrapCat :: [Text] }
+newtype KeyakiCat = KeyakiCat { unwrapCat :: [Text] } deriving (Eq)
 
 ----------------------------------
 

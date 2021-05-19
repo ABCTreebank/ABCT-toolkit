@@ -266,11 +266,12 @@ instance {-# OVERLAPS #-}
 ----------------------------------
 
 data CatPlusPrintOption = CatPlusPrintOption {
-    omitCat :: Bool -- | Omit categories in printing
-    , omitRole :: Bool -- | Omit grammatical roles in printing
-    , omitDerivTrace :: Bool -- | Omit derivational traces in printing
-} deriving (Eq, Show)
+    omitCat :: Bool -- ^ Omit categories in printing
+    , omitRole :: Bool -- ^ Omit grammatical roles in printing
+    , omitDerivTrace :: Bool -- ^ Omit derivational traces in printing
+    } deriving (Eq, Show)
 
+pattern CatPlusPrintFull :: CatPlusPrintOption
 pattern CatPlusPrintFull = CatPlusPrintOption {
     omitCat = False
     , omitRole = False
