@@ -614,7 +614,7 @@ binPuncInternalPost root midTreeBined (lastTree:postReved) = do
         Term w -> throwM $ IllegalTerminalException w
     let labelRoot = if postReved == [] then root else root { deriv = UsualDeriv }
     return Node {
-        rootLabel = labelRoot
+        rootLabel = labelRoot { deriv = UsualDeriv }
         , subForest = [remainderTreeMod, lastTreeMod]
     }
 
