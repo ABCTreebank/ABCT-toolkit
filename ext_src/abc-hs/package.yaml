@@ -1,10 +1,10 @@
 name:                abc-hs
-version:             0.1.1
+version:             0.2.0
 github:              "aslemen/abc-hs"
 license:             BSD3
 author:              "T. N. Hayashi"
 maintainer:          "net@hayashi-lin.net"
-copyright:           "2019-2020 T. N. Hayashi"
+copyright:           "2019-2021 T. N. Hayashi"
 
 # extra-source-files:
 # - README.md
