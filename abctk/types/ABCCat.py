@@ -162,9 +162,44 @@ class ABCCatFunctorMode(Enum):
 # === END CLASS ===
 
 class ABCCatReprMode(Enum):
-    TRADITIONAL = 0
-    TLCG = 1
+    """
+    Styles of representation of categories.
+    """
 
+    TRADITIONAL = 0
+    """
+    The traditional way of representing categories.
+    Adopted by Combinatorial Categorial Grammar.
+
+    Examples
+    --------
+    - `<S/NP>` stands for an `S` wanting an `NP` to its right.
+    - `<S\\NP>` is an `S` whose `NP` argument to its left is missing.
+    """
+    
+    TLCG = 1
+    """
+    An iconic way of representing categories.
+    Adopted by Type-logical Categorial Grammar and the ABC Treebank.
+    This is the default representation of this package.
+    
+    Examples
+    --------
+    - `<S/NP>` stands for an `S` wanting an `NP` to its right.
+    - `<NP\\S>` is an `S` whose `NP` argument to its left is missing.
+    - `<Sm\\NP>` is a predicate which bears an `m` feature. The categorial features are not marked in a special way.
+    """
+    
+    DEPCCG = 2
+    """
+    The style that can be read by depccg.
+
+    Examples
+    --------
+    - `<S/NP>` stands for an `S` wanting an `NP` to its right.
+    - `<S\\NP>` is an `S` whose `NP` argument to its left is missing.
+    - `<S[m]\\NP>` is a predicate which bears an `m` feature.
+    """
 @attr.s(
     auto_attribs = True,
     slots = True,
@@ -589,6 +624,8 @@ class ABCCatBot(ABCCat, Enum):
         else:
             return NotImplemented
 
+_re_ABCCat_feature = re.compile(r"(?P<cat>.*?)(?<=[A-Z])(?P<feat>[a-z][a-z0-9]*)")
+
 @attr.s(
     auto_attribs = True,
     frozen = True,
@@ -605,11 +642,19 @@ class ABCCatBase(ABCCat):
     The letter of the atom.
     """
 
+    @functools.lru_cache()
     def pprint(
         self, 
         mode: ABCCatReprMode = ABCCatReprMode.TLCG
     ) -> str:
-        return self.name
+        if mode == ABCCatReprMode.DEPCCG:
+            dict_maybe = self.tell_feature()
+            if dict_maybe:
+                return f"{dict_maybe['cat']}[{dict_maybe['feat']}]"
+            else:
+                return self.name
+        else:
+            return self.name
 
     def invert_dir(self):
         return self
@@ -622,6 +667,14 @@ class ABCCatBase(ABCCat):
         else:
             return NotImplemented
 
+    @functools.lru_cache()
+    def tell_feature(self) -> typing.Optional[typing.Dict[str, str]]:
+        match = _re_ABCCat_feature.search(self.name)
+        if match:
+            return match.groupdict()
+        else:
+            return None
+            
 @attr.s(
     auto_attribs = True, # Unnecessary in newer version of Python
     frozen = True,
@@ -649,6 +702,7 @@ class ABCCatFunctor(ABCCat):
     The consequence.
     """
 
+    @functools.lru_cache()
     def pprint(
         self, 
         mode: ABCCatReprMode = ABCCatReprMode.TLCG

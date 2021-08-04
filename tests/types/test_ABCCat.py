@@ -117,6 +117,23 @@ class Test_ABCCat:
 
         assert ~(ABCCat.p("S") / ABCCat.p("NP")) == ABCCat.p("NP\\S")
 
+class Test_ABCCatBase:
+    def test_tell_feature(self):
+        test_items = (
+            ("S", "m"),
+            ("S3m", None),
+            ("S", "m3"),
+        )
+
+        for cat, feat in test_items:
+            if feat is None:
+                assert typing.cast(ABCCatBase, ABCCat.p(cat)).tell_feature() is None
+            else:
+                d = typing.cast(ABCCatBase, ABCCat.p(cat + feat)).tell_feature()
+                assert d is not None
+                assert cat == d["cat"]
+                assert feat == d["feat"]
+
 class Test_ABCCatFunctor:
     def test_reduce_with(self):
         test_items = (
@@ -130,3 +147,14 @@ class Test_ABCCatFunctor:
             f = typing.cast(ABCCatFunctor, ABCCat.parse(func))
             res = f.reduce_with(ant, ant_left)
             assert res == ABCCat.parse(res_exp)
+
+    def test_pprint(self):
+        test_items = (
+            ("C/<B\\A>", ABCCatReprMode.TLCG, "<C/<B\\A>>"),
+            ("C/<B\\A>", ABCCatReprMode.TRADITIONAL, "<C/<A\\B>>"),
+            ("C/<Bm3/A>", ABCCatReprMode.DEPCCG, "<C/<B[m3]/A>>"),
+        )
+
+        for item, mode, res_exp in test_items:
+            res = ABCCat.p(item).pprint(mode)
+            assert res == res_exp
