@@ -40,12 +40,19 @@ class Test_ABCCat:
             ant = ABCCatBase("NP"),
             conseq = ABCCatBase("S"),
         )
+        assert ABCCat.parse("S|NP") == ABCCatFunctor(
+            func_mode = ABCCatFunctorMode.VERT,
+            ant = ABCCatBase("NP"),
+            conseq = ABCCatBase("S"),
+        )
 #
     def test_parse_pprint(self):
         test_items = (
             "⊥", "NP", "NP\\S", "<NP\\S>", "<S/NP>",
             "<NP\\<NP\\NP>>",
             "<S/NP>\\<S/NP>",
+            "S|NP",
+            "S|NP|NP",
         )
 
         for item in test_items:
@@ -64,30 +71,33 @@ class Test_ABCCat:
         assert ABCCat.p("S/NP").adj_l() == ABCCat.p("<S/NP>\\<S/NP>")
         assert ABCCat.p("NP\\S").adj_r() == ABCCat.p("<NP\\S>/<NP\\S>")
 
-    def test_apply(self):
+    def test_simplify_exh(self):
         test_items = (
             (("S/NP", "NP"), ("S", "R0")),
+            (("S|NP", "NP"), ("S", "V0")),
             (("NP", "NP\\S"), ("S", "L0")),
             (("A\\B", "B\\C"), ("A\\C", "L1")),
             (("C/B", "B/A"), ("C/A", "R1")),
             (("C/<B\\A>", "B\\A"), ("C", "R0")),
         )
-        for item, res_expected in test_items:
-            cat, code = ABCCat.apply(*item)
-            assert cat == ABCCat.p(res_expected[0])
-            assert str(code) == res_expected[1]
+        for (left, right), (cat_exp, res_exp) in test_items:
+            res_set = ABCCat.simplify_exh(left, right)
+            assert (ABCCat.p(cat_exp), res_exp) in {
+                (cat, str(res)) for cat, res in res_set
+            }
 
     def test_mul(self):
         test_items = (
-            (("S/NP", "NP"), "S"),
-            (("NP", "NP\\S"), "S"),
-            (("A\\B", "B\\C"), "A\\C"),
-            (("C/B", "B/A"), "C/A"),
-            (("C/<B\\A>", "B\\A"), "C"),
+            (("S/NP", "NP"), ("S", "R0")),
+            (("S|NP", "NP"), ("S", "V0")),
+            (("NP", "NP\\S"), ("S", "L0")),
+            (("A\\B", "B\\C"), ("A\\C", "L1")),
+            (("C/B", "B/A"), ("C/A", "R1")),
+            (("C/<B\\A>", "B\\A"), ("C", "R0")),
         )
-
-        for item, res_expected in test_items:
-            assert ABCCat.p(item[0]) * ABCCat.p(item[1]) == ABCCat.p(res_expected)
+        for (left, right), (cat_exp, _) in test_items:
+            res = ABCCat.p(left) * right
+            assert res == ABCCat.p(cat_exp)
 
     def test_invert_dir(self):
         test_items = (
@@ -95,6 +105,7 @@ class Test_ABCCat:
             ("NP", "NP"),
             ("NP\\S", "S/NP"),
             ("NP/S", "S\\NP"),
+            ("S|NP", "S|NP"),
         )
 
         for item, res_exp in test_items:
@@ -105,3 +116,17 @@ class Test_ABCCat:
             assert item_parsed == ~res_exp_parsed
 
         assert ~(ABCCat.p("S") / ABCCat.p("NP")) == ABCCat.p("NP\\S")
+
+class Test_ABCCatFunctor:
+    def test_reduce_with(self):
+        test_items = (
+            (("S/NP", "NP", False), "S"),
+            (("NP\\S", "NP", True), "S"),
+            (("C/<B\\A>", "B\\A", False), "C"),
+            (("C|<B\\A>", "B\\A", False), "C"),
+        )
+
+        for (func, ant, ant_left), res_exp in test_items:
+            f = typing.cast(ABCCatFunctor, ABCCat.parse(func))
+            res = f.reduce_with(ant, ant_left)
+            assert res == ABCCat.parse(res_exp)
