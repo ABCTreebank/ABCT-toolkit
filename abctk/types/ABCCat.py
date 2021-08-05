@@ -60,7 +60,7 @@ Annot = typing.Dict[
 ]
 Plain_Annot = typing.Tuple[PlainCat, Annot]
 
-_annot_cat_basic_matcher = re.compile(r"^(?P<cat>[^#]*)(?P<feats>#.*)$")
+_annot_cat_basic_matcher = re.compile(r"^(?P<cat>[^#]*)(?P<feats>#.*)?$")
 _annot_feat_matcher = re.compile(r"#(?P<key>[^=]+)=(?P<val>[^#]*)")
 def parse_annot(source: str) -> Plain_Annot:
     """
@@ -89,7 +89,7 @@ def parse_annot(source: str) -> Plain_Annot:
 
     feats: Annot = {
         m.group("key"):m.group("val")
-        for m in _annot_feat_matcher.finditer(match.group("feats"))
+        for m in _annot_feat_matcher.finditer(match.group("feats") or "")
     }
 
     if "role" in feats:
