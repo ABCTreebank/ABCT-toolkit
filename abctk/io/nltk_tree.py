@@ -65,7 +65,7 @@ def load_Keyaki_Annot_psd(
         
     for i, tree in enumerate(
         BracketParseCorpusReader(
-            root = folder,
+            root = str(folder),
             fileids = re_filter,
         ).parsed_sents()
     ):
@@ -79,7 +79,7 @@ def load_Keyaki_Annot_psd(
         prog_stream.write("\n")
 
 def load_ABC_psd(
-    folder: typing.Union[str, pathlib.Path, fs.base.FS], 
+    folder: typing.Union[str, pathlib.Path], 
     re_filter: typing.Union[str, typing.Pattern] = r".*\.psd$",
     prog_stream: typing.Optional[typing.IO[str]] = sys.stderr,
 ) -> typing.Iterator[typing.Tuple[Keyaki_ID, Tree]]:
@@ -119,7 +119,7 @@ def load_ABC_psd(
         map(
             _split_ID_from_Tree,
             BracketParseCorpusReader(
-                root = folder,
+                root = str(folder),
                 fileids = re_filter,
             ).parsed_sents()
         )
@@ -153,7 +153,6 @@ def dump_Keyaki_to_psd(
             return f"({label_pprint} {children_pprint})"
         else:
             return str(tree)
-
 
     bucket = list(tb)
 
