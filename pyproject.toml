@@ -19,6 +19,7 @@ exclude = ["**/docs"]
 
 [tool.poetry.scripts]
 abctk = "abctk.cli:cmd_main" 
+abctk_typer = "abctk.cli_typer:app" 
 
 [tool.poetry.dependencies]
 python = "^3.9"
@@ -48,6 +49,7 @@ jaconv = "^0.3"
 pykakasi = "^2.1.0"
 simplejson = "^3.17.3"
 Cython = { version = "^0.29.24", optional = true }
+typer = { git = "https://github.com/tiangolo/typer", rev = "click-8" }
 
 [tool.poetry.dev-dependencies]
 pylint = "^2.6.0"

@@ -579,6 +579,9 @@ class ABCCat():
         >>> ABCCat.parse(pred) == pred
         True
         """
+
+        # TODO: find alternative of parsy. Still not efficient.
+
         if isinstance(source, str):
             return _parser_ABCCat.parse(source) # typing: ignore
         elif isinstance(source, ABCCat):

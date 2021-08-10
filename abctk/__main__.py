@@ -1,3 +1,5 @@
+import typer
+
 from . import cli
 
-cli.cmd_main.__call__()
+typer.run(cli.cmd_main)
