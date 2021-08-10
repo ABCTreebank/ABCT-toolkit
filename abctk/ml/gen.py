@@ -21,6 +21,7 @@ import fs.base
 import simplejson as json
 
 import abctk.types.ABCCat as abcc
+from abctk.types.treebank import Keyaki_ID
 
 UNK = "*UNKNOWN*"
 """
@@ -148,7 +149,14 @@ class Instance:
 
             if not is_returning:
                 if isinstance(pointer, Tree):
-                    pointer_cat_raw, pointer_feats = abcc.parse_annot(pointer.label())
+                    label = pointer.label()
+                    if isinstance(label, tuple):
+                        pointer_cat_raw, pointer_feats = label
+                    elif isinstance(label, str):
+                        pointer_cat_raw, pointer_feats = abcc.parse_annot(label)
+                    else:
+                        raise TypeError
+
                     pointer_cat_parsed = abcc.ABCCat.p(pointer_cat_raw).pprint(abcc.ABCCatReprMode.DEPCCG)
                     len_children = len(pointer)
 
@@ -357,8 +365,8 @@ class DepCCGDataSet:
 
     @classmethod
     def from_ABC_NLTK_trees(
-        cls, 
-        trees: typing.Sequence["nltk.Tree"],
+        cls,
+        trees: typing.Sequence[typing.Tuple[Keyaki_ID, "nltk.Tree"]],
         settings: DepCCGDataSetGenerationSettings = DepCCGDataSetGenerationSettings(),
         prog_stream: typing.Optional[typing.IO] = sys.stderr,
     ):
@@ -371,7 +379,7 @@ class DepCCGDataSet:
         trees: typing.Sequence[nltk.Tree]
         settings: DepCCGDataSetGenerationSettings
         prog_stream: typing.IO, optional
-            The stream where tqdm progress bars are redirected to and show up there.
+            The stream where the progress info is redirected to and show up there.
             Feature disabled when set to `None`. 
         """
         from nltk import Tree
@@ -403,27 +411,17 @@ class DepCCGDataSet:
 
         def _convert_ABC_tree(
             tree: Tree,
+            ID: str,
             pg_obj: typing.Optional[tqdm.tqdm],
             pg_disc: typing.Optional[tqdm.tqdm],
         ):
-            # ripping off IDs
-            if len(tree) == 2:
-                child_1, child_2 = tree
-                if child_2.label() == "ID" and len(child_2) == 1 and isinstance(child_2[0], abcc.ABCCatReady.__args__):
-                    ID = child_2[0]
-                    tree = child_1
-                else:
-                    ID = "<UNKNOWN>"
-            else:
-                ID = "<UNKWOWN>"
-
             try: # to create an instance
                 res = Instance.from_ABC_NLTK_tree(
                     tree, ID
                 )
             except DepCCGIneligibleTreeException as e:
                 logger.info(
-                    "Tree (ID: {ID}) is discarded. Reason: {e.message}"
+                    f"Tree (ID: {ID}) is discarded. Reason: {e.message}"
                 )
                 res = None
 
@@ -445,8 +443,8 @@ class DepCCGDataSet:
             filter(
                 None,
                 (
-                    _convert_ABC_tree(tree, prog_obj, prog_elim)
-                    for tree in trees
+                    _convert_ABC_tree(tree, str(kID), prog_obj, prog_elim)
+                    for kID, tree in trees
                 )
             )
         )
