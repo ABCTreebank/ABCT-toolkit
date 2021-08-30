@@ -186,8 +186,13 @@ class Instance:
                     elif len_children == 2:
                         # binary branching
                         child_1, child_2 = pointer
+                        child_1_cat_raw, _ = abcc.parse_annot(child_1.label())
+                        child_1_cat_converted = abcc.ABCCat.p(child_1_cat_raw).pprint(abcc.ABCCatReprMode.DEPCCG)
+                        child_2_cat_raw, _ = abcc.parse_annot(child_2.label())
+                        child_2_cat_converted = abcc.ABCCat.p(child_2_cat_raw).pprint(abcc.ABCCatReprMode.DEPCCG)
+
                         list_binary_seen.append(
-                            (child_1.label(), child_2.label())
+                            (child_1_cat_converted, child_2_cat_converted)
                         )
                         stack.extend(
                             (
@@ -234,8 +239,10 @@ class Instance:
         ana = self.analysis
         return [
             " ".join(word for _, word, _, _ in ana),
-            [cat  for _, _, cat, _  in ana],
-            [head for _, _, _, head in ana],
+            [
+                [cat  for _, _, cat, _  in ana],
+                [head for _, _, _, head in ana],
+            ]
         ]
     
 @attr.s(auto_attribs = True, slots = True)
