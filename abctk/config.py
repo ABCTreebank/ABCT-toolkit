@@ -1,18 +1,15 @@
+import importlib.util
+import pathlib
 import psutil
-
-import sys
-
-PY_VER = sys.version_info
-if PY_VER >= (3, 7):
-    import importlib.resources as imp_res # type: ignore
-else:
-    import importlib_resources as imp_res # type: ignore
-# === END IF ===
 
 import xdg
 
-with imp_res.path("abctk", "runtime") as runtime_path:
-    DIR_RUNTIME = runtime_path
+MODULE = importlib.util.find_spec("abctk")
+
+if MODULE is None: raise RuntimeError
+MODULE_PATH = MODULE.submodule_search_locations
+if MODULE_PATH is None: raise RuntimeError
+DIR_RUNTIME = pathlib.Path(MODULE_PATH[0] + "/runtime")
 
 DIR_SHARE = xdg.xdg_data_home() / "ABCT-toolkit"
 DIR_CACHE = xdg.xdg_cache_home() / "ABCT-toolkit"

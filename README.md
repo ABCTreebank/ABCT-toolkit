@@ -2,7 +2,7 @@
 ## Overview
 This repository provides a comprehensive kit of tools 
     that are necessary for generating, tailoring and utilizing ABC Treebank data.
-The CLI interface and most of the functionalities are implemented with Python 3.6.
+The CLI interface and most of the functionalities are implemented with Python 3.9.
 Part of the functionalities are implemented by other langauges but all wrapped with Python.
 
 ## Requirements
@@ -12,7 +12,7 @@ Part of the functionalities are implemented by other langauges but all wrapped w
     - Java JRE (the version requirement aligns with that of [Stanford Tregex 4.2.0](https://nlp.stanford.edu/software/tregex.shtml))
     - m4
     - sed
-    - Python (currently working only with 3.6, tested with 3.6.12) and that required packages listed in `pyproject.toml`
+    - Python (>= 3.9) and that required packages listed in `pyproject.toml`
 - Automatically prepared in building the python bdist
     - [Stanford Tregex](https://nlp.stanford.edu/software/tregex.shtml) (tested with 4.2.0)
 - Optional dependencies:
