@@ -58,7 +58,7 @@ def load_Keyaki_Annot_psd(
         while stack:
             pointer = stack.pop()
             if isinstance(pointer, Tree):
-                pointer.set_label(abcc.parse_annot(pointer.label()))
+                pointer.set_label(abcc.Annot.parse(pointer.label()))
             else:
                 # do nothing
                 pass
@@ -102,14 +102,8 @@ def load_ABC_psd(
         while stack:
             pointer = stack.pop()
             if isinstance(pointer, Tree):
-                cat, feat = abcc.parse_annot(
-                    pointer.label()
-                )
                 pointer.set_label(
-                    (
-                        abcc.ABCCat.p(cat),
-                        feat,
-                    )
+                    abcc.Annot.parse(pointer.label())
                 )
             else:
                 # do nothing
@@ -141,9 +135,8 @@ def dump_Keyaki_to_psd(
     def _flatten_tree(tree: typing.Union[Tree, str]):
         if isinstance(tree, Tree):
             label = tree.label()
-            if isinstance(label, tuple):
-                cat, feat = label
-                label_pprint = str(cat) + abcc.annot_feat_pprint(feat)
+            if isinstance(label, abcc.Annot):
+                label_pprint = label.pprint()
             else:
                 label_pprint = str(label)
 

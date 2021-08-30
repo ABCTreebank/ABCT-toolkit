@@ -54,78 +54,97 @@ class DepMk(Enum):
 PlainCat = str
 KeyakiCat = str
 
-Annot = typing.Dict[
-    str,
-    typing.Any,
-]
-Plain_Annot = typing.Tuple[PlainCat, Annot]
-
 _annot_cat_basic_matcher = re.compile(r"^(?P<cat>[^#]*)(?P<feats>#.*)?$")
 _annot_feat_matcher = re.compile(r"#(?P<key>[^=]+)=(?P<val>[^#]*)")
-def parse_annot(source: str) -> Plain_Annot:
-    """
-    Parse a tree node label with ABC annotations.
-
-    Arguments
-    ---------
-    source : str
-        A tree node label.
-
-    Returns
-    -------
-    cat : str
-        The category part.
-    remainder : dict
-        The feature part.
-
-    Examples
-    --------
-    >>> parse_annot("<NP/NP>#role=h#deriv=leave")
-    ('<NP/NP>', {'role': <DepMk.HEAD: 'h'>, 'deriv': 'leave'})
-    """
-    match = _annot_cat_basic_matcher.match(source)
-
-    if match is None: raise ValueError
-
-    feats: Annot = {
-        m.group("key"):m.group("val")
-        for m in _annot_feat_matcher.finditer(match.group("feats") or "")
-    }
-
-    if "role" in feats:
-        feats["role"] = DepMk(feats["role"])
-    else:
-        feats["role"] = DepMk.NONE
-    # === END IF ==
-
-    return match.group("cat"), feats
-
-def annot_feat_pprint(
-    feat_set: Annot
-) -> str:
-    """
-    Prettyprint an ABC Treebank feature bundle.
-
-    Examples
-    --------
-    >>> _, feat_set = parse_annot("<NP/NP>#role=h#deriv=leave")
-    >>> annot_feat_pprint(feat_set)
-    '#role=h#deriv=leave'
-
-    """
-    if "role" in feat_set:
-        role = f"#role={feat_set['role'].value}"
-    else:
-        role = ""
-    # === END IF===
-
-    others = "".join(
-        f"#{k}={v}"
-        for k, v in feat_set.items()
-        if k not in ["role"]
-    )
+@attr.s(auto_attribs = True, slots = True, frozen = True)
+class Annot:
+    cat: typing.Any # TODO: generic
+    feats: typing.Dict[str, typing.Any] = attr.ib(factory = dict)
+    pprinter_cat: typing.Callable[[typing.Any], str] = str
     
-    return f"{role}{others}"
+    def pprint(
+        self, 
+        pprinter_cat: typing.Callable[[typing.Any], str] = str
+    ):
+        """
+        Prettyprint an ABC Treebank feature bundle.
+
+        Examples
+        --------
+        >>> label = Annot.parse("<NP/NP>#role=h#deriv=leave")
+        >>> label.annot_feat_pprint()
+        '<NP/NP>#role=h#deriv=leave'
+
+        """
+        if "role" in self.feats:
+            role = f"#role={self.feats['role'].value}"
+        else:
+            role = ""
+        # === END IF===
+
+        others = "".join(
+            f"#{k}={v}"
+            for k, v in self.feats.items()
+            if k not in ["role"]
+        )
+        
+        if pprinter_cat:
+            cat = pprinter_cat(self.cat)
+        else:
+            cat = self.pprinter_cat(self.cat)
+
+        return f"{cat}{role}{others}"
+
+    @classmethod
+    def parse(
+        cls,
+        source: str,
+        parser_cat: typing.Callable[[str], typing.Any] = (lambda x: x),
+        pprinter_cat: typing.Callable[[typing.Any], str] = str,
+    ):
+        """
+        Parse a tree node label with ABC annotations.
+
+        Arguments
+        ---------
+        source : str
+            A tree node label.
+        parser_cat
+        pprinter_cat
+
+        Examples
+        --------
+        >>> c = parse_annot("<NP/NP>#role=h#deriv=leave")
+        >>> c.cat
+        '<NP/NP>'
+        >>> isinstance(c.cat, str)
+        True
+        >>> c.feats
+        {'role': <DepMk.HEAD: 'h'>, 'deriv': 'leave'})
+        """
+        match = _annot_cat_basic_matcher.match(source)
+
+        if match is None: raise ValueError
+
+        feats = {
+            m.group("key"):m.group("val")
+            for m in _annot_feat_matcher.finditer(match.group("feats") or "")
+        }
+
+        if "role" in feats:
+            feats["role"] = DepMk(feats["role"])
+        else:
+            feats["role"] = DepMk.NONE
+        # === END IF ==
+
+        return cls(
+            parser_cat(match.group("cat")), 
+            feats,
+            pprinter_cat,
+        )
+
+    def __str__(self):
+        return self.pprint()
 
 # ============
 # Classes for ABC categories
@@ -199,6 +218,17 @@ class ABCCatReprMode(Enum):
     - `<S/NP>` stands for an `S` wanting an `NP` to its right.
     - `<S\\NP>` is an `S` whose `NP` argument to its left is missing.
     - `<S[m]\\NP>` is a predicate which bears an `m` feature.
+    """
+
+    CCG2LAMBDA = 3
+    """
+    The style compatible with ccg2lambda.
+
+    Examples
+    --------
+    - `<S/NP>` stands for an `S` wanting an `NP` to its right.
+    - `<S\\NP>` is an `S` whose `NP` argument to its left is missing.
+    - `<S[m=true]\\NP>` is a predicate which bears an `m` feature.
     """
 @attr.s(
     auto_attribs = True,
@@ -604,6 +634,29 @@ class ABCCat():
     def p_trad(cls, source: ABCCatReady):
         raise NotImplementedError
 
+class ABCCatTop(ABCCat, Enum):
+    """
+    Represents the bottom type in the ABC Treebank.
+    """
+    TOP = "⊤"
+
+    def pprint(
+        self, 
+        mode: ABCCatReprMode = ABCCatReprMode.TLCG
+    ) -> str:
+        return self.value
+
+    def invert_dir(self):
+        return self
+
+    def __eq__(self, other):
+        if isinstance(other, ABCCatBot):
+            return (self.value == other.value)
+        elif isinstance(other, ABCCat):
+            return False
+        else:
+            return NotImplemented
+
 class ABCCatBot(ABCCat, Enum):
     """
     Represents the bottom type in the ABC Treebank.
@@ -650,10 +703,13 @@ class ABCCatBase(ABCCat):
         self, 
         mode: ABCCatReprMode = ABCCatReprMode.TLCG
     ) -> str:
-        if mode == ABCCatReprMode.DEPCCG:
+        if mode == ABCCatReprMode.DEPCCG or mode == ABCCatReprMode.CCG2LAMBDA:
             dict_maybe = self.tell_feature()
             if dict_maybe:
-                return f"{dict_maybe['cat']}[{dict_maybe['feat']}]"
+                if mode == ABCCatReprMode.DEPCCG:
+                    return f"{dict_maybe['cat']}[{dict_maybe['feat']}]"
+                else:
+                    return f"{dict_maybe['cat']}[{dict_maybe['feat']}=true]"
             else:
                 return self.name
         else:
@@ -793,8 +849,7 @@ class ABCCatFunctor(ABCCat):
 
 # === END CLASS ===
 
-ABCCat_Annot = typing.Tuple[ABCCat, Annot]
-
+_parser_ABCCatTop: parsy.Parser = parsy.from_enum(ABCCatTop)
 _parser_ABCCatBot: parsy.Parser = parsy.from_enum(ABCCatBot)
 _parser_ABCCatBase: parsy.Parser = parsy.regex(r"[^/\\|<>#\s]+").map(ABCCatBase)
 
@@ -867,7 +922,8 @@ _parser_ABCCat_simple: parsy.Parser = (
     _parser_ABCCatFunctor_Left
     | _parser_ABCCatFunctor_Right
     | _parser_ABCCatFunctor_Vert
-    | _parser_ABCCatBot 
+    | _parser_ABCCatBot
+    | _parser_ABCCatTop
     | _parser_ABCCatBase
 )
 
