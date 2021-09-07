@@ -212,12 +212,13 @@ class ABCCatReprMode(Enum):
     DEPCCG = 2
     """
     The style that can be read by depccg.
+    Parentheses are used instead of angle brackets.
 
     Examples
     --------
-    - `<S/NP>` stands for an `S` wanting an `NP` to its right.
-    - `<S\\NP>` is an `S` whose `NP` argument to its left is missing.
-    - `<S[m]\\NP>` is a predicate which bears an `m` feature.
+    - `(S/NP)` stands for an `S` wanting an `NP` to its right.
+    - `(S\\NP)` is an `S` whose `NP` argument to its left is missing.
+    - `(S[m]\\NP)` is a predicate which bears an `m` feature.
     """
 
     CCG2LAMBDA = 3
@@ -766,17 +767,27 @@ class ABCCatFunctor(ABCCat):
         self, 
         mode: ABCCatReprMode = ABCCatReprMode.TLCG
     ) -> str:
-        if self.func_mode == ABCCatFunctorMode.LEFT:
-            if mode == ABCCatReprMode.TLCG:
-                return f"<{self.ant.pprint(mode)}\\{self.conseq.pprint(mode)}>"
+        if mode == ABCCatReprMode.DEPCCG:
+            if self.func_mode == ABCCatFunctorMode.LEFT:
+                return f"({self.conseq.pprint(mode)}\\{self.ant.pprint(mode)})"
+            elif self.func_mode == ABCCatFunctorMode.RIGHT:
+                return f"({self.conseq.pprint(mode)}/{self.ant.pprint(mode)})"
+            elif self.func_mode == ABCCatFunctorMode.VERT:
+                return f"({self.conseq.pprint(mode)}|{self.ant.pprint(mode)})"
             else:
-                return f"<{self.conseq.pprint(mode)}\\{self.ant.pprint(mode)}>"
-        elif self.func_mode == ABCCatFunctorMode.RIGHT:
-            return f"<{self.conseq.pprint(mode)}/{self.ant.pprint(mode)}>"
-        elif self.func_mode == ABCCatFunctorMode.VERT:
-            return f"<{self.conseq.pprint(mode)}|{self.ant.pprint(mode)}>"
+                raise ValueError
         else:
-            raise ValueError
+            if self.func_mode == ABCCatFunctorMode.LEFT:
+                if mode == ABCCatReprMode.TLCG:
+                    return f"<{self.ant.pprint(mode)}\\{self.conseq.pprint(mode)}>"
+                else:
+                    return f"<{self.conseq.pprint(mode)}\\{self.ant.pprint(mode)}>"
+            elif self.func_mode == ABCCatFunctorMode.RIGHT:
+                return f"<{self.conseq.pprint(mode)}/{self.ant.pprint(mode)}>"
+            elif self.func_mode == ABCCatFunctorMode.VERT:
+                return f"<{self.conseq.pprint(mode)}|{self.ant.pprint(mode)}>"
+            else:
+                raise ValueError
     # === END ===
 
     def invert_dir(self):
