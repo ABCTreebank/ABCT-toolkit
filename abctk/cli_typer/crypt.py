@@ -1,4 +1,4 @@
-import importlib_resources as imp_res
+import importlib.resources as imp_res
 from pathlib import Path
 import os
 import shutil
