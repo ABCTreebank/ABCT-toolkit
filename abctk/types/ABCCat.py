@@ -568,7 +568,10 @@ class ABCCat():
 
     def __mul__(self, others):
         # NOTE: This operator must hinge on `simplify_exh` rather than `simplify` for the proper exploitation of cache, which is not available for the latter.
-        cat, _ = next(iter(ABCCat.simplify_exh(self, others)))
+        try:
+            cat, _ = next(iter(ABCCat.simplify_exh(self, others)))
+        except StopIteration as e:
+            raise ValueError("No application can be applied to the two categories.")
         return cat
 
     @abst_class.abstractmethod
