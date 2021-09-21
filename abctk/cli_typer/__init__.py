@@ -156,6 +156,9 @@ app.add_typer(crypt.app, name = "crypt")
 from . import conv
 app.add_typer(conv.app, name = "conv")
 
+from . import norm
+app.add_typer(norm.app, name = "norm")
+
 @app.command("ml-prep")
 def cmd_ml_prep(
     source_path: pathlib.Path = typer.Argument(
