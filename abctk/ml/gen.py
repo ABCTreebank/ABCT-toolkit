@@ -178,7 +178,9 @@ class Instance:
 
                         elif isinstance(only_child, Tree):
                             # unary node
-                            only_child_cat_parsed = abcc.ABCCat.p(label.cat).pprint(abcc.ABCCatReprMode.DEPCCG)
+                            only_child_cat_parsed = abcc.ABCCat.p(
+                                abcc.Annot.parse(only_child.label()).cat
+                            ).pprint(abcc.ABCCatReprMode.DEPCCG)
 
                             list_unary.append(
                                 (pointer_cat_parsed, only_child_cat_parsed)
