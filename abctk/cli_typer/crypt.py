@@ -15,10 +15,12 @@ import abctk.transform_Keyaki.corpus_readers as corpus_readers
 
 app = typer.Typer()
 
-@app.callback()
+@app.callback(invoke_without_command = True)
 def cmd_main():
     """
-    Encrypt (obfuscate) or decrypt the proprietary part of the Keyaki and the ABC Treebank.  
+    Encrypt (obfuscate) or decrypt the proprietary part of the Keyaki and the ABC Treebank.
+
+    (Not completely mirgated. Use `abctk_old` instead.)
     """
 
 @app.command("de-legacy")

@@ -18,6 +18,7 @@ app = typer.Typer()
 @app.callback()
 def cmd_main():
     """
+    Normalize ABC trees.
     """
 
 @app.command("treebank")
@@ -44,13 +45,22 @@ def cmd_from_treebank(
     ),
     discard_trace: bool = typer.Option(
         True,
+        help = """
+        Whether to discard existent trace features.
+        """
     ),
     reduction_check: bool = typer.Option(
         True,
+        help = """
+        If true, check the validity of beta-reduction before minimizing away categories.
+        Incorrect derivations, which might contain valuable mistakes (contra correct derivations, in which the resulting categories can be readily recovered), will be kept untouched.
+        
+        Skipping it will fasten the program.
+        """
     )
 ):
     """
-    
+    Normalize the ABC Treebank as a whole.
     """
     tb = list(nt.load_ABC_psd(source_path))
 

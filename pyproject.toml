@@ -18,8 +18,8 @@ exclude = ["**/docs"]
 "Bug Tracker" = "https://github.com/ABCTreebank/ABCTreebank/issues"
 
 [tool.poetry.scripts]
-abctk = "abctk.cli:cmd_main" 
-abctk_typer = "abctk.cli_typer:app" 
+abctk_old = "abctk.cli:cmd_main" 
+abctk = "abctk.cli_typer:app" 
 
 [tool.poetry.dependencies]
 python = "^3.9"

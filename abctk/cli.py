@@ -1,7 +1,6 @@
 import typing
 import pathlib
 
-import sys
 import logging
 logger = logging.getLogger(__name__)
 
@@ -120,9 +119,6 @@ def cmd_main(
 import abctk.conversion.cli as cli_conv
 cmd_main.add_command(cli_conv.cmd_main, name = "conv")
 
-import abctk.ml.cli as cli_ml
-cmd_main.add_command(cli_ml.cmd_main, name = "ml")
-
 import abctk.parsing.cli as cli_parse
 cmd_main.add_command(cli_parse.cmd_main, name = "parse")
 
@@ -137,39 +133,3 @@ cmd_main.add_command(
     cli_trans_ABC.cmd_main,
     name = "trans-ABC"
 )
-
-@cmd_main.command(
-    name = "dic",
-    short_help = "list special lexical entries in ABC Treebank"
-)
-def cmd_dic():
-    import abctk.dic
-    abctk.dic.dump_dic_as_csv(sys.stdout)
-# === END ===
-
-@cmd_main.command(name = "version")
-def cmd_ver():
-    from abctk.version import pprint_version_info
-    sys.stdout.write(pprint_version_info())
-# === END ===
-
-def _represent_PurePath(dumper, instance: pathlib.PurePath):
-    return dumper.represent_str(str(instance))
-# === END ===
-
-@cmd_main.command(
-    name = "show-config",
-    short_help = "dump the configurations recognized by the program (for debugging)"
-)
-@click.pass_context
-def cmd_show_conf(ctx: click.Context):
-    from ruamel.yaml import YAML
-
-    yaml = YAML()
-    yaml.representer.add_multi_representer(
-        pathlib.PurePath, 
-        _represent_PurePath
-    )
-    
-    yaml.dump(ctx.obj["CONFIG"], sys.stdout)
-# === END ===
