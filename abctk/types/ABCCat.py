@@ -64,7 +64,9 @@ class Annot:
     
     def pprint(
         self, 
-        pprinter_cat: typing.Callable[[typing.Any], str] = str
+        pprinter_cat: typing.Optional[
+            typing.Callable[[typing.Any], str]
+        ] = None
     ):
         """
         Prettyprint an ABC Treebank feature bundle.
@@ -573,7 +575,11 @@ class ABCCat():
     def pprint(
         self, 
         mode: ABCCatReprMode = ABCCatReprMode.TLCG
-    ) -> str: ...
+    ) -> str:
+        if isinstance(self, ABCCat):
+            return self.pprint(mode)
+        else:
+            return str(self)
 
     @classmethod
     @functools.lru_cache()

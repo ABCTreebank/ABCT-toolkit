@@ -103,8 +103,20 @@ def load_ABC_psd(
             pointer = stack.pop()
             if isinstance(pointer, Tree):
                 pointer.set_label(
-                    abcc.Annot.parse(pointer.label())
+                    abcc.Annot.parse(
+                        pointer.label(),
+                        #parser_cat = abcc.ABCCat.parse, # NOTE: too slow
+                        pprinter_cat = abcc.ABCCat.pprint,
+                        # TODO: exclude terminals
+                    )
                 )
+
+                if len(pointer) == 1:
+                    if not isinstance(pointer[0], Tree):
+                        continue
+                    
+                for child in tree:
+                    _parse_label(child)
             else:
                 # do nothing
                 pass
@@ -181,12 +193,8 @@ def dump_ABC_to_psd(
     def _flatten_tree(tree: typing.Union[Tree, str]):
         if isinstance(tree, Tree):
             label = tree.label()
-            if isinstance(label, tuple):
-                cat, feat = label
-                if isinstance(cat, abcc.ABCCat):
-                    label_pprint = cat.pprint() + abcc.annot_feat_pprint(feat)
-                else:
-                    label_pprint = str(cat) + abcc.annot_feat_pprint(feat)
+            if isinstance(label, abcc.Annot):
+                label_pprint = label.pprint()
             else:
                 label_pprint = str(label)
 
