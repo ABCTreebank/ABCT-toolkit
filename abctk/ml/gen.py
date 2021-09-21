@@ -150,17 +150,18 @@ class Instance:
             if not is_returning:
                 if isinstance(pointer, Tree):
                     label = pointer.label()
-                    if isinstance(label, tuple):
-                        pointer_cat_raw, pointer_feats = label
+                    if isinstance(label, abcc.Annot):
+                        pass
+                        #pointer_cat_raw, pointer_feats = label
                     elif isinstance(label, str):
-                        pointer_cat_raw, pointer_feats = abcc.parse_annot(label)
+                        label = abcc.Annot.parse(label)
                     else:
                         raise TypeError
 
-                    pointer_cat_parsed = abcc.ABCCat.p(pointer_cat_raw).pprint(abcc.ABCCatReprMode.DEPCCG)
+                    pointer_cat_parsed = abcc.ABCCat.p(label.cat).pprint(abcc.ABCCatReprMode.DEPCCG)
                     len_children = len(pointer)
 
-                    if pointer_feats.get("deriv", "") == "leave":
+                    if label.feats.get("deriv", "") == "leave":
                         raise DepCCGIneligibleTreeException("Non-CCG derivations are not supported")
                     elif len_children == 1:
                         only_child = pointer[0]
@@ -177,8 +178,7 @@ class Instance:
 
                         elif isinstance(only_child, Tree):
                             # unary node
-                            only_child_cat_raw, _ = abcc.parse_annot(only_child.label())
-                            only_child_cat_parsed = abcc.ABCCat.p(only_child_cat_raw).pprint(abcc.ABCCatReprMode.DEPCCG)
+                            only_child_cat_parsed = abcc.ABCCat.p(label.cat).pprint(abcc.ABCCatReprMode.DEPCCG)
 
                             list_unary.append(
                                 (pointer_cat_parsed, only_child_cat_parsed)
@@ -194,10 +194,14 @@ class Instance:
                     elif len_children == 2:
                         # binary branching
                         child_1, child_2 = pointer
-                        child_1_cat_raw, _ = abcc.parse_annot(child_1.label())
-                        child_1_cat_converted = abcc.ABCCat.p(child_1_cat_raw).pprint(abcc.ABCCatReprMode.DEPCCG)
-                        child_2_cat_raw, _ = abcc.parse_annot(child_2.label())
-                        child_2_cat_converted = abcc.ABCCat.p(child_2_cat_raw).pprint(abcc.ABCCatReprMode.DEPCCG)
+
+                        child_1_cat_converted = abcc.ABCCat.p(
+                            abcc.Annot.parse(child_1.label()).cat
+                        ).pprint(abcc.ABCCatReprMode.DEPCCG)
+
+                        child_2_cat_converted = abcc.ABCCat.p(
+                            abcc.Annot.parse(child_2.label()).cat
+                        ).pprint(abcc.ABCCatReprMode.DEPCCG)
 
                         list_binary_seen.append(
                             (child_1_cat_converted, child_2_cat_converted)
