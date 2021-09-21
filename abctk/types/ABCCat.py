@@ -468,15 +468,16 @@ class ABCCat():
             queue.append(
                 (left_parsed, right_parsed, False, lambda x, res: (x, res))
             )
-        elif (
+        # === END IF ===
+
+        if (
             isinstance(right_parsed, ABCCatFunctor)
             and right_parsed.func_mode in (ABCCatFunctorMode.LEFT, )
         ):
             queue.append(
                 (right_parsed, left_parsed, True, lambda x, res: (x, res))
             )
-        else:
-            pass
+        # === END IF ===
 
         while queue:
             f, v, ant_left, decor = queue.popleft()
@@ -688,6 +689,9 @@ class ABCCatBot(ABCCat, Enum):
             return False
         else:
             return NotImplemented
+
+    def __hash__(self):
+        return hash(self.BOT.value)
 
 _re_ABCCat_feature = re.compile(r"(?P<cat>.*?)(?<=[A-Z])(?P<feat>[a-z][a-z0-9]*)")
 

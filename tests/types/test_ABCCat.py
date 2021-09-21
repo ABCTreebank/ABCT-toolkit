@@ -45,7 +45,7 @@ class Test_ABCCat:
             ant = ABCCatBase("NP"),
             conseq = ABCCatBase("S"),
         )
-#
+
     def test_parse_pprint(self):
         test_items = (
             "⊥", "NP", "NP\\S", "<NP\\S>", "<S/NP>",
@@ -79,6 +79,13 @@ class Test_ABCCat:
             (("A\\B", "B\\C"), ("A\\C", "L1")),
             (("C/B", "B/A"), ("C/A", "R1")),
             (("C/<B\\A>", "B\\A"), ("C", "R0")),
+            (
+                (
+                    "<<PPs\\Srel>/<PPs\\Srel>>",
+                    "<<<PPs\\Srel>/<PPs\\Srel>>\\<<PPs\\Srel>/<PPs\\Srel>>>"
+                ),
+                ("<<PPs\\Srel>/<PPs\\Srel>>", "L0"),
+            ),
         )
         for (left, right), (cat_exp, res_exp) in test_items:
             res_set = ABCCat.simplify_exh(left, right)
