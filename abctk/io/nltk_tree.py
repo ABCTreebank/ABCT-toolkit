@@ -134,7 +134,7 @@ def load_ABC_psd(
         yield ID, tree
 
         if prog_stream:
-            prog_stream.write(f"\r# of tree(s) fetched: {i:,}")
+            prog_stream.write(f"\r# of tree(s) fetched: {i + 1:,}")
             
     if prog_stream:
         prog_stream.write("\n")
