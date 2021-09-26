@@ -233,6 +233,11 @@ class ABCCatReprMode(Enum):
     - `<S\\NP>` is an `S` whose `NP` argument to its left is missing.
     - `<S[m=true]\\NP>` is a predicate which bears an `m` feature.
     """
+
+_re_elimtype = re.compile(
+    r"^(?P<dir>[<>|])(B(?P<level>[0-9]+))?$"
+)
+
 @attr.s(
     auto_attribs = True,
     slots = True,
@@ -241,6 +246,8 @@ class ABCCatReprMode(Enum):
 class ElimType:
     """
     Representing details of simplification of ABC categories.
+
+    The string representation `__str__` is compatible with the Jigg-ccg2lambda format. 
     """
 
     func_mode: ABCCatFunctorMode
@@ -253,8 +260,53 @@ class ElimType:
     The depth of functional compoisition.
     """
 
+    @classmethod
+    def is_compatible_repr(cls, input: str) -> bool:
+        return (
+            input in ("", "none")
+            or bool(_re_elimtype.match(input))
+        )
+
+    @classmethod
+    def is_repr(cls, input: str) -> bool:
+        return bool(_re_elimtype.match(input))
+
+    @classmethod
+    def maybe_parse(cls, input: str):
+        match = _re_elimtype.match(input)
+
+        if match:
+            d = match.groupdict()
+
+            level = d.get("level", 0)
+            dir_raw = d["dir"]
+            
+            if dir_raw == "<":
+                direct = ABCCatFunctorMode.LEFT
+            elif dir_raw == ">":
+                direct = ABCCatFunctorMode.RIGHT
+            elif dir_raw == "|":
+                direct = ABCCatFunctorMode.VERT
+            else:
+                raise ValueError
+            
+            return cls(func_mode = direct, level = level)
+        else:
+            return input
+
     def __str__(self):
-        return f"{self.func_mode.value}{self.level}"
+        level_str = f"B{self.level}" if self.level > 0 else ""
+
+        direct = self.func_mode
+
+        if direct == ABCCatFunctorMode.LEFT:
+            return f"<{level_str}"
+        elif direct == ABCCatFunctorMode.RIGHT:
+            return f">{level_str}"
+        elif direct == ABCCatFunctorMode.VERT:
+            return f"|{level_str}"
+        else:
+            raise ValueError
 
 ABCSimplifyRes = typing.Tuple["ABCCat", ElimType]
 
@@ -563,7 +615,7 @@ class ABCCat():
         >>> cat.pprint()
         '<A/C>'
         >>> str(details)
-        'R1'
+        '>'
         """
         
         return set(cls.simplify(left, right))

@@ -1,3 +1,5 @@
+import pytest
+
 from abctk.types.ABCCat import *
 
 class Test_DepMk:
@@ -71,40 +73,40 @@ class Test_ABCCat:
         assert ABCCat.p("S/NP").adj_l() == ABCCat.p("<S/NP>\\<S/NP>")
         assert ABCCat.p("NP\\S").adj_r() == ABCCat.p("<NP\\S>/<NP\\S>")
 
-    def test_simplify_exh(self):
-        test_items = (
-            (("S/NP", "NP"), ("S", "R0")),
-            (("S|NP", "NP"), ("S", "V0")),
-            (("NP", "NP\\S"), ("S", "L0")),
-            (("A\\B", "B\\C"), ("A\\C", "L1")),
-            (("C/B", "B/A"), ("C/A", "R1")),
-            (("C/<B\\A>", "B\\A"), ("C", "R0")),
+    simp_items = [
+        (("S/NP", "NP"), ("S", ">")),
+        (("S|NP", "NP"), ("S", "|")),
+        (("PPs", "S|PPs"), ("S", "|")),
+        (("NP", "NP\\S"), ("S", "<")),
+        (("A\\B", "B\\C"), ("A\\C", "<B1")),
+        (("C/B", "B/A"), ("C/A", ">B1")),
+        (("C/<B\\A>", "B\\A"), ("C", ">")),
+        (
             (
-                (
-                    "<<PPs\\Srel>/<PPs\\Srel>>",
-                    "<<<PPs\\Srel>/<PPs\\Srel>>\\<<PPs\\Srel>/<PPs\\Srel>>>"
-                ),
-                ("<<PPs\\Srel>/<PPs\\Srel>>", "L0"),
+                "<<PPs\\Srel>/<PPs\\Srel>>",
+                "<<<PPs\\Srel>/<PPs\\Srel>>\\<<PPs\\Srel>/<PPs\\Srel>>>"
             ),
+            ("<<PPs\\Srel>/<PPs\\Srel>>", "<"),
         )
-        for (left, right), (cat_exp, res_exp) in test_items:
-            res_set = ABCCat.simplify_exh(left, right)
-            assert (ABCCat.p(cat_exp), res_exp) in {
-                (cat, str(res)) for cat, res in res_set
-            }
+    ]
 
-    def test_mul(self):
-        test_items = (
-            (("S/NP", "NP"), ("S", "R0")),
-            (("S|NP", "NP"), ("S", "V0")),
-            (("NP", "NP\\S"), ("S", "L0")),
-            (("A\\B", "B\\C"), ("A\\C", "L1")),
-            (("C/B", "B/A"), ("C/A", "R1")),
-            (("C/<B\\A>", "B\\A"), ("C", "R0")),
-        )
-        for (left, right), (cat_exp, _) in test_items:
-            res = ABCCat.p(left) * right
-            assert res == ABCCat.p(cat_exp)
+    @pytest.mark.parametrize("input, answer", simp_items)
+    def test_simplify_exh(self, input, answer):
+        left, right = input
+        cat_exp, res_exp = answer
+        
+        res_set = ABCCat.simplify_exh(left, right)
+        assert (ABCCat.p(cat_exp), res_exp) in {
+            (cat, str(res)) for cat, res in res_set
+        }
+
+    @pytest.mark.parametrize("input, answer", simp_items)
+    def test_mul(self, input, answer):
+        left, right = input
+        cat_exp, res_exp = answer
+
+        res = ABCCat.p(left) * right
+        assert res == ABCCat.p(cat_exp)
 
     def test_invert_dir(self):
         test_items = (
