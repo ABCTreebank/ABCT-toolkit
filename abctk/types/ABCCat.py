@@ -516,7 +516,10 @@ class ABCCat():
         ] = deque()
         if (
             isinstance(left_parsed, ABCCatFunctor)
-            and left_parsed.func_mode in (ABCCatFunctorMode.RIGHT, ABCCatFunctorMode.VERT)
+            and left_parsed.func_mode in (
+                ABCCatFunctorMode.RIGHT,
+                ABCCatFunctorMode.VERT,
+            )
         ):
             queue.append(
                 (left_parsed, right_parsed, False, lambda x, res: (x, res))
@@ -525,10 +528,14 @@ class ABCCat():
 
         if (
             isinstance(right_parsed, ABCCatFunctor)
-            and right_parsed.func_mode in (ABCCatFunctorMode.LEFT, )
+            and right_parsed.func_mode in (
+                ABCCatFunctorMode.LEFT,
+                ABCCatFunctorMode.VERT,
+            )
         ):
             queue.append(
                 (right_parsed, left_parsed, True, lambda x, res: (x, res))
+                # swapped
             )
         # === END IF ===
 
@@ -841,6 +848,15 @@ class ABCCatFunctor(ABCCat):
                 return f"({self.conseq.pprint(mode)}|{self.ant.pprint(mode)})"
             else:
                 raise ValueError
+        elif mode == ABCCatReprMode.CCG2LAMBDA:
+            if self.func_mode == ABCCatFunctorMode.LEFT:
+                return f"({self.ant.pprint(mode)}\\{self.conseq.pprint(mode)})"
+            elif self.func_mode == ABCCatFunctorMode.RIGHT:
+                return f"({self.conseq.pprint(mode)}/{self.ant.pprint(mode)})"
+            elif self.func_mode == ABCCatFunctorMode.VERT:
+                return f"({self.conseq.pprint(mode)}|{self.ant.pprint(mode)})"
+            else:
+                raise ValueError
         else:
             if self.func_mode == ABCCatFunctorMode.LEFT:
                 if mode == ABCCatReprMode.TLCG:
@@ -916,10 +932,20 @@ class ABCCatFunctor(ABCCat):
         ant_parsed = ABCCat.p(ant)
 
         if self.ant == ant_parsed:
-            if not ant_left or self.func_mode == ABCCatFunctorMode.LEFT:
-                return self.conseq
-            else:
+            if (
+                (
+                    self.func_mode == ABCCatFunctorMode.LEFT
+                    and not ant_left
+                ) or (
+                    self.func_mode == ABCCatFunctorMode.RIGHT
+                    and ant_left
+                )
+            ):
+                # wrong functor-argument arrangement
                 return None
+            else:
+                # reduction successful
+                return self.conseq
         else:
             return None
 
