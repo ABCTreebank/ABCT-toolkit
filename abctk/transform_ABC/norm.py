@@ -107,9 +107,7 @@ def elaborate_tree(
         )
         # NOTE: subtrees tampered
 
-        if len(children_cats) == 2:
-            deriv = self_label_feats.get("deriv", "none")
-            if deriv == "none":
+            if abcc.ElimType.is_compatible_repr(deriv):
                 child_1, child_2 = children_cats
                 if child_1 is None or child_2 is None:
                     pass
@@ -118,24 +116,31 @@ def elaborate_tree(
                     if cat_applied_res_set:
                         # simp successful
                         new_cat, elimtype = next(iter(cat_applied_res_set))
-                        if not self_label_cat:
-                            # self_label_cat is empty
+                        if not self_label_cat and deriv == "none":
+                            # self_label_cat is empty, no deriv speficied
                             # supplement it with the result
                             self_label_cat = new_cat
 
-                            self_label_feats["trace.elab.res-deriv"] = str(elimtype)
+                            self_label_feats["deriv"] = str(elimtype)
                             tree.set_label(
                                 attr.evolve(
                                     self_label,
                                     cat = new_cat,
                                 )
                             )
-                        elif self_label_cat == new_cat:
+                        elif abcc.ABCCat.p(self_label_cat) == new_cat:
                             # successful
-                            # do nothing
-                            pass
+                            # check deriv
+                            if deriv == "none":
+                                # no deriv 
+                                # fill it
+                                self_label_feats["deriv"] = str(elimtype)
+                            else:
+                                deriv_parsed = abcc.ElimType.maybe_parse(deriv)
+                                if deriv_parsed != elimtype:
+                                    self_label_feats["trace.elab.wrong-rule"] = str(elimtype)
                         else:
-                            # not matching
+                            # categories are not identical
                             self_label_feats["trace.elab.error"] = "cat-discrepancy"
                             self_label_feats["trace.elab.res"] = new_cat.pprint()
                             self_label_feats["trace.elab.res-deriv"] = str(elimtype)
