@@ -107,6 +107,10 @@ def elaborate_tree(
         )
         # NOTE: subtrees tampered
 
+        children_count = len(children_cats)
+        deriv: str = self_label_feats.get("deriv", "none")
+
+        if children_count == 2:
             if abcc.ElimType.is_compatible_repr(deriv):
                 child_1, child_2 = children_cats
                 if child_1 is None or child_2 is None:
@@ -162,8 +166,31 @@ def elaborate_tree(
                 # special derivations
                 # do nothing
                 pass
-        else:
-            pass
+        elif children_count == 1:
+            if deriv == "none":
+                # check if it is actually a |-intro
+                only_child = children_cats[0]
+                if only_child is not None and self_label_cat:
+                    self_label_cat_parsed = abcc.ABCCat.p(self_label_cat)
+
+                    if (
+                        isinstance(self_label_cat_parsed, abcc.ABCCatFunctor)
+                        and self_label_cat_parsed.func_mode == abcc.ABCCatFunctorMode.VERT
+                        and abcc.ABCCat.parse(only_child) == self_label_cat_parsed.conseq
+                    ):
+                        # found a |-intro situation
+        
+                        # Try finding indices
+                        index = "unknown"
+                        comp_list = self_label_feats.get("comp", "").split(",")
+                        if comp_list and "bind" in comp_list:
+                            index = f"{comp_list[1]}{comp_list[0]}"
+
+                        self_label_feats["deriv"] = f"|intro-{index}"
+                else:
+                    pass
+            else:
+                pass
         
         return self_label_cat
     else:
