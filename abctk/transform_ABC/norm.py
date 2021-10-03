@@ -171,6 +171,7 @@ def elaborate_tree(
                 # check if it is actually a |-intro
                 only_child = children_cats[0]
                 if only_child is not None and self_label_cat:
+                    # self_label has a cat & the only_child also has a cat
                     self_label_cat_parsed = abcc.ABCCat.p(self_label_cat)
 
                     if (
@@ -181,12 +182,15 @@ def elaborate_tree(
                         # found a |-intro situation
         
                         # Try finding indices
-                        index = "unknown"
+                        index = "unary-unknown"
                         comp_list = self_label_feats.get("comp", "").split(",")
                         if comp_list and "bind" in comp_list:
                             index = f"{comp_list[1]}{comp_list[0]}"
 
                         self_label_feats["deriv"] = f"|intro-{index}"
+                    else:
+                        # found an ordinary unary branching
+                        self_label_feats["deriv"] = "unary-unknown"
                 else:
                     pass
             else:
