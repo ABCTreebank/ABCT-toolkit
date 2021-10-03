@@ -159,6 +159,9 @@ app.add_typer(conv.app, name = "conv")
 from . import norm
 app.add_typer(norm.app, name = "norm")
 
+from . import to_jigg
+app.add_typer(to_jigg.app, name = "to-jigg")
+
 @app.command("ml-prep")
 def cmd_ml_prep(
     source_path: pathlib.Path = typer.Argument(
