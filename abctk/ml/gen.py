@@ -271,7 +271,7 @@ class Instance:
     def to_json_list(self):
         ana = self.analysis
         return [
-            " ".join(word for _, word, _, _ in ana),
+            " ".join(word for _, word, _, _ in sorted(ana)),
             [
                 [cat  for _, _, cat, _  in ana],
                 [head for _, _, _, head in ana],
@@ -452,7 +452,14 @@ class DepCCGDataSet:
 
                 if pg_disc is not None:
                     pg_disc.update(-1)
+            except Exception as e:
+                logger.warning(
+                    f"Tree (ID: {ID}) cannot be transformed for unexpect reasons. Reason: {e}"
+                )
+                res = None
 
+                if pg_disc is not None:
+                    pg_disc.update(-1)
             if pg_obj is not None:
                 pg_obj.update()
 
