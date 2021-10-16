@@ -162,6 +162,9 @@ app.add_typer(norm.app, name = "norm")
 from . import to_jigg
 app.add_typer(to_jigg.app, name = "to-jigg")
 
+from . import elim_empty
+app.add_typer(elim_empty.app, name = "elim-empty")
+
 @app.command("ml-prep")
 def cmd_ml_prep(
     source_path: pathlib.Path = typer.Argument(
