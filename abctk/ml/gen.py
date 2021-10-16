@@ -178,9 +178,16 @@ class Instance:
 
                         elif isinstance(only_child, Tree):
                             # unary node
-                            only_child_cat_parsed = abcc.ABCCat.p(
-                                abcc.Annot.parse(only_child.label()).cat
-                            ).pprint(abcc.ABCCatReprMode.DEPCCG)
+                            only_child_label = only_child.label()
+
+                            if isinstance(only_child_label, abcc.Annot):
+                                only_child_cat_parsed = abcc.ABCCat.p(
+                                    only_child_label.cat
+                                ).pprint(abcc.ABCCatReprMode.DEPCCG)
+                            else:
+                                only_child_cat_parsed = abcc.ABCCat.p(
+                                    abcc.Annot.parse(only_child.label()).cat
+                                ).pprint(abcc.ABCCatReprMode.DEPCCG)
 
                             list_unary.append(
                                 (pointer_cat_parsed, only_child_cat_parsed)
@@ -197,13 +204,25 @@ class Instance:
                         # binary branching
                         child_1, child_2 = pointer
 
-                        child_1_cat_converted = abcc.ABCCat.p(
-                            abcc.Annot.parse(child_1.label()).cat
-                        ).pprint(abcc.ABCCatReprMode.DEPCCG)
+                        child_1_label = child_1.label()
+                        if isinstance(child_1_label, abcc.Annot):
+                            child_1_cat_converted = abcc.ABCCat.p(
+                                child_1_label.cat
+                            ).pprint(abcc.ABCCatReprMode.DEPCCG)
+                        else:
+                            child_1_cat_converted = abcc.ABCCat.p(
+                                abcc.Annot.parse(child_1.label()).cat
+                            ).pprint(abcc.ABCCatReprMode.DEPCCG)
 
-                        child_2_cat_converted = abcc.ABCCat.p(
-                            abcc.Annot.parse(child_2.label()).cat
-                        ).pprint(abcc.ABCCatReprMode.DEPCCG)
+                        child_2_label = child_2.label()
+                        if isinstance(child_2_label, abcc.Annot):
+                            child_2_cat_converted = abcc.ABCCat.p(
+                                child_2_label.cat
+                            ).pprint(abcc.ABCCatReprMode.DEPCCG)
+                        else:
+                            child_2_cat_converted = abcc.ABCCat.p(
+                                abcc.Annot.parse(child_2.label()).cat
+                            ).pprint(abcc.ABCCatReprMode.DEPCCG)
 
                         list_binary_seen.append(
                             (child_1_cat_converted, child_2_cat_converted)
