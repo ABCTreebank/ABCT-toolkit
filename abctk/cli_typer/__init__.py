@@ -165,6 +165,24 @@ app.add_typer(to_jigg.app, name = "to-jigg")
 from . import elim_empty
 app.add_typer(elim_empty.app, name = "elim-empty")
 
+@app.command("interp-parse-result")
+def cmd_interp_parse():
+    """
+    Convert sentences parsed by AllenNLP/depccg into trees in the Penn Treebank format.
+
+    Data are exchanged through STDIN/STDOUT.
+    """
+
+    from abctk.io.depccg_parse_output import load_ABC_parsed_jsonl_psd
+    import abctk.io.nltk_tree as nt
+
+    trees_with_ID = load_ABC_parsed_jsonl_psd(sys.stdin)
+
+    sys.stdout.writelines(
+        nt.flatten_tree_with_ID(ID, tree) + "\n"
+        for ID, tree in trees_with_ID
+    )
+
 @app.command("ml-prep")
 def cmd_ml_prep(
     source_path: pathlib.Path = typer.Argument(

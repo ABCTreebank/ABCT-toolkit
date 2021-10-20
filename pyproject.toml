@@ -50,6 +50,7 @@ pykakasi = "^2.1.0"
 simplejson = "^3.17.3"
 Cython = { version = "^0.29.24", optional = true }
 typer = "^0.4.0"
+jsonlines = "^2.0.0"
 lark = "^0.11.3"
 
 [tool.poetry.dev-dependencies]
