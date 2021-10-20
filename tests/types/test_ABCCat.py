@@ -10,18 +10,20 @@ class Test_DepMk:
         assert DepMk("a") == DepMk.ADJUNCT
         assert DepMk("ac") == DepMk.ADJUNCT_CONTROL
 
-def test_parse_pprint_annot():
-    test_items = (
+class Test_Annot():
+    pprint_items = (
         ("a", "#role=c"),
         ("<a/b/c>", "#deriv=stref#comp-id=1"),
     )
+    
+    @pytest.mark.parametrize("cat, feat", pprint_items)
+    def test_pprint(self, cat, feat):
+        string = cat + feat
+        parsed = Annot.parse(string)
+        parsed_pprinted = parsed.pprint()
+        parsed_pprinted_parsed = Annot.parse(parsed_pprinted)
 
-    for item in test_items:
-        cat, feats = parse_annot("".join(item))
-        assert cat == item[0]
-        feat_str = annot_feat_pprint(feats)
-        cat, feats_2 = parse_annot(feat_str)
-        assert feats == feats_2
+        assert parsed == parsed_pprinted_parsed
 
 class Test_ABCCat:
     parse_items = (
