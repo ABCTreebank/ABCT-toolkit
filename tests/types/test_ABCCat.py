@@ -24,29 +24,38 @@ def test_parse_pprint_annot():
         assert feats == feats_2
 
 class Test_ABCCat:
-    def test_parse(self):
-        assert ABCCat.parse("⊥") == ABCCatBot.BOT
-        assert ABCCat.parse("NP") == ABCCatBase("NP")
-        assert ABCCat.parse("<NP\\S>") == ABCCatFunctor(
-            func_mode = ABCCatFunctorMode.LEFT,
-            ant = ABCCatBase("NP"),
-            conseq = ABCCatBase("S"),
-        )
-        assert ABCCat.parse("<S/NP>") == ABCCatFunctor(
-            func_mode = ABCCatFunctorMode.RIGHT,
-            ant = ABCCatBase("NP"),
-            conseq = ABCCatBase("S"),
-        )
-        assert ABCCat.parse("S/NP") == ABCCatFunctor(
-            func_mode = ABCCatFunctorMode.RIGHT,
-            ant = ABCCatBase("NP"),
-            conseq = ABCCatBase("S"),
-        )
-        assert ABCCat.parse("S|NP") == ABCCatFunctor(
-            func_mode = ABCCatFunctorMode.VERT,
-            ant = ABCCatBase("NP"),
-            conseq = ABCCatBase("S"),
-        )
+    parse_items = (
+        ("⊥", ABCCatBot.BOT),
+        ("NP", ABCCatBase("NP")),
+        ("<NP\\S>", ABCCatFunctor(
+                func_mode = ABCCatFunctorMode.LEFT,
+                ant = ABCCatBase("NP"),
+                conseq = ABCCatBase("S"),
+            )
+        ),
+        ("<S/NP>", ABCCatFunctor(
+                func_mode = ABCCatFunctorMode.RIGHT,
+                ant = ABCCatBase("NP"),
+                conseq = ABCCatBase("S"),
+            )
+        ),
+        ("S/NP", ABCCatFunctor(
+                func_mode = ABCCatFunctorMode.RIGHT,
+                ant = ABCCatBase("NP"),
+                conseq = ABCCatBase("S"),
+            )
+        ),
+        ("S|NP", ABCCatFunctor(
+                func_mode = ABCCatFunctorMode.VERT,
+                ant = ABCCatBase("NP"),
+                conseq = ABCCatBase("S"),
+            )
+        ),
+    )
+
+    @pytest.mark.parametrize("input, answer", parse_items)
+    def test_parse(self, input, answer):
+        assert ABCCat.parse(input) == answer
 
     def test_parse_pprint(self):
         test_items = (
@@ -72,6 +81,30 @@ class Test_ABCCat:
     def test_adjunct(self):
         assert ABCCat.p("S/NP").adj_l() == ABCCat.p("<S/NP>\\<S/NP>")
         assert ABCCat.p("NP\\S").adj_r() == ABCCat.p("<NP\\S>/<NP\\S>")
+
+    _lexer_items = [
+        (
+            "<ABC/DE>>F//G\\\\H<>JJK//L/MM/N",
+            ("<", "ABC", "/", "DE", ">", ">", "F", "/", "/", "G", "\\", "\\", "H", "<", ">", "JJK", "/", "/", "L", "/", "MM", "/", "N"),
+            None
+        ),
+        ("DE//<", ("DE", "/", "/", "<"), None),
+        (
+            "(ABC/DE))F//G\\\\H()JJK//L/MM/N",
+            ("(", "ABC", "/", "DE", ")", ")", "F", "/", "/", "G", "\\", "\\", "H", "(", ")", "JJK", "/", "/", "L", "/", "MM", "/", "N"),
+            "/\\()⊥⊤"
+        ),
+        ("DE//(", ("DE", "/", "/", "("), "/\\()⊥⊤"),
+    ]
+
+    @pytest.mark.parametrize("input, answer, symbols", _lexer_items)
+    def test__lexer(self, input, answer, symbols):
+        if symbols:
+            res = tuple(ABCCat._lexer(input, symbols))
+        else:
+            res = tuple(ABCCat._lexer(input))
+
+        assert res == answer
 
     simp_items = [
         (("S/NP", "NP"), ("S", ">")),
@@ -157,13 +190,13 @@ class Test_ABCCatFunctor:
             res = f.reduce_with(ant, ant_left)
             assert res == ABCCat.parse(res_exp)
 
-    def test_pprint(self):
-        test_items = (
-            ("C/<B\\A>", ABCCatReprMode.TLCG, "<C/<B\\A>>"),
-            ("C/<B\\A>", ABCCatReprMode.TRADITIONAL, "<C/<A\\B>>"),
-            ("C/<Bm3/A>", ABCCatReprMode.DEPCCG, "<C/<B[m3]/A>>"),
-        )
+    pprint_items = (
+        ("C/<B\\A>", ABCCatReprMode.TLCG, "<C/<B\\A>>"),
+        ("C/<B\\A>", ABCCatReprMode.TRADITIONAL, "<C/<A\\B>>"),
+        ("C/<Bm3/A>", ABCCatReprMode.DEPCCG, "(C/(B[m3]/A))"),
+    )
 
-        for item, mode, res_exp in test_items:
-            res = ABCCat.p(item).pprint(mode)
-            assert res == res_exp
+    @pytest.mark.parametrize("input, mode, answer", pprint_items)
+    def test_pprint(self, input, mode, answer):
+
+        assert ABCCat.p(input).pprint(mode) == answer

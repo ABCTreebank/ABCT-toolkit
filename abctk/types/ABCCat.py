@@ -6,7 +6,7 @@ import re
 import typing
 
 import attr
-import parsy
+import lark
 
 class DepMk(Enum):
     """
@@ -683,7 +683,9 @@ class ABCCat():
         # TODO: find alternative of parsy. Still not efficient.
 
         if isinstance(source, str):
-            return _parser_ABCCat.parse(source) # typing: ignore
+            parser = _init_parser(mode)
+            return parser.parse(source)
+
         elif isinstance(source, ABCCat):
             return source
         else:
@@ -701,8 +703,34 @@ class ABCCat():
         return cls.parse(source, mode)
 
     @classmethod
-    def p_trad(cls, source: ABCCatReady):
-        raise NotImplementedError
+    @functools.lru_cache()
+    def _lexer(
+        cls,
+        source: str,
+        symbols: str = "/\\<>⊥⊤"
+    ) -> typing.Iterator[str]:
+        pt_begin = 0
+        pt_end = 0
+    
+        while pt_end < len(source):
+            curr_char = source[pt_end]
+            
+            if curr_char in symbols:
+                # yield previous char
+                if pt_begin < pt_end:
+                    yield source[pt_begin:pt_end]
+                    
+                yield curr_char
+                
+                pt_begin = pt_end + 1
+                pt_end += 1
+            else:
+                # make pt_begin trailing
+                pt_end += 1
+            
+        if pt_begin < pt_end:
+            yield source[pt_begin:pt_end]
+    # === END ===
 
 class ABCCatTop(ABCCat, Enum):
     """
@@ -951,91 +979,101 @@ class ABCCatFunctor(ABCCat):
 
 # === END CLASS ===
 
-_parser_ABCCatTop: parsy.Parser = parsy.from_enum(ABCCatTop)
-_parser_ABCCatBot: parsy.Parser = parsy.from_enum(ABCCatBot)
-_parser_ABCCatBase: parsy.Parser = parsy.regex(r"[^/\\|<>#\s]+").map(ABCCatBase)
+_cat_grammar_TLCG = r"""
+cat: (cat_simple | cat_group)
+cat_group: "<" cat_simple ">"
+cat_simple: func_left | func_right | func_vert | bot | top | atom
+func_left: cat "\\" cat
+func_right: cat "/" cat
+func_vert: cat "|" cat
+bot: "⊥"
+top: "⊤"
+atom: ATOM
+ATOM: /[^\/\\|<>#\s]+/
+"""
 
-@parsy.generate
-def _parser_ABCCatFunctor_Left() -> parsy.Parser: 
-    que = yield (
-        _parser_ABCCatBot
-        | _parser_ABCCatBase
-        | _parser_ABCCat_group
-    ).sep_by(
-        parsy.string("\\"),
-        min = 2,
-    )
+_cat_grammar_DEPCCG = r"""
+cat: (cat_simple | cat_group)
+cat_group: "(" cat_simple ")"
+cat_simple: func_left | func_right | func_vert | bot | top | atom
+func_left: cat "\\" cat
+func_right: cat "/" cat
+func_vert: cat "|" cat
+bot: "⊥"
+top: "⊤"
+atom: ATOM
+ATOM: /[^\/\\|()#\s]+/
+"""
+class CatParserTransformer(lark.Transformer):
+    def __init__(self, mode: ABCCatReprMode = ABCCatReprMode.TLCG):
+        self.mode = mode
 
-    return functools.reduce(
-        lambda c, a: ABCCatFunctor(
-            func_mode = ABCCatFunctorMode.LEFT,
-            ant = a,
-            conseq = c,
-        ),
-        reversed(que)
-    )
-# === END ===
+    def atom(self, args: typing.Sequence[lark.Token]):
+        return ABCCatBase(args[0].value)
 
-@parsy.generate
-def _parser_ABCCatFunctor_Vert() -> parsy.Parser:
-    stack = yield (
-        _parser_ABCCatBot
-        | _parser_ABCCatBase
-        | _parser_ABCCatFunctor_Left
-        | _parser_ABCCatFunctor_Right
-        | _parser_ABCCat_group
-    ).sep_by(
-        parsy.string("|"),
-        min = 2,
-    )
+    def top(self, args):
+        return ABCCatTop.TOP
 
-    return functools.reduce(
-        lambda c, a: ABCCatFunctor(
-            func_mode = ABCCatFunctorMode.VERT,
-            ant = a,
-            conseq = c,
-        ),
-        stack
-    )
+    def bot(self, args):
+        return ABCCatBot.BOT
 
-@parsy.generate
-def _parser_ABCCatFunctor_Right() -> parsy.Parser:
-    stack = yield (
-        _parser_ABCCatBot
-        | _parser_ABCCatBase
-        | _parser_ABCCatFunctor_Left
-        | _parser_ABCCat_group
-    ).sep_by(
-        parsy.string("/"),
-        min = 2,
-    )
+    def func_vert(self, args):
+        return ABCCatFunctor(
+            ABCCatFunctorMode.VERT,
+            args[1],
+            args[0],
+        )
 
-    return functools.reduce(
-        lambda c, a: ABCCatFunctor(
-            func_mode = ABCCatFunctorMode.RIGHT,
-            ant = a,
-            conseq = c,
-        ),
-        stack
-    )
-# === END ===
+    def func_right(self, args):
+        return ABCCatFunctor(
+            ABCCatFunctorMode.RIGHT,
+            args[1],
+            args[0],
+        )
 
-_parser_ABCCat_simple: parsy.Parser = (
-    _parser_ABCCatFunctor_Left
-    | _parser_ABCCatFunctor_Right
-    | _parser_ABCCatFunctor_Vert
-    | _parser_ABCCatBot
-    | _parser_ABCCatTop
-    | _parser_ABCCatBase
-)
+    def func_left(self, args):
+        if self.mode == ABCCatReprMode.TLCG:
+            return ABCCatFunctor(
+                ABCCatFunctorMode.LEFT,
+                args[0],
+                args[1],
+            )
+        else:
+            return ABCCatFunctor(
+                ABCCatFunctorMode.LEFT,
+                args[1],
+                args[0]
+            )
 
-_parser_ABCCat_group: parsy.Parser = (
-    parsy.string("<")
-    >> _parser_ABCCat_simple
-    << parsy.string(">")
-)
+    def cat_simple(self, args):
+        return args[0]
 
-_parser_ABCCat: parsy.Parser = (
-    _parser_ABCCat_simple
-    | _parser_ABCCat_group
-)
+    def cat_group(self, args):
+        return args[0]
+
+    def cat(self, args):
+        return args[0]
+
+_cat_parser: typing.Dict[ABCCatReprMode, lark.Lark] = {}
+def _init_parser(mode: ABCCatReprMode):
+    global _cat_parser
+
+    if mode not in _cat_parser:
+        if mode == ABCCatReprMode.TLCG:
+            _cat_parser[mode] = lark.Lark(
+                _cat_grammar_TLCG,
+                start = "cat",
+                parser = "lalr",
+                transformer = CatParserTransformer(mode)
+            )
+        elif mode == ABCCatReprMode.DEPCCG:
+            _cat_parser[mode] = lark.Lark(
+                _cat_grammar_DEPCCG,
+                start = "cat",
+                parser = "lalr",
+                transformer = CatParserTransformer(mode)
+            )
+        else:
+            raise NotImplementedError
+
+    return _cat_parser[mode]
