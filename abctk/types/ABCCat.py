@@ -680,8 +680,6 @@ class ABCCat():
         True
         """
 
-        # TODO: find alternative of parsy. Still not efficient.
-
         if isinstance(source, str):
             parser = _init_parser(mode)
             return parser.parse(source)

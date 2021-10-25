@@ -119,9 +119,6 @@ def cmd_main(
 import abctk.conversion.cli as cli_conv
 cmd_main.add_command(cli_conv.cmd_main, name = "conv")
 
-import abctk.parsing.cli as cli_parse
-cmd_main.add_command(cli_parse.cmd_main, name = "parse")
-
 import abctk.transform_Keyaki.cli as cli_trans_Keyaki
 cmd_main.add_command(
     cli_trans_Keyaki.cmd_main, 
