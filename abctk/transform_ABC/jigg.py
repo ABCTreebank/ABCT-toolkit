@@ -1,4 +1,4 @@
-from collections import deque
+import re
 import typing
 
 import janome.lattice
@@ -270,21 +270,34 @@ def tree_to_jigg(
             # find the derivational rule of the subtree
             if not is_subterminal:
                 span_rule = label.feats.get("deriv", "none")
+                comparative_maybe: str = label.feats.get("comp", "")
+                _re = re.compile(r"(?P<num>[0-9]+),(?P<role>[a-zA-Z]+),bind")
+                comp_parsed = _re.match(comparative_maybe)
 
-                if span_rule == "none":
-                    # automatically find it
-                    if children_num == 2:
-                        child_1, child_2 = pointer
-                        child_1_cat = child_1.label().cat
-                        child_2_cat = child_2.label().cat
-                        simp_candidates = abcc.ABCCat.simplify_exh(child_1_cat, child_2_cat)
-                        if simp_candidates:
-                            _, simp_elimtype = next(iter(simp_candidates))
-                            span_rule = str(simp_elimtype)
+                if span_rule != "none":
+                    # rule manually specified
+                    # do nothing
+                    pass
+                else:
+                    if comp_parsed:
+                        # comparative binding
+                        d = comp_parsed.groupdict()
+                        # trace = f"*{d['role']}{d['num']}*"
+                        span_rule = f"|-intro-{d['role']}{d['num']}"
+                    else:
+                        # try to automatically find it
+                        if children_num == 2:
+                            child_1, child_2 = pointer
+                            child_1_cat = child_1.label().cat
+                            child_2_cat = child_2.label().cat
+                            simp_candidates = abcc.ABCCat.simplify_exh(child_1_cat, child_2_cat)
+                            if simp_candidates:
+                                _, simp_elimtype = next(iter(simp_candidates))
+                                span_rule = str(simp_elimtype)
+                            else:
+                                span_rule = "unknown"
                         else:
                             span_rule = "unknown"
-                    else:
-                        span_rule = "unknown"
 
                 xml_span.set(
                     "rule",
