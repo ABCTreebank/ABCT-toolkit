@@ -224,7 +224,7 @@ def tree_to_jigg(
     # NOTE: no ID yet
 
     xml_ccgs: et._Element = et.SubElement(xml_pool, "ccg")
-    # NOTE: no ID yet
+    xml_ccgs.set("id", f"{jigg_ID}_ccg0")
 
     # 1. Annotation creation
     call_stack: list[tuple[Tree, bool]] = [(tree, False)]
@@ -338,6 +338,7 @@ def tree_to_jigg(
                 et.SubElement(
                     xml_tokens,
                     "token",
+                    base = pointer,
                     surf = pointer,
                     id = token_name,
                     offsetBegin = str(token_offset_count),
@@ -357,6 +358,9 @@ def tree_to_jigg(
                 token_offset_count = token_offset_count_end
             else:
                 raise TypeError
+
+    # get the root node
+    xml_ccgs.set("root", return_stack[0].token_span_name)
 
     # 2. Morph Analysis
     _morph_analyze_janome(xml_tokens)

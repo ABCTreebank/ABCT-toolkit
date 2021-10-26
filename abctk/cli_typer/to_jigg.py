@@ -39,8 +39,9 @@ def cmd_from_treebank(
 
     xml_root = et.Element("root")
     xml_doc = et.SubElement(xml_root, "document", id = "d0")
+    xml_sentences = et.SubElement(xml_doc, "sentences")
     for num, (keyaki_id, tree) in enumerate(tb):
-        xml_doc.append(jg.tree_to_jigg(tree, str(keyaki_id), num))
+        xml_sentences.append(jg.tree_to_jigg(tree, str(keyaki_id), num))
     et.ElementTree(xml_root).write(
         str(dest_path),
         xml_declaration = True,
