@@ -159,6 +159,9 @@ app.add_typer(conv.app, name = "conv")
 from . import norm
 app.add_typer(norm.app, name = "norm")
 
+from . import tweak
+app.add_typer(tweak.app, name = "tweak")
+
 from . import to_jigg
 app.add_typer(to_jigg.app, name = "to-jigg")
 
