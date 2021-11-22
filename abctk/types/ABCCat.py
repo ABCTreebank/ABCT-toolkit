@@ -54,13 +54,15 @@ class DepMk(Enum):
 PlainCat = str
 KeyakiCat = str
 
+X_co = typing.TypeVar("X_co", covariant = True)
+
 _annot_cat_basic_matcher = re.compile(r"^(?P<cat>[^#]*)(?P<feats>#.*)?$")
 _annot_feat_matcher = re.compile(r"#(?P<key>[^=]+)=(?P<val>[^#]*)")
 @attr.s(auto_attribs = True, slots = True, frozen = True)
-class Annot:
-    cat: typing.Any # TODO: generic
+class Annot(typing.Generic[X_co]):
+    cat: X_co
     feats: typing.Dict[str, typing.Any] = attr.ib(factory = dict)
-    pprinter_cat: typing.Callable[[typing.Any], str] = str
+    pprinter_cat: typing.Callable[[X_co], str] = str
     
     def pprint(
         self, 
