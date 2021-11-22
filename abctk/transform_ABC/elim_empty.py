@@ -18,7 +18,7 @@ def elim_empty_terminals(
 
     Returns
     -------
-    is_empty: Bool
+    is_empty: bool
         For internal recursion only.
     """
 
@@ -31,7 +31,7 @@ def elim_empty_terminals(
 
         children_num = len(children_cats)
         if children_num == 1:
-            return children_cats[0] # propage the result of the only child
+            return children_cats[0] # propagate the result of the only child
         elif any(children_cats):
             children = list(tree)
 
