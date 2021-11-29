@@ -647,6 +647,9 @@ class ABCCat():
         else:
             return str(self)
 
+    def __repr__(self) -> str:
+        return f"<{self.__class__}: {self.pprint()} >"
+
     @classmethod
     @functools.lru_cache()
     def parse(
