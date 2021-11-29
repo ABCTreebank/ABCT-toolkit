@@ -162,43 +162,71 @@ class Test_ABCCat:
         assert ~(ABCCat.p("S") / ABCCat.p("NP")) == ABCCat.p("NP\\S")
 
 class Test_ABCCatBase:
-    def test_tell_feature(self):
-        test_items = (
-            ("S", "m"),
-            ("S3m", None),
-            ("S", "m3"),
-        )
+    tell_feature_items = (
+        ("S", "m"),
+        ("S3m", None),
+        ("S", "m3"),
+    )
 
-        for cat, feat in test_items:
-            if feat is None:
-                assert typing.cast(ABCCatBase, ABCCat.p(cat)).tell_feature() is None
-            else:
-                d = typing.cast(ABCCatBase, ABCCat.p(cat + feat)).tell_feature()
-                assert d is not None
-                assert cat == d["cat"]
-                assert feat == d["feat"]
+    @pytest.mark.parametrize("cat, feat", tell_feature_items)
+    def test_tell_feature(self, cat: str, feat: typing.Optional[str]):
+        if feat is None:
+            assert typing.cast(ABCCatBase, ABCCat.p(cat)).tell_feature() is None
+        else:
+            d = typing.cast(ABCCatBase, ABCCat.p(cat + feat)).tell_feature()
+            assert d is not None
+            assert cat == d["cat"]
+            assert feat == d["feat"]
+
+    eq_ign_items = (
+        (("NP", "NP"), True),
+        (("NPq", "NP"), True),
+        (("NPq", "VP"), False),
+    )
+    @pytest.mark.parametrize("input, answer", eq_ign_items)
+    @pytest.mark.ign_feat
+    def test_eq_ign_feat(self, input: typing.Tuple[str, str], answer: bool):
+        item1 = ABCCat.p(input[0])
+        item2 = ABCCat.p(input[1])
+
+        assert (item1 == item2) == answer
 
 class Test_ABCCatFunctor:
-    def test_reduce_with(self):
-        test_items = (
-            (("S/NP", "NP", False), "S"),
-            (("NP\\S", "NP", True), "S"),
-            (("C/<B\\A>", "B\\A", False), "C"),
-            (("C|<B\\A>", "B\\A", False), "C"),
-        )
+    reduce_with_items = (
+        (("S/NP", "NP", False), "S"),
+        (("NP\\S", "NP", True), "S"),
+        (("C/<B\\A>", "B\\A", False), "C"),
+        (("C|<B\\A>", "B\\A", False), "C"),
+    )
+    @pytest.mark.parametrize("input, answer", reduce_with_items)
+    def test_reduce_with(
+        self,
+        input: typing.Tuple[str, str, bool],
+        answer: str
+    ):
+        func, ant, ant_left = input
+        f = typing.cast(ABCCatFunctor, ABCCat.parse(func))
+        res = f.reduce_with(ant, ant_left)
+        assert res == ABCCat.parse(answer)
 
-        for (func, ant, ant_left), res_exp in test_items:
-            f = typing.cast(ABCCatFunctor, ABCCat.parse(func))
-            res = f.reduce_with(ant, ant_left)
-            assert res == ABCCat.parse(res_exp)
-
+    reduce_with_ign_feat_items = (
+        (("NPq\\S", "NP", True), "S"),
+        (("C/<B\\Aq>", "B\\A", False), "C"),
+    )
+    @pytest.mark.ign_feat
+    @pytest.mark.parametrize("input, answer", reduce_with_ign_feat_items)
+    def test_reduce_with_ign_feat(
+        self,
+        input: typing.Tuple[str, str, bool],
+        answer: str
+    ):
+        self.test_reduce_with(input, answer)
+    
     pprint_items = (
         ("C/<B\\A>", ABCCatReprMode.TLCG, "<C/<B\\A>>"),
         ("C/<B\\A>", ABCCatReprMode.TRADITIONAL, "<C/<A\\B>>"),
         ("C/<Bm3/A>", ABCCatReprMode.DEPCCG, "(C/(B[m3]/A))"),
     )
-
     @pytest.mark.parametrize("input, mode, answer", pprint_items)
     def test_pprint(self, input, mode, answer):
-
         assert ABCCat.p(input).pprint(mode) == answer

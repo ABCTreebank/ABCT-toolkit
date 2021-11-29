@@ -735,6 +735,13 @@ class ABCCat():
             yield source[pt_begin:pt_end]
     # === END ===
 
+    @abst_class.abstractmethod
+    def equiv_to(self, other, ignore_feature: bool = False):
+        ...
+
+    def __eq__(self, other):
+        self.equiv_to(other, ignore_feature = False)
+
 class ABCCatTop(ABCCat, Enum):
     """
     Represents the bottom type in the ABC Treebank.
@@ -750,7 +757,7 @@ class ABCCatTop(ABCCat, Enum):
     def invert_dir(self):
         return self
 
-    def __eq__(self, other):
+    def equiv_to(self, other, ignore_feature: bool = False):
         if isinstance(other, ABCCatBot):
             return (self.value == other.value)
         elif isinstance(other, ABCCat):
@@ -773,7 +780,7 @@ class ABCCatBot(ABCCat, Enum):
     def invert_dir(self):
         return self
 
-    def __eq__(self, other):
+    def equiv_to(self, other, ignore_feature: bool = False):
         if isinstance(other, ABCCatBot):
             return (self.value == other.value)
         elif isinstance(other, ABCCat):
@@ -785,6 +792,7 @@ class ABCCatBot(ABCCat, Enum):
         return hash(self.BOT.value)
 
 _re_ABCCat_feature = re.compile(r"(?P<cat>.*?)(?<=[A-Z])(?P<feat>[a-z][a-z0-9]*)")
+_re_ABCCat_cat_subcat = re.compile(r"(?P<cat>[A-Z]+)(?P<feat>.*)")
 
 @attr.s(
     auto_attribs = True,
@@ -822,9 +830,22 @@ class ABCCatBase(ABCCat):
     def invert_dir(self):
         return self
 
-    def __eq__(self, other):
+    def equiv_to(self, other, ignore_feature: bool = False):
         if isinstance(other, ABCCatBase):
-            return (self.name == other.name)
+            # return (self.name == other.name)
+            
+            # temporary hack: feature matching
+            # test whether it is of such type
+            if ignore_feature:
+                match = _re_ABCCat_cat_subcat.match(self.name)
+                other_match = _re_ABCCat_cat_subcat.match(other.name)
+                if match and other_match:
+                    # only compare categories and ignore features
+                    return match.groupdict()["cat"] == other_match.groupdict()["cat"]
+                else:
+                    return (self.name == other.name)
+            else:
+                return (self.name == other.name)
         elif isinstance(other, ABCCat):
             return False
         else:
@@ -926,7 +947,7 @@ class ABCCatFunctor(ABCCat):
             func_mode = fm_new,
         )
 
-    def __eq__(self, other):
+    def equiv_to(self, other, ignore_feature: bool = False):
         if isinstance(other, ABCCatFunctor):
             return (
                 self.func_mode == other.func_mode
@@ -962,7 +983,7 @@ class ABCCatFunctor(ABCCat):
 
         ant_parsed = ABCCat.p(ant)
 
-        if self.ant == ant_parsed:
+        if self.ant.equiv_to(ant_parsed, ignore_feature = True):
             if (
                 (
                     self.func_mode == ABCCatFunctorMode.LEFT
