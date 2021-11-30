@@ -984,20 +984,14 @@ class ABCCatFunctor(ABCCat):
         ant_parsed = ABCCat.p(ant)
 
         if self.ant.equiv_to(ant_parsed, ignore_feature = True):
-            if (
-                (
-                    self.func_mode == ABCCatFunctorMode.LEFT
-                    and not ant_left
-                ) or (
-                    self.func_mode == ABCCatFunctorMode.RIGHT
-                    and ant_left
-                )
-            ):
-                # wrong functor-argument arrangement
-                return None
-            else:
-                # reduction successful
+            if self.func_mode == ABCCatFunctorMode.LEFT and ant_left:
                 return self.conseq
+            elif self.func_mode == ABCCatFunctorMode.RIGHT and not ant_left:
+                return self.conseq
+            elif self.func_mode == ABCCatFunctorMode.VERT:
+                return self.conseq
+            else:
+                return None
         else:
             return None
 
