@@ -951,8 +951,8 @@ class ABCCatFunctor(ABCCat):
         if isinstance(other, ABCCatFunctor):
             return (
                 self.func_mode == other.func_mode
-                and self.ant == other.ant
-                and self.conseq == other.conseq
+                and self.ant.equiv_to(other.ant, ignore_feature)
+                and self.conseq.equiv_to(other.conseq, ignore_feature)
             )
         elif isinstance(other, ABCCat):
             return False
