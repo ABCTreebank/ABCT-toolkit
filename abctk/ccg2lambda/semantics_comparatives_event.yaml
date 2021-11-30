@@ -1,0 +1,1386 @@
+%YAML 1.2
+---
+# Semantic Lexicon for Keyaki-ABC Treebank
+
+# Type T ::= Entity | Event | Bool | T1 -> T2
+#
+# Variables    Type
+# x,y,z,x1,x2  Entity, E
+# e,e1,e2      Event, Ev
+# F,G,F1,F2    E -> Bool
+# K,K1,K2      Ev -> Bool
+# Q,Q1,Q2      (E -> Bool) -> Bool (= N*)
+# S,S1,S2      (Ev -> Bool) -> Bool (= S*)
+# V            ((E -> Bool) -> Bool) -> (Ev -> Bool) -> Bool (= N* -> S*)
+#              ((E -> Bool) -> Bool) -> ((E -> Bool) -> Bool) -> (Ev -> Bool) -> Bool (= N* -> N* -> S*)
+#              ((E -> Bool) -> Bool) -> ((E -> Bool) -> Bool) -> ((E -> Bool) -> Bool) -> (Ev -> Bool) -> Bool (= N* -> N* -> N* -> S*)
+# E            expression (= base)
+
+# Category        Type
+# S               (Ev -> Bool) -> Bool
+# CP[t]           (Ev -> Bool) -> Bool
+# CP[q]           (Ev -> Bool) -> Bool
+# N               (E -> Bool) -> Bool
+# N              (E -> Bool) -> Bool
+# PP              (E -> Bool) -> Bool
+# NUM             E
+#
+# Type(X\Y) = Type(Y/X) = Type(X) -> Type(Y)
+
+# Predicate  Type
+# arg_s      Ev -> E -> Bool
+# arg_o1     Ev -> E -> Bool
+# arg_o2     Ev -> E -> Bool
+# arg_tht    Ev -> Ev -> Bool
+# arg_que    E -> Bool -> Bool
+# wh         Bool -> Bool
+# content    E -> Bool -> Bool
+# mod        Ev -> E -> Bool
+# is_a       E -> E -> Bool
+# cause      Ev -> Ev -> Bool
+
+# ========================
+# == Roots
+# ========================
+
+- category: S
+  rule: "<"
+  semantics: \L R. R(L,\e.True)
+  root: "true"
+
+- category: S
+  rule: ">"
+  semantics: \L R. L(R,\e.True)
+  root: "true"
+
+- category: CP
+  rule: "<"
+  semantics: \L R. R(L,\e.True)
+  root: "true"
+
+- category: CP
+  rule: ">"
+  semantics: \L R. L(R,\e.True)
+  root: "true"
+
+- category: (S|PP) # parentheses cannot be dropped
+  rule: "|-intro-cont1"
+  semantics: \M. lam(T11, M)
+
+- category: ((S|PP)|((PP\S)/(PP\S)))
+  rule: "|-intro-prej1"
+  semantics: \M. lam(T21, M)
+
+- category: (S|PP[s=true]) 
+  rule: "|-intro-rel1"
+  semantics: \M. lam(T101, M)
+
+# ========================
+# == Unary rule
+# ========================
+
+# ------------------------
+# === Scrambling
+# ------------------------
+#### Intransitive w/ double sbj
+- category: PP[s=true]\(PP[s2=true]\S)
+  rule: unary
+  child0_category: PP[s2=true]\(PP[s=true]\S)
+  semantics: \V Q1 Q2 K. V(Q2, Q1, K)
+
+### Transitive
+- category: PP[s=true]\(PP[o1=true]\S)
+  rule: unary
+  child0_category: PP[o1=true]\(PP[s=true]\S)
+  semantics: \V Q1 Q2 K. V(Q2, Q1, K)
+
+### Transitive w/ double sbj
+- category: PP[s2=true]\(PP[o1=true]\(PP[s=true]\S))
+  rule: unary
+  child0_category: PP[o1=true]\(PP[s2=true]\(PP[s=true]\S))
+  semantics: \V S2 O1 S K. V(O1, S2, S, K)
+
+- category: PP[s2=true]\(PP[s=true]\(PP[o1=true]\S))
+  rule: unary
+  child0_category: PP[o1=true]\(PP[s2=true]\(PP[s=true]\S))
+  semantics: \V S2 S O1 K. V(O1, S2, S, K)
+
+- category: PP[o1=true]\(PP[s=true]\(PP[s2=true]\S))
+  rule: unary
+  child0_category: PP[o1=true]\(PP[s2=true]\(PP[s=true]\S))
+  semantics: \V O1 S S2 K. V(O1, S2, S, K)
+
+- category: PP[s=true]\(PP[o1=true]\(PP[s2=true]\S))
+  rule: unary
+  child0_category: PP[o1=true]\(PP[s2=true]\(PP[s=true]\S))
+  semantics: \V S O1 S2 K. V(O1, S2, S, K)
+
+- category: PP[s=true]\(PP[s2=true]\(PP[o1=true]\S))
+  rule: unary
+  child0_category: PP[o1=true]\(PP[s2=true]\(PP[s=true]\S))
+  semantics: \V S S2 O1 K. V(O1, S2, S, K)
+
+### Clausal
+- category: PP[cp=true]\(CP\S)
+  rule: unary
+  child0_category: CP\(PP[s=true]\S)
+  semantics: \V Q C K. V(C, Q, K)
+  
+### Clausal w/ double subj
+- category: PP[s2=true]\(CP\(PP[s=true]\S))
+  rule: unary
+  child0_category: CP\(PP[s2=true]\(PP[s=true]\S))
+  semantics: \V S2 C S K. V(C, S2, S, K)
+
+- category: PP[s2=true]\(PP[s=true]\(CP\S))
+  rule: unary
+  child0_category: CP\(PP[s2=true]\(PP[s=true]\S))
+  semantics: \V S2 S C K. V(C, S2, S, K)
+
+- category: CP\(PP[s=true]\(PP[s2=true]\S))
+  rule: unary
+  child0_category: CP\(PP[s2=true]\(PP[s=true]\S))
+  semantics: \V C S S2 K. V(C, S2, S, K)
+
+- category: PP[s=true]\(CP\(PP[s2=true]\S))
+  rule: unary
+  child0_category: CP\(PP[s2=true]\(PP[s=true]\S))
+  semantics: \V S C S2 K. V(C, S2, S, K)
+
+- category: PP[s=true]\(PP[s2=true]\(CP\S))
+  rule: unary
+  child0_category: CP\(PP[s2=true]\(PP[s=true]\S))
+  semantics: \V S S2 C K. V(C, S2, S, K)
+
+### Ditransitive 
+- category: PP[o1=true]\(PP[o2=true]\(PP[s=true]\S))
+  rule: unary
+  child0_category: PP[o2=true]\(PP[o1=true]\(PP[s=true]\S))
+  semantics: \V O1 O2 S K. V(O2, O1, S, K)
+
+- category: PP[o1=true]\(PP[s=true]\(PP[o2=true]\S))
+  rule: unary
+  child0_category: PP[o2=true]\(PP[o1=true]\(PP[s=true]\S))
+  semantics: \V O1 S O2 K. V(O2, O1, S, K)
+
+- category: PP[o2=true]\(PP[s=true]\(PP[o1=true]\S))
+  rule: unary
+  child0_category: PP[o2=true]\(PP[o1=true]\(PP[s=true]\S))
+  semantics: \V O2 S O1 K. V(O2, O1, S, K)
+
+- category: PP[s=true]\(PP[o2=true]\(PP[o1=true]\S))
+  rule: unary
+  child0_category: PP[o2=true]\(PP[o1=true]\(PP[s=true]\S))
+  semantics: \V S O2 O1 K. V(O2, O1, S, K)
+
+- category: PP[s=true]\(PP[o1=true]\(PP[o2=true]\S))
+  rule: unary
+  child0_category: PP[o2=true]\(PP[o1=true]\(PP[s=true]\S))
+  semantics: \V S O1 O2 K. V(O2, O1, S, K)
+
+### Ditransitive w/ double sbj
+
+### Transitive + Clausal
+### Transitive + Clausal w/ double sbj
+
+#### Adverbial modifiers that are bound by subjects
+# (PP[s]\S[a]) ==> (PP[s]\S[m])/(PP[s]\S[m])
+- category: (PP[s=true]\S)/(PP[s=true]\S)
+  semantics: \V1 V2 Q K.Q(\x.(V1(\F.F(x),\e1.V2(\F.F(x),\e2.K(e2)))))
+  # semantics: \V1 V2 Q K.Q(\x.(V1(\F.F(x),\e.True) & V2(\F.F(x),\e2.True)))
+  rule: unary
+  child0_category: PP[s=true]\S[a=true]
+  # 40_textbook_particles
+
+# ------------------------
+# === Verbs as Adnominal Modification
+# ------------------------
+
+# PP[s]\S[rel] ==> NP/NP
+- category: NP/NP
+  semantics: \V Q F. Q(\x.(V(\G.G(x),\e.True) & F(x)))
+  rule: unary
+  child0_category: PP[s=true]\S[rel=true]
+
+# S[rel] ==> NP/NP
+- category: NP/NP
+  semantics: \S Q F. Q(\x.(S(\e.(arg_s(e,x) & F(x)))))
+  rule: unary
+  child0_category: S[rel=true]
+
+# PP[s]\S[rel] ==> N/N
+- category: N/N
+  semantics: \V Q F. Q(\x.(V(\G.G(x),\e.True) & F(x)))
+  rule: unary
+  child0_category: PP[s=true]\S[rel=true]
+
+# S[rel] ==> N/N
+- category: N/N
+  semantics: \S Q F. Q(\x.(S(\e.(arg_s(e,x) & F(x)))))
+  rule: unary
+  child0_category: S[rel=true]
+
+
+# ==== CLs modifying or quantifying bare Ns
+
+- category: Ns\N
+  rule: unary
+  child0_category: NUM
+  semantics: >-
+    \Q1 Q2 F. Q2(
+      \x. Q1(
+        \y. (quant(x, y) & F(x))
+      )
+    )
+
+# -- for NP -- N unary branching
+# -- non-Quantifier
+- category: NP
+  rule: unary
+  child0_category: N
+  semantics: \E. E
+
+- category: NP
+  rule: unary
+  child0_category: N[q=true]
+  semantics: \E. E
+
+
+# # ========================
+# # == Conjunctions
+# # ========================
+
+# N ==> NP\N
+- category: NP\N
+  rule: unary
+  semantics: \Q1 Q2 F.exists x.(Q1(\y.part(y,x)) & Q2(\y.part(y,x)) & F(x))
+  # 1_ted_talk_8
+
+# N ==> NP\(NP\N)
+- category: NP\(NP\N)
+  rule: unary
+  semantics: \Q1 Q2 Q3 F.exists x.(Q1(\y.part(y,x)) & Q2(\y.part(y,x)) & Q3(\y.part(y,x)) & F(x))
+  # 15_fiction_POTTER-1902
+
+#  - category: NP
+#    child0_category: NP
+#    child1_category: P
+#    child2_category: NP
+#    semantics: >-
+#      \N1 P N2 F. exists z. N2(
+#        \y. N1(
+#          \x. (
+#            part(y, z) & part(x, z) & F(z)
+#          )
+#        )
+#      )
+
+# ------------------------ 
+# === Floating Quantifiers
+# ------------------------ 
+# N[q] ==> (PP[s]\S)/(PP[s]\S)
+- category: (PP[s=true]\S)/(PP[s=true]\S)
+  rule: unary
+  child0_category: N[q=true]
+  semantics: \Q1 V Q2 K.V(Q2,\e.Q1(\x.(mod(e,x) & K(e))))
+  # being adverbial
+
+# ========================
+# == NPs
+# ========================
+
+# ------------------------ 
+# === Floating Quantifiers
+# ------------------------ 
+# N[q] ==> (PP[s]\S)/(PP[s]\S)
+- category: (PP[s=true]\S)/(PP[s=true]\S)
+  rule: unary
+  child0_category: N[q=true]
+  semantics: \Q1 V Q2 K.V(Q2,\e.Q1(\x.(mod(e,x) & K(e))))
+
+
+# ------------------------ 
+# === NPs as adverbials 
+# ------------------------ 
+# NP ==> S/S
+- &NP-to-Smod
+  category: (S/S)
+  rule: unary
+  child0_category: NP
+  semantics: \Q S K.Q(\x.S(\e.(mod(e,x) & K(e))))
+- <<: *NP-to-Smod
+  child0_category: N
+
+# NP ==> (PP[s]\S)/(PP[s]\S)
+- &NP-to-VPmod
+  category: ((PP[s=true]\S)/(PP[s=true]\S))
+  rule: unary
+  child0_category: NP
+  semantics: \Q1 V Q2 K.V(Q2,\e.Q1(\x.(mod(e,x) & K(e))))
+- <<: *NP-to-VPmod
+  child0_category: N
+
+# NP ==> (PP[o]\(PP[s]\S))/(PP[o]\(PP[s]\S))
+- &NP-to-DVPmod
+  category: (PP[o1=true]\(PP[s=true]\S))/(PP[o1=true]\(PP[s=true]\S))
+  rule: unary
+  child0_category: NP
+  semantics: \Q1 V Q2 Q3 K.V(Q2,Q3,\e.Q1(\x.(mod(e,x) & K(e))))
+- <<: *NP-to-DVPmod
+  child0_category: N
+# shortcutting multiple unary branches
+  
+# (PP[s2]\PP[s]\S) mod
+- &NP-to-VPDSbjmod
+  <<: *NP-to-DVPmod
+  category: ((PP[s2=true]\(PP[s=true]\S))/(PP[s2=true]\(PP[s=true]\S)))
+- <<: *NP-to-VPDSbjmod
+  child0_category: N
+
+# === PP predicates (often accopanied with copulars)
+- &NP-to-pred
+  category: (PP[s=true]\S)
+  rule: unary
+  child0_category: NP
+  semantics: >-
+    \D Q K. Q(
+      \x. exists e. (
+        D(\y. (arg_s(y, e) & x = y))
+        & K(e)
+      )
+    )
+- <<: *NP-to-pred
+  child0_category: N
+
+# ------------------------ 
+# === Question Markers
+# ------------------------ 
+# S[sub] ==> CP[q]
+- category: CP[q=true]
+  semantics: \S K. wh(S(K))
+  rule: unary
+  child0_category: S[sub=true]
+
+# S[sub] ==> CP[x]
+- category: CP[f=true]
+  semantics: \S K. excl(S(K))
+  rule: unary
+  child0_category: S[sub=true]
+
+# INTJ ==> INTJP
+- category: INTJP
+  rule: unary
+  child0_category: INTJ
+  semantics: \K. K
+
+
+### Existential Closure ###
+
+# PP[s]\S[m] ==> S[m]
+- category: S
+  rule: unary
+  semantics: \V1 K. V1(\F.exists x.F(x), K)
+  child0_category: PP[s=true]\S
+
+# PP[o1]\(PP[s]\S[m] ==> PP[s]\S[m]
+- category: PP\S
+  rule: unary
+  semantics: \V2 Q K. V2(\F.exists x.F(x),Q,K)
+  child0_category: PP\(PP\S)
+
+# PP[o2]\(PP[o1]\(PP[s]\S[m]) ==> PP[o1]\(PP[s]\S[m])
+- category: PP\(PP\S)
+  rule: unary
+  semantics: \V3 Q1 Q2 K. V3(\F.exists x.F(x),Q1,Q2,K)
+  child0_category: PP\(PP\(PP\S))
+
+# PP[s]\CP[t] ==> CP[t]
+- category: CP
+  rule: unary
+  semantics: \V1 K. V1(\F.exists x.F(x), K)
+  child0_category: PP[s=true]\CP
+
+# PP[o1]\(PP[s]\CP ==> PP[s]\CP
+- category: PP\CP
+  rule: unary
+  semantics: \V2 Q K. V2(\F.exists x.F(x),Q,K)
+  child0_category: PP\(PP\CP)
+
+# PP[o2]\(PP[o1]\(PP[s]\CP) ==> PP[o1]\(PP[s]\CP)
+- category: PP\(PP\CP)
+  rule: unary
+  semantics: \V3 Q1 Q2 K. V3(\F.exists x.F(x),Q1,Q2,K)
+  child0_category: PP\(PP\(PP\CP))
+
+
+# ========================
+# == Verbs
+# ========================
+
+# ------------------------
+# === Main Verbs: Argument Structures 
+# ------------------------
+- category: (PP[s=true]\S)
+  semantics: \E Q K.Q(\x.exists e.(E(e) & arg_s(e,x) & K(e)))
+
+- category: (PP[o1=true]\(PP[s=true]\S))
+  semantics: \E Q1 Q2 K.Q2(\x.Q1(\y.exists e.(E(e) & arg_s(e,x) & arg_o1(e,y) & K(e))))
+
+- category: (PP[s2=true]\(PP[s=true]\S))
+  semantics: \E Q1 Q2 K.Q2(\x.Q1(\y.exists e.(E(e) & arg_s(e,x) & arg_s2(e,y) & K(e))))
+
+- category: (PP[o2=true]\(PP[o1=true]\(PP[s=true]\S)))
+  semantics: \E Q1 Q2 Q3 K.Q3(\x.Q2(\y.Q1(\z.exists e.(E(e) & arg_s(e,x) & arg_o1(e,y) & arg_o2(e,z) & K(e)))))
+
+- category: (CP[t=true]\S)
+  semantics: \E S K.S(\e1.exists e2.(E(e2) & arg_tht(e2,e1) & K(e2)))
+
+- category: (CP[t=true]\(PP[s=true]\S))
+  semantics: \E S Q K.Q(\x.S(\e1.exists e2.(E(e2) & arg_s(e2,x) & arg_tht(e2,e1) & K(e2))))
+
+- category: (CP[q=true]\(PP[s=true]\S))
+  semantics: \E C Q K.Q(\x.exists e.(E(e) & arg_s(e,x) & arg_que(e,C(\e.True)) & K(e)))
+  # わかる (45_textbook_kisonihongo)
+
+# - category: PP\(PP\S)
+#   semantics: \E Q1 Q2 K.Q2(\x.Q1(\y.exists e.(E(e) & arg_x(e,x) & arg_y(e,y) & K(e))))
+
+
+
+# ------------------------
+# === Complex predicates
+# ------------------------
+- category: (S\S)
+  semantics: \E S K.S(\e.(E(e) & K(e)))
+
+- category: ((PP[s=true]\S)\(PP[s=true]\S))
+  semantics: \E V Q K.V(Q,\e.(E(e) & K(e)))
+
+- category: ((PP[o1=true]\(PP[s=true]\S))\(PP[o1=true]\(PP[s=true]\S)))
+  semantics: \E V Q1 Q2 K.V(Q1,Q2,\e.(E(e) & K(e)))
+
+- category: ((PP[o2=true]\(PP[o1=true]\(PP[s=true]\S)))\(PP[o2=true]\(PP[o1=true]\(PP[s=true]\S))))
+  semantics: \E V Q1 Q2 Q3 K.V(Q1,Q2,Q3,\e.(E(e) & K(e)))
+
+# ==== Pre-sentential adverbials
+- category: (S/S)
+  semantics: \E V K. V(\e. (E(e) & K(e)))
+
+# ------------------------
+# === Verbs as Adverbials
+# ------------------------
+# ==== Controlled by the matrix
+- category: ((PP[s=true]\S)/(PP[s=true]\S))
+  semantics: \E V Q K.V(Q,\e.(E(e) & K(e)))
+
+- category: ((PP[o1=true]\(PP[s=true]\S))/(PP[o1=true]\(PP[s=true]\S)))
+  semantics: \E V Q1 Q2 K.V(Q1,Q2,\e.(E(e) & K(e)))
+
+- category: ((PP[o2=true]\(PP[o1=true]\(PP[s=true]\S)))/(PP[o2=true]\(PP[o1=true]\(PP[s=true]\S))))
+  semantics: \E V C Q K.V(C,Q,\e.(E(e) & K(e)))
+
+
+- category: ((PP[s=true]\S)\(PP[s=true]\S))
+  semantics: \E V Q K.Q(\x.V(\F.F(x),\e.(E(e,x) & K(e))))
+  pos: CONTROL
+
+# ------------------------
+# === Negation
+# ------------------------
+- category: (S\S)
+  semantics: \E S K.-S(K)
+  pos: NEG
+
+- category: ((PP[s=true]\S)\(PP[s=true]\S))
+  semantics: \E V Q K.-V(Q,K)
+  pos: NEG
+
+- category: ((PP[o1=true]\(PP[s=true]\S))\(PP[o1=true]\(PP[s=true]\S)))
+  semantics: \E V Q1 Q2 K.-V(Q1,Q2,K)
+  pos: NEG
+
+- category: ((PP[o2=true]\(PP[o1=true]\(PP[s=true]\S)))\(PP[o2=true]\(PP[o1=true]\(PP[s=true]\S))))
+  semantics: \E V Q1 Q2 Q3 K.-V(Q1,Q2,Q3,K)
+  pos: NEG
+
+- category: ((CP\(PP[s=true]\S))\(CP\(PP[s=true]\S)))
+  semantics: \E V C Q K.-V(C,Q,K)
+  pos: NEG
+  # base: ない
+  # wide scope negation (45_textbook_kisonihongo)
+  # semantics: \E V C Q K.C(\e.Q(\x.-V(\K.K(e),\F.F(x),K)))
+  # narrow scope negation (43_textbook_djg_advanced)
+
+# ------------------------
+# === Modal Verbs
+# ------------------------
+- category: (S\S)
+  semantics: \E S K.E(S(K))
+  pos: MODAL
+
+
+# ==== Passive predicates & tough predicates
+- category: ((PP[o1=true]\(PP[s=true]\S[smc=true]))\(PP[s=true]\S))
+  semantics: \E V Q K.V(Q,\F.exists x.F(x),K)
+  # ある (13_textbook_djg_gram_terms)
+  # られ (389_textbook_djg_advanced)
+
+- category: ((PP[o1=true]\(PP[s=true]\S[smc=true]))\(PPLGS\(PP[s=true]\S)))
+  semantics: >-
+    \E V A Q K. A(
+      \a0. V(
+        Q,
+        \F. F(a0),
+        \e. (E(e) & arg_agent(e, a0) & K(e))
+      )
+    )
+  # \E K. V(X0, X1, \e. (E(e) & arg_agent(e, a) & K(e)))
+  #          \E V Q K. V(Q, \F. exists x. F(x), K)
+  # られ (long-passive 226_misc_JSeM）
+  # MEMO：受動態の動作主をarg_sと同一視してよいかどうかよく分からない．
+
+# ==== Causative  
+- category: ((PP[s=true]\S)\(PP[o1=true]\(PP[s=true]\S)))
+  semantics: \E V Q1 Q2 K.V(Q1,\e1.Q2(\x.exists e2.(cause(e2,e1) & arg_s(e2,x) & K(e2))))
+  # base: する
+  # 76_textbook_djg_intermediate
+
+
+# ==== Controlled by the matrix
+- category: ((PP[s=true]\S)\((PP[o1=true]\(PP[s=true]\S))/(PP[o1=true]\(PP[s=true]\S))))
+  base: て
+  semantics: >-
+    \P V1 V2 Q2 Q1 K. Q1(\a. V2(
+      Q2,
+      \F. F(a),
+      \e. (
+        V1(\F. F(a), \e2. P(e, e2)) 
+        & K(e)
+      )
+    ))
+# - category: (CP\(PP[s=true]\S))\(CP\(PP[s=true]\S))
+#   semantics: \E X.X
+#   base: だに
+
+
+# ------------------------
+# === Ad-adverbials
+# ------------------------
+
+# ==== Adverbial Ad-adverbials
+- category: ((PP\S)/(PP\S))/((PP\S)/(PP\S))
+  semantics: \E X. X
+# NEXT TODO 一番 (439_text_kisonihongo)
+
+# ==== Toritate particles
+- category: ((S/S)\(S/S))
+  pos: P-ADADV-TORITATE
+  semantics: \E X. X
+
+- category: ((PP\S)/(PP\S))\((PP\S)/(PP\S))
+  pos: P-ADADV-TORITATE
+  semantics: \E X. X
+
+# ==== vacuous AX
+- category: ((S/S)\(S/S))
+  pos: P-AX
+  semantics: \E X. X
+
+- category: ((PP\S)/(PP\S))\((PP\S)/(PP\S))
+  pos: P-AX
+  semantics: \E X. X
+
+
+# ========================
+# == Adverbial Postpositions, or subordinate coordinators
+# ========================
+# ------------------------ 
+# === Defaults
+# ------------------------ 
+- category: (S[a=true]\(S/S))
+  semantics: >-
+    \E S1 S2 K. S2(
+      \e2. S1(
+        \e1. (E(e2,e1) & K(e1))
+      )
+    )
+
+- category: (S[a=true]\((PP[s=true]\S)/(PP[s=true]\S)))
+  semantics: >-
+    \E S V Q K. S(
+      \e1. V(
+        Q,
+        \e2. (E(e1,e2) & K(e2))
+      )
+    )
+
+- category: ((PP[s=true]\S[a=true])\((PP[s=true]\S)/(PP[s=true]\S)))
+  # control
+  semantics: >-
+    \E V1 V2 Q K. Q(
+      \x. (
+        V2(
+          \F.F(x),
+          \e1. V1(
+            \F.F(x),
+            \e2. (E(e2,e1) & K(e2))
+          )
+        )
+      )
+    )
+
+- category: (PPSCON\(S/S))
+  semantics: >-
+    \E S V K.(S(\e.True) -> V(K))
+# (て)も (883_textbook_TANAKA)
+
+- category: (S[a=true]\((PP[s=true]\S)/(PP[s=true]\S)))
+  semantics: \E S V Q K.V(Q,\e1.(E(e1,S(\e.True)) & K(e1)))
+  base: から
+
+- category: (PPSCON\((PP[s=true]\S)/(PP[s=true]\S)))
+  semantics: \E V1 V2 Q K.Q(\x.(V1(\F.F(x),\e1.V2(\F.F(x),\e2.(E(e1,e2) & K(e2))))))
+  # から (72_textbook_purple_intermediate)
+
+- category: (S[a=true]\(PP[s=true]\S))
+  semantics: \E S Q K.Q(\x.S(\e.(E(e,x) & K(e))))
+  # から (1127_textbook_particles)
+
+- category: (S\PPSCON)
+  semantics: \E X. X
+  # から。(1100_textbook_particles)
+
+- category: (S[a=true]\((PP[o1=true]\(PP[s=true]\S))/(PP[o1=true]\(PP[s=true]\S))))
+  base: に
+  semantics: >- 
+    \E S V2 Q2 Q1 K. S(
+      \e. V2(
+        Q2, Q1, 
+        \i. (E(e, i) & K(i))
+      )
+    )
+  # 317_textbook_djg_advanced.html
+
+- category: (S\((PP[s=true]\S)/(PP[s=true]\S)))
+  base: と
+  semantics: >- 
+    \E S V2 Q1 K. S(
+      \e. V2(
+        Q1, 
+        \i. (E(e, i) & K(i))
+      )
+    )
+  # 454_textbook_djg_intermediate.html
+
+- category: ((PP[s=true]\S)\((PP[s=true]\S)/(PP[s=true]\S)))
+  base: に
+  semantics: >- 
+    \E S V2 Q1 K. S(
+      Q1,
+      \e. V2(
+        Q1, 
+        \i. (E(e, i) & K(i))
+      )
+    )
+
+  # 370_textbook_purple_intermediate 「本を返しに」
+
+- category: ((PP[s=true]\S)\((PP[o1=true]\(PP[s=true]\S))/(PP[o1=true]\(PP[s=true]\S))))
+  base: ように
+  semantics: >-
+    \E S V2 Q2 Q1 K. S(
+      Q2, 
+      \e. V2(
+        Q2,
+        Q1,
+        \i. (E(e, i) & K(i))
+      )
+    )
+  # 448_textbook_TANAKA
+
+# ------------------------ 
+# === Conditionals
+# ------------------------ 
+- category: (S[a=true]\((PP[s=true]\S)/(PP[s=true]\S)))
+  pos: SCON-CND
+  semantics: \E S V Q K.(S(\e.True) -> V(Q,K))
+
+- category: ((PP[s=true]\S[a=true])\((PP[s=true]\S)/(PP[s=true]\S)))
+  semantics: \E V1 V2 Q K.Q(\x.(V1(\F.F(x),\e.True) & V2(\F.F(x),\e2.True)))
+  base: どころか
+  # (35_textbook_djg_intermediate)
+
+# - category: S[a=true]\((PP[s=true]\S)/(PP[s=true]\S))
+#   semantics: \E S V Q K.(S(\e.True) -> V(Q,K))
+#   base: だけ
+#   # Conditional?
+#   # 26_textbook_djg_intermediate
+
+
+# ### Type Shifters ###
+
+# - category: N\(PP[s=true]\S)
+#   semantics: \E Q1 Q2 K. Q2(\x.Q1(\y.exists e.(arg_s(e,x) & is_a(x,y) & K(e))))
+#   base: "__lex_case"
+#   # 45_textbook_kisonihongo
+#   # Copula だ
+
+# - category: N\(S/S)
+#   semantics: \E Q S K.Q(\x.S(\e.(rel(e,x) & K(e))))
+#   base: "__lex_case"
+#   # 72_textbook_TANAKA
+
+# - category: N\((PP[s=true]\S)/(PP[s=true]\S))
+#   semantics: \E Q1 V Q2 K.Q1(\x.V(Q2,\e.(rel(e,x) & K(e))))
+#   # semantics: \E Q1 V Q2 K.V(Q2,\e.(Q1(\x.rel(x,e)) & K(e)))
+#   base: "__lex_case"
+#   # 43_textbook_djg_advanced
+
+# - category: N\((PP[o1=true]\(PP[s=true]\S))/(PP[o1=true]\(PP[s=true]\S)))
+#   semantics: \E Q1 V Q2 Q3 K.Q1(\x.V(Q2,Q3,\e.(rel(e,x) & K(e))))
+#   base: "__lex_case"
+
+# - category: S[rel=true]\(N/N)
+#   semantics: \E S Q F. Q(\x.(S(\e.(arg_s(e,x) & F(x)))))
+#   base: "__lex_P_ADNOM"
+
+### Semantically Null Elements ###
+
+- category: (S/S)
+  semantics: \E X.X
+  base: "*LFQ*-1"
+
+- category: (S|S)
+  semantics: \E X.X
+  base: "*"
+
+- category: (S[a=true]\PPSCON)
+  base: て
+  semantics: \E X.X
+
+- category: ((PP[s=true]\S[a=true])\PPSCON)
+  base: て
+  semantics: \E X.X
+  # 72_textbook_purple_intermediate
+
+- category: ((PP[s=true]\S[m=true])/(PP[s=true]\S[m=true]))\((PP[s=true]\S[m=true])/(PP[s=true]\S[m=true]))
+  semantics: \E X.X
+  base: で
+  # 26_textbook_djg_intermediate
+
+- category: ((PP[s=true]\S[m=true])/(PP[s=true]\S[m=true]))\((PP[s=true]\S[m=true])/(PP[s=true]\S[m=true]))
+  semantics: \E X.X
+  base: も
+  # 88_textbook_purple_basic
+
+# ========================
+# == Numerals & Noun Classifiers
+# ========================
+
+# ------------------------ 
+# === NUM
+# ------------------------
+
+# NUM   -> NUM
+- category: NUM
+  semantics: \E. E
+  # 43_textbook_djg_advanced
+
+- category: NUM
+  pos: NUM-NUMCL
+  # syncretism
+  semantics: \E F. exists x. (E(x) & F(x))
+
+# ------------------------ 
+# === CL
+# ------------------------ 
+# CL    -> NUM/N, predicated of the number and the entity
+# whole -> N, modifying an event
+- category: (NUM\N)
+  # TODO: distinguish [q=true] from others
+  semantics: \E N F. exists x.(E(x,N) & F(x))
+  # 43_textbook_djg_advanced
+
+- category: (WNUM\N)
+  semantics: \E N F. exists x.(E(x,N) & F(x))
+
+- category: (NUM\NUMCLP)
+  semantics: \E N F. exists x.(E(x,N) & F(x))
+  # 1722_misc_JSeM_beta
+
+# ==== CLs modifying or quantifying bare Ns
+- category: (NUM\(Ns\N))
+  semantics: >-
+    \E N N2 F. N2(\x. 
+      (E(x, N) & F(x))
+    )
+
+# ==== CLs predicated of NUMCLPs
+- category: (NUM\(NUMCLP\N[q=true]))
+  semantics:
+    \E N N0 F. (
+      forall x. (
+        N0(\z. EQ(x, z)) -> (
+          exists y. (choice(x, y) & E(y, N) & F(y))
+        )
+      )
+    )
+# 一回三冊（424_textbook_particles）
+
+# ========================
+# == Ns
+# ========================
+
+- category: N
+  semantics: \E F.exists x.(E(x) & F(x))
+
+# - category: N
+#   pos: REF
+#   semantics: \E F.F(E)
+
+- category: PP
+  semantics: \E F.exists x.(E(x) & F(x))
+
+- category: Ns
+  semantics: \E F.exists x.(E(x) & F(x))
+
+
+# ------------------------
+# === N modifiers
+# ------------------------
+# default
+- category: N/N
+  semantics: \E N F. N(\x. (E(x) & F(x)))
+
+
+# ------------------------ 
+# === Coordination
+# ------------------------ 
+
+- category: (NP\N)/(NP\N)
+  base: と
+  semantics: \E X. X
+
+- category: (NP\(NP\N))/(NP\(NP\N))
+  base: と
+  semantics: \E X. X
+
+
+# ------------------------ 
+# === Ns modifying NUMCLPs
+# ------------------------ 
+- category: NUMCLP\N
+  semantics: >-
+    \M N F. exists y. N(
+      \x. (
+        M(x, y)
+        & F(x)
+      )
+    )
+# 1722_misc_JSeM_beta「2時間以内」
+
+# ------------------------
+# === Ns predicated of N/NRs
+# ------------------------
+- category: Ns\N
+  pos: N-NRED
+  semantics: \E N F. N(\x. exists y. (E(x, y) & F(x)))
+
+
+# ------------------------
+# === Ns modifying & quantifiying N/NRs
+# ------------------------
+# default
+- category: Ns\N
+  semantics: \E N F. N(\x. exists y. (E(x, y) & F(x)))
+- category: NPR\N
+  semantics: \E N F. N(\x. exists y. (E(x, y) & F(x)))
+- category: N\N
+  semantics: \E N F. N(\x. exists y. (E(x, y) & F(x)))
+# NOTE: the entry introduces a new entry
+#         and treats what it takes as an conceptual argument.
+
+- category: Ns\N
+  semantics: \E N F. N(\x. (E(x) & F(x)))
+# 234_textbook_djg_advanced 「(日本)全国」
+# NOTE: continuative semantics for quantificational adposition
+
+- category: NP\N
+  semantics: \E N F. N(\x. exists y. (E(x, y) & F(x)))
+# 43_textbook_djg_advanced.html 「(最多安打)記録」
+
+# Later specifications are prioritized.
+- category: Ns\N[q=true]
+  semantics: \E N F. N(\x. (E(x) & F(x)))
+# 234_textbook_djg_advanced 「(日本)全国」
+
+- category: NP\N[q=true]
+  semantics: \E N F. N(\x. exists y. (E(x, y) & F(x)))
+# 234_textbook_djg_advanced 「(日本)全国」
+
+- category: NP[q=true]\N
+  semantics: \E N F. N(\x. (E(x) & F(x)))
+# 61_textbook_djg_intermediate.html 「(何か)外国語（を）」
+
+# ------------------------
+# === Possessive pronouns
+# ------------------------
+- category: PRO\N
+  pos: N-POSS
+  semantics: \E P F. exists x. (poss(P, x) & F(x))
+
+- category: N\N
+  pos: N-POSS
+  semantics: \E N F. N(\x. exists x. (poss(P, x) & E(x) & F(x))) 
+
+
+
+
+# ========================
+# == Adnominal Postpositions
+# ========================
+
+# ------------------------ 
+# === Default: Vacuous
+# ------------------------ 
+- category: (NP\PP)
+  semantics: \E X. X
+
+- category: (NP\PPLGS)
+  semantics: \E X. X
+
+- category: (PP\PP)
+  semantics: \E X. X
+
+# === Stacked Particles: Vacuous by default
+- category: (((PP\S)/(PP\S))\((PP\S)/(PP\S)))
+  base: に
+  semantics: \E X. X
+  # 208_textbook_djg_advanced
+
+- category: ((N/N)\(N/N))
+  base: の
+  semantics: \E X. X
+  # 1515_misc_JSeM
+  
+# === Adnominal connectives
+- category: (NP\(N/N))
+  semantics: \E Q1 Q2 F. Q2(\x.Q1(\y.(E(x,y) & F(x))))
+
+- category: (NP\(N/N))
+  pos: P-ADN-QUANT
+  semantics: >-
+    \E Q1 Q2 F. Q2(
+      \x. Q1(
+        \y. (E(x, y) & F(x))
+      )
+    )
+
+# === Adverbializer (NP -> S/S)
+- category: (NP\(S/S))
+  semantics: \E Q S K.Q(\x.S(\e.(E(e,x) & K(e))))
+  # で (47_textbook_purple_basic)
+
+- category: (NP\((PP[s=true]\S)/(PP[s=true]\S)))
+  semantics: \E Q1 V Q2 K.Q1(\x.V(Q2,\e.(E(e,x) & K(e))))
+  # に, で
+
+- category: (NP\((PP[o1=true]\(PP[s=true]\S))/(PP[o1=true]\(PP[s=true]\S))))
+  semantics: \E Q1 V Q2 Q3 K.Q1(\x.V(Q2,Q3,\e.(E(e,x) & K(e))))
+- category: (NP\((PP[o2=true]\(PP[s=true]\S))/(PP[o2=true]\(PP[s=true]\S))))
+  semantics: \E Q1 V Q2 Q3 K.Q1(\x.V(Q2,Q3,\e.(E(e,x) & K(e))))
+
+# === PP predicates (often accopanied with copulars)
+
+# Example: 俺たちの戦いは，(PP これから) (AX だ)．
+- category: (NP\(PP[s=true]\S))
+  semantics: >-
+    \P D Q K. D(
+      \x. Q(
+        \z. exists e. (
+          arg_s(e, z)
+          & P(e, x)
+        )
+      )
+    )
+
+
+#################
+- category: (N\((PP[o1=true]\(PP[s=true]\CP))/(PP[o1=true]\(PP[s=true]\CP))))
+  semantics: \E Q1 V Q2 Q3 K.Q1(\x.V(Q2,Q3,\e.(E(e,x) & K(e))))
+  # 74_textbook_particles
+#################
+
+### Empty Categories ###
+
+- category: PP
+  semantics: \E F.F(*pro*)
+  base: "*pro*"
+
+- category: PP
+  semantics: \E F.F(*PRO*)
+  base: "*PRO*"
+  # doesn't work!
+
+- category: PP
+  semantics: \E F.F(*speaker*)
+  base: "*speaker*"
+
+- category: PP
+  semantics: \E F.F(*hearer*)
+  base: "*hearer*"
+
+- category: PP
+  semantics: \E F.F(*T*)
+  base: "*T*"
+
+
+### Determiners ###
+
+# - category: N/N
+#   semantics: \E Q F. Q(\x.(E(x) & F(x)))
+#   # その
+# 
+# - category: N\N
+#   semantics: \E Q F. Q(\x.(E(x) & F(x)))
+# 
+# - category: N\N
+#   semantics: \E Q F. Q(\x.(E(x) & F(x)))
+#   # 43_textbook_djg_advanced
+# 
+# 
+# - category: N\(N\N)
+#   semantics: \E Q1 Q2 F.Q2(\x.Q1(\y.(E(x,y) & F(x))))
+  # （社会）全体
+  # N\(N[dq]\N[dq])
+  # 101_textbook_djg_advanced
+
+
+# - category: (S/S)\(S/S)
+#   semantics: \E M S. E(M,S)
+
+# - category: ((PP\S)/(PP\S))\((PP\S)/(PP\S))
+#   semantics: \E X. X
+
+# - category: QP\((PP\S)/(PP\S))
+#   semantics: \E y V x K. V(x,\e.(E(e,y) & K(e)))
+
+# - category: NP\((PP\S)/(PP\S))
+#   semantics: \E y V x K. V(x,\e.(E(e,y) & K(e)))
+
+# - category: ((PP\CP)/(PP\CP))\((PP\CP)/(PP\CP))
+#   semantics: \E X. X
+
+# # Control
+# - category: (PP\S)\(PP\S)
+#   semantics: \E V X. E(X,V(X))
+
+# # Passive
+# - category: (PP[o1=true]\(PP[s=true]\S[smc=true]))\(PPLGS\(PP[s=true]\S[m=true]))
+#   semantics: \E V x y K. V(y,x,K)
+#   # base: られ, れ
+
+# - category: (PP[o1=true]\(PP[s=true]\S[smc=true]))\(PP[s=true]\S[m=true])
+#   semantics: \E V y K. exists x. V(y,x,K)
+#   # base: られ, れ
+
+# - category: (PP[o1=true]\(PP[s=true]\S))/(PP[o1=true]\(PP[s=true]\S))
+#   semantics: \E V y x K. E(V(x,y,K))
+
+# # Control
+# - category: (PP\S)\(PP\S)
+#   semantics: \E V x K. exists e1. V(x,\e2.(try(e1,x,e2) & K(e1)))
+#   base: み
+
+
+
+
+### N with external relation ###
+
+- category: (S[e=true]\N)
+  semantics: \E S F.exists x.(E(x,S(\e.True)) & F(x))
+  # semantics: \E S F.exists x.(E(x) & content(x,S(\e.True)) & F(x))
+  # 予感 (56_textbook_TANAKA)
+  # semantics: \E S F.S(\e.exists x.(E(e,x) & F(x)))
+  # とき (72_textbook_TANAKA)
+
+- category: (CP[t=true]\N)
+  semantics: \E S F.exists x.(E(x,S(\e.True)) & F(x))
+  # semantics: \E S F.exists x.(E(x) & content(x,S(\e.True)) & F(x))
+  # の (1127_textbook_particles)
+
+# ========================
+# == Complementizers, Sentence-final Particles
+# ========================
+
+# ------------------------ 
+# === Default
+# ------------------------ 
+- category: (S\CP)
+  semantics: \E S K. E(S(K))
+  
+- category: (CP\CP)
+  semantics: \E S K. E(S(K))
+
+- category: (INTJP\CP)
+  semantics: \E S. S
+
+# ------------------------ 
+# === Ordinary Complementizers
+# ------------------------ 
+- category: (S\CP)
+  pos: COMP-ORD
+  semantics: \E X. X
+  # treated as vacuous.
+
+- category: (CP\CP)
+  pos: COMP-ORD
+  semantics: \E X. X
+
+# ------------------------ 
+# === Question Markers
+# ------------------------ 
+- category: (S\CP)
+  pos: COMP-Q
+  semantics: \E S K. wh(S(K))
+
+- category: (CP\CP)
+  pos: COMP-Q
+  semantics: \E S K. wh(S(K))
+
+# ------------------------ 
+# === Teinei Markers
+# ------------------------ 
+- category: (CP\CP)
+  pos: COMP-TEINEI
+  semantics: \E S K. teinei(S(K))
+
+# ------------------------ 
+# === Exclamatives
+# ------------------------ 
+- category: (S[sub=true]\CP[f=true])
+  pos: COMP-EXCL
+  semantics: \E S K. excl(S(K))
+
+- category: (CP[f=false]\CP[f=true])
+  pos: COMP-EXCL
+  semantics: \E S K. excl(S(K))
+
+# duplicated particles
+- category: (CP[f=true]\CP[f=true])
+  pos: COMP-EXCL-EMPTY
+  # treated as redundant
+  semantics: \E X. X
+
+
+# ------------------------
+# === Speech-Act particles
+# ------------------------
+- category: (S[sub=true]\CP[f=true])
+  pos: COMP-EXCL
+  semantics: \E S K. E(S(K))
+
+- category: (CP\CP[f=true])
+  pos: COMP-EXCL
+  semantics: \E S K. E(S(K))
+
+# ========================
+# == Speech-act Items
+# ========================
+- category: INTJ
+  semantics: \O K. exists e. (sound(e, O) & K(e))
+
+# ========================
+# == Pre-speech-act Modifiers
+# ========================
+- category: (S/S)
+  pos: PRESA-INTJ
+  semantics: \E X. X
+
+- category: (CP/CP)
+  pos: PRESA-INTJ
+  semantics: \E X. X
+
+# ========================
+# == empty terms
+# ========================
+
+- category: (S\S)
+  pos: EMPTY
+  semantics: \E X.X
+
+# ========================
+# == Punctuations
+# ========================
+
+# ------------------------ 
+# === Intra-sentential
+# ------------------------ 
+- &punc-maru
+  category: (PP\PP)
+  pos: 記号,句点,*,*
+  semantics: \E X. X
+- <<: *punc-maru
+  category: ((S/S)\(S/S))
+- <<: *punc-maru
+  category: ((PP\S)/(PP\S))
+- <<: *punc-maru 
+  category: (((PP\S)/(PP\S))\((PP\S)/(PP\S)))
+- <<: *punc-maru 
+  category: (((PP\(PP\S))/(PP\(PP\S)))\((PP\(PP\S))/(PP\(PP\S))))
+- <<: *punc-maru 
+  category: (S\S)
+- <<: *punc-maru 
+  category: (CP\CP)
+- <<: *punc-maru 
+  category: PU
+- &punc-ten
+  category: (PP\PP)
+  pos: 記号,読点,*,*
+  semantics: \E X. X
+- <<: *punc-ten
+  category: ((S/S)\(S/S))
+- <<: *punc-ten
+  category: ((PP\S)/(PP\S))
+- <<: *punc-ten
+  category: (((PP\S)/(PP\S))\((PP\S)/(PP\S)))
+- <<: *punc-ten
+  category: (((PP\(PP\S))/(PP\(PP\S)))\((PP\(PP\S))/(PP\(PP\S))))
+- <<: *punc-ten
+  category: (S\S)
+- <<: *punc-ten
+  category: (CP\CP)
+- <<: *punc-ten
+  category: PU
+# ------------------------ 
+# === Pre-sentential
+# ------------------------ 
+- <<: *punc-maru 
+  category: (S/S)
+- <<: *punc-maru
+  category: (CP/CP)
+- <<: *punc-ten 
+  category: (S/S)
+- <<: *punc-ten
+  category: (CP/CP)
+  
+# ------------------------ 
+# === Parentheses
+# ------------------------ 
+- category: (N/N)
+  pos: PU
+  semantics: \E X. X
+
+- category: (N\N)
+  pos: PU
+  semantics: \E X. X
+
+# === ??
+- category: ((N/N)\(N/N))
+  pos: PU
+  semantics: \E X.X
+  # （へ）の
+
+# ========================
+# == Relative Clauses
+# ========================
+
+- category: PP[s=true]
+  base: "*T*"
+  semantics: \E. T101
+
+- &rel-shift
+  category: (N/N)
+  rule: unary
+  child0_category: (S|PP)
+  semantics: |
+    \E N F. N(
+      \x. (
+        E(\P. P(x), True) & F(x)
+      )
+    )
+  # E: (PP → S) ≡ ((e → t) → t) → (ev → t) → t
+  # N: N ≡ (e → t) → t
+  # return: λ (F : e → t), t
+- <<: *rel-shift
+  child0_category: (PP\S)
+
+# ========================
+# == Comparatives
+# ========================
+
+# yori-NP
+# (
+#    (
+#      (S[m=true]|PP[s=true] # arg2)
+#      |
+#      (
+#        (S[m=true]|PP[s=true])
+#        |
+#        (
+#          (PP[s=true]\S[m=true])
+#          /
+#          (PP[s=true]\S[m=true])
+#        )
+#      ) # arg1
+#    )
+#    |
+#    NP # arg0
+#  )
+- &yori-np
+  category: (((S|PP[s=true])|((S|PP[s=true])|((PP[s=true]\S)/(PP[s=true]\S))))|NP)
+  base: よりも
+  semantics: |
+    \X.
+      \C1 S C0 K. yori(
+        S(C1, \e. True),
+        S(C0, K)
+      )
+  # C1: NP
+  # S: (VP → VP) → VP
+  # C0: PPs
+  # K: ev → t
+- <<: *yori-np
+  base: より
+# yori-S
+#  (
+#    (
+#      (S[m=true]|PP[s=true])
+#      |
+#      (
+#        (S[m=true]|PP[s=true])
+#        |
+#        (
+#          (PP[s=true]\S[m=true])
+#          /
+#          (PP[s=true]\S[m=true])
+#        )
+#      )
+#    )
+#    |
+#    S[nml=true]
+#  )
+- &yori-S
+  category: (((S[m=true]|PP[s=true])|((S[m=true]|PP[s=true])|((PP[s=true]\S[m=true])/(PP[s=true]\S[m=true]))))|S[nml=true])
+  base: よりも
+  semantics: |
+    \X.
+      \C1 S N K. yori(
+        C1(\e. True),
+        S(N, K)
+      )
+- <<: *yori-S
+  base: より
+#
+- category: (PP[o1=true]\(PP[s=true]\S))\(PP[s=true]\S)
+  semantics: \E.E
+  # semantics: \E V2 N.exists x.V2(x,N)
+  base: ある
+
+# 1: cont, 2:prej
+- category: PP
+  semantics: \E. T11
+  base: "*TRACE-cont1*"
+- category: ((PP\S)/(PP\S))
+  semantics: \E. T21
+  base: "*TRACE-prej1*"
