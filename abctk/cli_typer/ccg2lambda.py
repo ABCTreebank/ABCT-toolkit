@@ -1,4 +1,5 @@
 import logging
+import typing
 logger = logging.getLogger(__name__)
 import pathlib
 import sys
@@ -125,6 +126,15 @@ def cmd_semparse(
         )
         logger.info(f"Output XML successfully dumped into {str(dest_path_str)}")
 
+
+class SemEntry(typing.NamedTuple):
+    name: str
+    drs_link: str
+    drs_status: str
+
+    def drs_successful(self):
+        return self.drs_status == "success"
+
 @app.command("to-drs")
 def cmd_to_drs(
     source: pathlib.Path = typer.Argument(
@@ -161,8 +171,12 @@ def cmd_to_drs(
         logger.info(f"Loaded the trees in {source_path}")
     sentences = root.findall(".//sentence")
 
-    # 2. convert files
     with fs.open_fs(str(dest), create = True) as folder:
+        folder.makedirs("contents", recreate = True)
+
+        links: typing.List[SemEntry] = []
+
+        # 2. convert files
         for sent_count, sentence in enumerate(sentences):
             sent_html = abctk.ccg2lambda.visualization_tools.convert_sentence_to_mathml(
                 sentence,
@@ -171,6 +185,43 @@ def cmd_to_drs(
             sent_html = abctk.ccg2lambda.visualization_tools.wrap_mathml_in_html(sent_html)
 
             sentence_id: str = sentence.attrib.get("abc_id", str(sent_count))
-            with folder.open(f"{sentence_id}.html", "w") as f:
+            sent_path = f"contents/{sentence_id}.html"
+            with folder.open(sent_path, "w") as f:
                 f.write(sent_html)
 
+            links.append(
+                SemEntry(
+                    name = sentence_id, 
+                    drs_link = sent_path, 
+                    drs_status = sentence.xpath("./semantics/@status")[0]
+                )
+            )
+
+        # 3. Make an index
+        with folder.open("index.html", "w") as f_index:
+            f_index.write(r"""
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+	<meta charset="utf-8">
+	<title>Semparse Rendering</title>
+</head>
+<body>
+<table>
+    <tr>
+        <th>ID</th>
+        <th>DRS</th>
+    </tr>
+            """)
+            for entry in links:
+                f_index.write(rf"""
+    <tr>
+        <td>{entry.name}</td>
+        <td><a href = "./{entry.drs_link}">{entry.drs_status}</td>
+    </tr>
+                """)
+            f_index.write(r"""
+</table>
+</body>
+</html>
+            """)
