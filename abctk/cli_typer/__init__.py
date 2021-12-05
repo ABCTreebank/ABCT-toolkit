@@ -165,8 +165,6 @@ app.add_typer(tweak.app, name = "tweak")
 from . import to_jigg
 app.add_typer(to_jigg.app, name = "to-jigg")
 
-from . import elim_empty
-app.add_typer(elim_empty.app, name = "elim-empty")
 
 @app.command("interp-parse-result")
 def cmd_interp_parse():
@@ -231,3 +229,4 @@ def cmd_normalize_category():
     Normalize ABC categories
     """
     pass
+
