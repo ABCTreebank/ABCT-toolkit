@@ -165,6 +165,8 @@ app.add_typer(tweak.app, name = "tweak")
 from . import to_jigg
 app.add_typer(to_jigg.app, name = "to-jigg")
 
+from . import ccg2lambda
+app.add_typer(ccg2lambda.app, name = "c2l")
 
 @app.command("interp-parse-result")
 def cmd_interp_parse():
