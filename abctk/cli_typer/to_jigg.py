@@ -68,8 +68,9 @@ def cmd_from_file(
         ...,
         file_okay = True,
         dir_okay = False,
+        allow_dash = True,
         help = """
-        The destination. `-` is not supported.
+        The destination. `-` indicates STDOUT.
         """
     ),
 ):
@@ -80,7 +81,6 @@ def cmd_from_file(
     with tempfile.TemporaryDirectory(prefix = "abct_jigg_") as temp_folder:
         temp_file: typing.Optional[typing.IO[str]] = None
         try:
-            print(source_path)
             if source_path.name == "-":
                 # load from stdin
                 temp_file = tempfile.NamedTemporaryFile("w", dir = temp_folder)
@@ -99,13 +99,25 @@ def cmd_from_file(
             xml_sentences = et.SubElement(xml_doc, "sentences")
             for num, (keyaki_id, tree) in enumerate(tb):
                 xml_sentences.append(jg.tree_to_jigg(tree, str(keyaki_id), num))
-            et.ElementTree(xml_root).write(
-                str(dest_path),
-                xml_declaration = True,
-                encoding = "utf-8",
-                pretty_print = True,
-            )
 
-            logger.info(f"Output XML successfully dumped into {str(dest_path)}")
+            dest_path_str = str(dest_path)
+            if dest_path_str == "-":
+                sys.stdout.write(
+                    et.tostring(
+                        xml_root,
+                        xml_declaration = True,
+                        encoding = "utf-8",
+                        pretty_print = True
+                    )
+                )
+                logger.info("Output XML successfully dumped to STDOUT")
+            else:
+                et.ElementTree(xml_root).write(
+                    dest_path_str,
+                    xml_declaration = True,
+                    encoding = "utf-8",
+                    pretty_print = True,
+                )
+                logger.info(f"Output XML successfully dumped into {str(dest_path)}")
         finally:
             if temp_file: temp_file.close()
