@@ -165,6 +165,9 @@ app.add_typer(tweak.app, name = "tweak")
 from . import to_jigg
 app.add_typer(to_jigg.app, name = "to-jigg")
 
+from . import renumber
+app.add_typer(renumber.app, name = "renum")
+
 from . import ccg2lambda
 app.add_typer(ccg2lambda.app, name = "c2l")
 
