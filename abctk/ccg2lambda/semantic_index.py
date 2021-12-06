@@ -176,7 +176,7 @@ def build_default_template(rule_pattern, ccg_tree):
     if not variable_names:
         template_string = r'\P.P'
     else:
-        template_string = r'\E O.O'
-        # template_string = r'\E.E'
+        # template_string = r'\E O.O' # vacuity
+        template_string = r'\E. E'
     template = lexpr(template_string)
     return template
