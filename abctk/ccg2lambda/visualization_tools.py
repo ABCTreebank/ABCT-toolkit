@@ -250,6 +250,81 @@ def convert_sentence_to_mathml(sentence, drt: bool = False):
 
     return mathml_str
 
+def convert_sentence_to_mathml_2(
+    sentence_label: str,
+    sentence_text: str,
+    xml_ccg,
+    xml_sem,
+    xml_tokens,
+    is_drt: bool = False
+):
+    mathml_str = ""
+    form_str = ""
+
+    # gold_tree_index = int(sentence.get('gold_tree', -1))
+    if not xml_tokens:
+        return mathml_str
+
+    if xml_sem.get("status") == "success":
+        formula_str = xml_sem.xpath('span[1]/@sem')[0]
+        try:
+            formula = lexpr(formula_str)
+            form_str = str(formula)
+            nf = get_normal_form(formula)
+            nf_str = str(nf)
+
+            try:
+                drs = convert_to_drs(formula)
+            except AttributeError:
+                drs = "Error in building DRS"
+                drs_str = drs
+                drs_mathml = ""
+                
+            drs_str = str(drs)
+            drs_mathml = convert_to_drs_mathml(drs)
+        except LogicalExpressionException as e:
+            nf = 'semantics_error: LogicalExpressionException'
+            nf_str = str(nf)
+            drs = 'semantics_error: LogicalExpressionException'
+            drs_str = str(drs)
+            drs_mathml = ""
+    else:
+        nf = 'semantics_error'
+        nf_str = str(nf)
+        drs = 'semantics_error'
+        drs_str = str(drs)
+        drs_mathml = convert_to_drs_mathml(drs)
+
+    # ccg_tree_id = xml_ccg.get('id', 0)
+    try:
+        ccg_tree = build_ccg_tree(xml_ccg)
+    
+                    
+        # if gold_tree_index == i:
+        #     ccg_tree_id += " (gold)"
+        sem_tree = build_ccg_tree(xml_sem)
+
+        if is_drt:
+            mathml_str += "<p>{0}: {1}</p>\n".format(
+                            sentence_label, sentence_text) \
+                        + "<p>FOL-Normalized: <font color='Blue'>" + nf_str + "</font></p>\n" \
+                        + "<p>DRS: <font color='Blue'>" + drs_str + "</font></p>\n" \
+                        + "<p><math>" + drs_mathml + "</math></p>\n" \
+                        + "<math xmlns='http://www.w3.org/1998/Math/MathML'>\n" \
+                        + convert_node_to_mathml(ccg_tree, sem_tree, xml_tokens) \
+                        + "</math>\n"
+        else:
+            mathml_str += "<p>HOL: <font color='Blue'>" + form_str + "</font></p>\n" \
+                        + "<math xmlns='http://www.w3.org/1998/Math/MathML'>\n" \
+                        + convert_node_to_mathml(ccg_tree, sem_tree, xml_tokens) \
+                        + "</math>\n"
+    except ValueError:
+        mathml_str += "<p>{0}: {1}</p>\n".format(
+                        sentence_label, sentence_text) \
+                    + "<p>Syntactic parse error. Visualization skipped.</p>"
+                    
+    return mathml_str
+
 def convert_doc_to_mathml(doc, drt):
     """
     This function expects an XML <document>, which is then converted

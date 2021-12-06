@@ -1,0 +1,127 @@
+# Semantic Lexicon for Keyaki-ABC Treebank
+
+### Semantic templates for HOL representations ###
+
+- category: (S\S)
+  pos: 記号,句点,*,*
+  semantics: \E O. O
+- &punc-ten
+  category: (S\S)
+  pos: 記号,読点,*,*
+  semantics: \E O. O
+- <<: *punc-ten
+  category: (PP\PP)
+- <<: *punc-ten
+  category: ((S/S)\(S/S))
+  
+- category: (N/N)
+  pos: 記号,括弧開,*,*
+  semantics: \E O. O
+- category: (NP\NP)
+  pos: 記号,括弧閉,*,*
+  semantics: \E O. O
+# - category: ((PP[o1=true]\(PP[s=true]\S))\(PP[s=true]\S))
+#   semantics: \E X. E(X)
+  # semantics: \E V2 N.exists x.V2(x,N)
+#   base: ある
+
+# oblique case
+- category: (NP\((PP\S)/(PP\S)))
+  semantics: \E N V. V(N(E))
+
+- category: (S\(S/S))
+  semantics: \E S1 S2. E(S1, S2)
+
+# - category: S\S
+#   semantics: \E S.-S
+#   pos: NEG
+
+# - category: S[m=true]\S[m=true]
+#   semantics: \E S. S
+#   # semantics: \E S. S(\e.True)
+#   base: 。
+
+# ========================
+# == Comparatives
+# ========================
+
+# yori-NP
+# (
+#    (
+#      (S[m=true]|PP[s=true] # arg2)
+#      |
+#      (
+#        (S[m=true]|PP[s=true])
+#        |
+#        (
+#          (PP[s=true]\S[m=true])
+#          /
+#          (PP[s=true]\S[m=true])
+#        )
+#      ) # arg1
+#    )
+#    |
+#    NP # arg0
+#  )
+- &yori-np
+  category: (((S|PP[s=true])|((S|PP[s=true])|((PP[s=true]\S)/(PP[s=true]\S))))|NP)
+  base: よりも
+  semantics: |
+    \X.
+      \C1 S C0. yori(
+        S(C1),
+        S(C0)
+      )
+  # C1: NP
+  # S: (VP → VP) → VP
+  # C0: PPs
+- <<: *yori-np
+  base: より
+# yori-S
+#  (
+#    (
+#      (S[m=true]|PP[s=true])
+#      |
+#      (
+#        (S[m=true]|PP[s=true])
+#        |
+#        (
+#          (PP[s=true]\S[m=true])
+#          /
+#          (PP[s=true]\S[m=true])
+#        )
+#      )
+#    )
+#    |
+#    S[nml=true]
+#  )
+- &yori-S
+  category: (((S[m=true]|PP[s=true])|((S[m=true]|PP[s=true])|((PP[s=true]\S[m=true])/(PP[s=true]\S[m=true]))))|S[nml=true])
+  base: よりも
+  semantics: |
+    \X.
+      \C1 S N. yori(
+        C1,
+        S(N)
+      )
+- <<: *yori-S
+  base: より
+# 1: cont, 2:prej
+- category: (S|PP) # parentheses cannot be dropped
+  rule: "|-intro-cont1"
+  semantics: \M. lam(T11, M)
+
+- category: ((S|PP)|((PP\S)/(PP\S)))
+  rule: "|-intro-prej1"
+  semantics: \M. lam(T21, M)
+
+- category: (S|PP[s=true]) 
+  rule: "|-intro-rel1"
+  semantics: \M. lam(T101, M)
+
+- category: PP
+  semantics: \E. T11
+  base: "*TRACE-cont1*"
+- category: ((PP\S)/(PP\S))
+  semantics: \E. T21
+  base: "*TRACE-prej1*"
