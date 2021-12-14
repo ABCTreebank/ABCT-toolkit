@@ -656,7 +656,7 @@ class ABCCat():
         cls, 
         source: ABCCatReady,
         mode: ABCCatReprMode = ABCCatReprMode.TLCG
-    ):
+    ) -> "ABCCat":
         """ 
         Parse an ABC category.
 
