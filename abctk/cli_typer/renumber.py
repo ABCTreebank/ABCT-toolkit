@@ -81,7 +81,7 @@ def cmd_from_file(
             else:
                 dest_file = open(str(dest_path.resolve()), "w")
 
-            tb_mapped = list(
+            tb_mapped = (
                 (
                     Keyaki_ID.from_string(
                         fmt.format(
