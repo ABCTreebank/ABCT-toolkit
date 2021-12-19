@@ -1309,9 +1309,9 @@
   category: PP
   semantics: \E. T11
   base: "*TRACE-cont1*"
-- <<: &trace-cont-1
+- <<: *trace-cont-1
   category: N
-- <<: &trace-cont-1
+- <<: *trace-cont-1
   category: NP
 - category: ((PP\S)/(PP\S))
   semantics: \E. T21
