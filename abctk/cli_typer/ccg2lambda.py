@@ -50,12 +50,19 @@ def cmd_semparse(
     hol: bool = typer.Option(
         False,
     ),
-    # template: typing.List[typing.Tuple[str, pathlib.Path]] = typer.Option(
-        # [],
-        # file_okay = True,
-        # dir_okay = False,
-    # ),
+    templates: typing.List[pathlib.Path] = typer.Option(
+        [], "--template", "-t",
+        file_okay = True,
+        dir_okay = False,
+    ),
+    templates_names: typing.List[str] = typer.Option(
+        [], "--template-name", "-n"
+    )
 ):
+    # 0. Check parameters
+    if len(templates) != len(templates_names):
+        raise RuntimeError("The number of the template arguments does not equal that of the name arguments.")
+
     # 1. Load sem template
     sem_index = {}
     if drs:
@@ -72,6 +79,11 @@ def cmd_semparse(
                 sem_index_hol_path_str
             )
             logger.info(f"Loaded the semantic template HOL at {sem_index_hol_path_str}")
+    for path_template, name in zip(templates, templates_names):
+        sem_index[name] = abctk.ccg2lambda.semantic_index.SemanticIndex(
+            str(path_template)
+        )
+        logger.info(f"Loaded the semantic template {name} at {str(path_template)}")
 
     if not sem_index:
         logger.warning("No semantics template is loaded")
