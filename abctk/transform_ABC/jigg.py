@@ -178,8 +178,6 @@ def _morph_analyze_janome(tokens_root: et._Element):
         )
     ):
         token_xml = tokens[i]
-        pos = str(token_analyzed.part_of_speech)
-        pos1, pos2, pos3, _ = pos.split(",")
 
         attribs = {
             "base": token_analyzed.base_form,
@@ -188,13 +186,17 @@ def _morph_analyze_janome(tokens_root: et._Element):
             "lemma": "", # no viable attrib?
             "cForm": token_analyzed.info_form,
             "cType": token_analyzed.infl_type,
-            "pos3": pos3,
-            "pos2": pos2,
-            "pos1": pos1,
-            "pos": pos,
         }
         for key, val in attribs.items():
             token_xml.set(key, val or "*")
+
+        pos = str(token_analyzed.part_of_speech)
+        pos_split = pos.split(",")
+        if len(pos_split) == 1:
+            token_xml.set("pos", pos)
+        else:
+            for i, pos_i in enumerate(pos_split):
+                token_xml.set(f"pos{i}", pos_i)
 
     tokens_root.set(
         "annotators",
