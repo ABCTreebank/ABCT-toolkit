@@ -233,7 +233,7 @@ def cmd_semparse(
                                 xml_ccg = record.ccg,
                                 xml_sem = sem_xml,
                                 xml_tokens = record.tokens,
-                                is_drt = sem_type == "drs",
+                                is_drt = "drs" in sem_type,
                             )
 
                         status = sem_xml.attrib["status"] if sem_xml else "NO OUTPUT"
