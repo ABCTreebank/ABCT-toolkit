@@ -26,7 +26,7 @@ class Test_Annot():
         assert parsed == parsed_pprinted_parsed
 
 class Test_ABCCat:
-    parse_items = (
+    items_parse_TLCG = (
         ("⊥", ABCCatBot.BOT),
         ("NP", ABCCatBase("NP")),
         ("<NP\\S>", ABCCatFunctor(
@@ -55,23 +55,75 @@ class Test_ABCCat:
         ),
     )
 
-    @pytest.mark.parametrize("input, answer", parse_items)
-    def test_parse(self, input, answer):
+    @pytest.mark.parametrize("input, answer", items_parse_TLCG)
+    def test_parse_TLCG(self, input, answer):
         assert ABCCat.parse(input) == answer
 
-    def test_parse_pprint(self):
-        test_items = (
-            "⊥", "NP", "NP\\S", "<NP\\S>", "<S/NP>",
-            "<NP\\<NP\\NP>>",
-            "<S/NP>\\<S/NP>",
-            "S|NP",
-            "S|NP|NP",
-        )
+    items_parse_CCG2LAMBDA = (
+        ("NP[q=true]", ABCCatBase(
+                name = "NP",
+                feats = frozenset([("q", True)]),
+            )
+        ),
+        ("NP[s=false]", ABCCatBase(
+                name = "NP",
+                feats = frozenset([("s", False)])
+            )
+        ),
+        ("NP", ABCCatBase(
+                name = "NP",
+                feats = frozenset()
+            )
+        ),
+        ("(NP[s=false]\\VP)", ABCCatFunctor(
+                func_mode = ABCCatFunctorMode.LEFT,
+                ant = ABCCatBase("NP", frozenset([("s", False)])),
+                conseq = ABCCatBase("VP"),
+            )
+        ),
+    )
+    @pytest.mark.parametrize("input, answer", items_parse_CCG2LAMBDA)
+    def test_parse_CCG2LAMBDA(self, input, answer):
+        assert ABCCat.parse(input, ABCCatReprMode.CCG2LAMBDA) == answer
 
-        for item in test_items:
-            parse_1 = ABCCat.parse(item)
-            parse_2 = ABCCat.parse(parse_1.pprint())
-            assert parse_1 == parse_2
+    items_pprint_TLCG = (
+        "⊥", "NP", "NP\\S", "<NP\\S>", "<S/NP>",
+        "<NP\\<NP\\NP>>",
+        "<S/NP>\\<S/NP>",
+        "S|NP",
+        "S|NP|NP",
+        "NPs", "NPs\\S", "<NP\\Srel>", "<Srel/NPx>",
+        "<NPq\\<NPq\\NPq>>",
+        "<Sq/NP>\\<S/NPq>",
+        "S|NPq",
+        "S|NPq|NP",
+    )
+    @pytest.mark.parametrize("input", items_pprint_TLCG)
+    def test_parse_pprint_TLCG(self, input):
+        parse_1 = ABCCat.parse(input)
+        parse_2 = ABCCat.parse(parse_1.pprint())
+        assert parse_1 == parse_2
+
+    items_pprint_CCG2LAMBDA = (
+        "⊥", "NP", "NP\\S", "(NP\\S)", "(S/NP)",
+        "(NP\\(NP\\NP))",
+        "(S/NP)\\(S/NP)",
+        "S|NP",
+        "S|NP|NP",
+        "NP[s=true]", "NP[s=true]\\S", "(NP\\S[rel=true])", "(S[rel=true]/NP[x=true])",
+        "(NP[q=false]\\(NP[q=true]\\NP[q=false]))",
+        "(S[q=true]/NP)\\(S/NP[q=false])",
+        "S|NP[q=true]",
+        "S|NP[q=false]|NP",
+    )
+    @pytest.mark.parametrize("input", items_pprint_CCG2LAMBDA)
+    def test_parse_pprint_CCG2LAMBDA(self, input):
+        parse_1 = ABCCat.parse(input, mode = ABCCatReprMode.CCG2LAMBDA)
+        parse_2 = ABCCat.parse(
+            parse_1.pprint(mode = ABCCatReprMode.CCG2LAMBDA),
+            mode = ABCCatReprMode.CCG2LAMBDA,
+        )
+        assert parse_1 == parse_2
 
     def test_r(self):
         assert ABCCat.p("S").r("NP") == ABCCat.p("S/NP")
@@ -162,22 +214,6 @@ class Test_ABCCat:
         assert ~(ABCCat.p("S") / ABCCat.p("NP")) == ABCCat.p("NP\\S")
 
 class Test_ABCCatBase:
-    tell_feature_items = (
-        ("S", "m"),
-        ("S3m", None),
-        ("S", "m3"),
-    )
-
-    @pytest.mark.parametrize("cat, feat", tell_feature_items)
-    def test_tell_feature(self, cat: str, feat: typing.Optional[str]):
-        if feat is None:
-            assert typing.cast(ABCCatBase, ABCCat.p(cat)).tell_feature() is None
-        else:
-            d = typing.cast(ABCCatBase, ABCCat.p(cat + feat)).tell_feature()
-            assert d is not None
-            assert cat == d["cat"]
-            assert feat == d["feat"]
-
     eq_ign_items = (
         (("NP", "NP"), True),
         (("NPq", "NP"), True),
@@ -190,6 +226,22 @@ class Test_ABCCatBase:
         item2 = ABCCat.p(input[1])
 
         assert (item1 == item2) == answer
+
+    items_unify = (
+        ("NP", "NP[s=true]", "NP[s=true]"),
+        ("NP[q=true]", "NP", "NP[q=true]"),
+        ("NP[q=true]", "NP[s=true]", "NP[s=true,q=true]"),
+        ("NP[q=true]", "NP[q=false]", None),
+    )
+    @pytest.mark.parametrize("cat1, cat2, answer", items_unify)
+    def test_unify(self, cat1, cat2, answer: ABCCat):
+        cat1 = ABCCat.p(cat1, mode = ABCCatReprMode.CCG2LAMBDA)
+        cat2 = ABCCat.p(cat2, mode = ABCCatReprMode.CCG2LAMBDA)
+        assert cat1.unify(cat2) == (
+            ABCCat.p(answer, ABCCatReprMode.CCG2LAMBDA)
+            if answer 
+            else None
+        )
 
 class Test_ABCCatFunctor:
     reduce_with_items = (

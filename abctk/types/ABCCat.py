@@ -739,6 +739,10 @@ class ABCCat():
     def equiv_to(self, other, ignore_feature: bool = False):
         ...
 
+    @abst_class.abstractmethod
+    def unify(self, other) -> typing.Optional["ABCCat"]:
+        ...
+
     def __eq__(self, other):
         self.equiv_to(other, ignore_feature = False)
 
@@ -758,13 +762,17 @@ class ABCCatTop(ABCCat, Enum):
         return self
 
     def equiv_to(self, other, ignore_feature: bool = False):
-        if isinstance(other, ABCCatBot):
-            return (self.value == other.value)
-        elif isinstance(other, ABCCat):
-            return False
-        else:
-            return NotImplemented
+        return isinstance(other, ABCCatTop)
 
+    def __eq__(self, other):
+        self.equiv_to(other, ignore_feature = False)
+
+    def unify(self, other):
+        if self == other:
+            return self
+        else:
+            return None
+            
 class ABCCatBot(ABCCat, Enum):
     """
     Represents the bottom type in the ABC Treebank.
@@ -781,18 +789,21 @@ class ABCCatBot(ABCCat, Enum):
         return self
 
     def equiv_to(self, other, ignore_feature: bool = False):
-        if isinstance(other, ABCCatBot):
-            return (self.value == other.value)
-        elif isinstance(other, ABCCat):
-            return False
+        return isinstance(other, ABCCatBot)
+
+    def unify(self, other):
+        if self == other:
+            return self
         else:
-            return NotImplemented
+            return None
+
+    def __eq__(self, other):
+        self.equiv_to(other, ignore_feature = False)
 
     def __hash__(self):
         return hash(self.BOT.value)
 
 _re_ABCCat_feature = re.compile(r"(?P<cat>.*?)(?<=[A-Z])(?P<feat>[a-z][a-z0-9]*)")
-_re_ABCCat_cat_subcat = re.compile(r"(?P<cat>[A-Z]+)(?P<feat>.*)")
 
 @attr.s(
     auto_attribs = True,
@@ -810,18 +821,52 @@ class ABCCatBase(ABCCat):
     The letter of the atom.
     """
 
+    feats: typing.FrozenSet[typing.Tuple[str, typing.Any]] = attr.ib(
+        factory = frozenset
+    )
+
     @functools.lru_cache()
     def pprint(
         self, 
         mode: ABCCatReprMode = ABCCatReprMode.TLCG
     ) -> str:
-        if mode == ABCCatReprMode.DEPCCG or mode == ABCCatReprMode.CCG2LAMBDA:
-            dict_maybe = self.tell_feature()
-            if dict_maybe:
-                if mode == ABCCatReprMode.DEPCCG:
-                    return f"{dict_maybe['cat']}[{dict_maybe['feat']}]"
-                else:
-                    return f"{dict_maybe['cat']}[{dict_maybe['feat']}=true]"
+        if mode == ABCCatReprMode.TLCG:
+            self_feats = self.feats
+            self_feats_len = len(self_feats)
+
+            if self_feats_len > 1:
+                raise ValueError("TLCG mode does not support more than one subcategorization features")
+            elif self_feats_len == 1:
+                feat, val = next(iter(self_feats))
+                if val != True:
+                    raise ValueError("TLCG mode does not supportsubcategorization feature values other than `True`")
+                
+                return f"{self.name}{feat}"
+            else:
+                return self.name
+        elif mode == ABCCatReprMode.CCG2LAMBDA:
+            if self.feats:
+                return "{name}[{feats}]".format(
+                    name = self.name,
+                    feats = ",".join(
+                        f"{feat}={str(val).lower()}"
+                        for feat, val 
+                        in self.feats
+                    )
+                )
+            else:
+                return self.name
+        elif mode == ABCCatReprMode.DEPCCG:
+            if self.feats:
+                return "{name}[{feats}]".format(
+                    name = self.name,
+                    feats = ",".join(
+                        f"{feat}={val.lower()}"
+                        for feat, val 
+                        in self.feats
+                        if val == True
+                    )
+                )
             else:
                 return self.name
         else:
@@ -832,32 +877,43 @@ class ABCCatBase(ABCCat):
 
     def equiv_to(self, other, ignore_feature: bool = False):
         if isinstance(other, ABCCatBase):
-            # return (self.name == other.name)
-            
-            # temporary hack: feature matching
-            # test whether it is of such type
-            if ignore_feature:
-                match = _re_ABCCat_cat_subcat.match(self.name)
-                other_match = _re_ABCCat_cat_subcat.match(other.name)
-                if match and other_match:
-                    # only compare categories and ignore features
-                    return match.groupdict()["cat"] == other_match.groupdict()["cat"]
-                else:
-                    return (self.name == other.name)
-            else:
-                return (self.name == other.name)
+            return (
+                self.name == other.name
+                and (ignore_feature or self.feats == other.feats)
+            )
         elif isinstance(other, ABCCat):
             return False
         else:
             return NotImplemented
 
-    @functools.lru_cache()
-    def tell_feature(self) -> typing.Optional[typing.Dict[str, str]]:
-        match = _re_ABCCat_feature.search(self.name)
-        if match:
-            return match.groupdict()
+    def unify(self, other):
+        other = ABCCat.p(other)
+        if (
+            isinstance(other, ABCCatBase)
+            and self.name == other.name
+            and (feats := ABCCatBase.unify_feats(self.feats, other.feats))
+        ):
+            return ABCCatBase(self.name, feats)
         else:
             return None
+
+    @staticmethod
+    def unify_feats(
+        feat_1: typing.FrozenSet[typing.Tuple[str, str]],
+        feat_2: typing.FrozenSet[typing.Tuple[str, str]],
+    ):
+        feat_union = feat_1.union(feat_2)
+        res_dict = {}
+        for feat, val in feat_union:
+            val_prev = res_dict.get(feat, None)
+            if val_prev is None:
+                res_dict[feat] = val
+            elif val == val_prev:
+                pass
+            else:
+                return None
+
+        return frozenset(res_dict.items())
             
 @attr.s(
     auto_attribs = True, # Unnecessary in newer version of Python
@@ -959,6 +1015,25 @@ class ABCCatFunctor(ABCCat):
         else:
             return NotImplemented
 
+    def __eq__(self, other):
+        return self.equiv_to(other, ignore_feature = False)
+
+    def unify(self, other):
+        other = ABCCat.p(other)
+        if isinstance(other, ABCCatFunctor):
+            if (
+                self.func_mode == other.func_mode
+                and (ant_uni := self.ant.unify(other.unify))
+                and (conseq_uni := self.conseq.unify(other.conseq))
+            ):
+                return ABCCatFunctor(
+                    func_mode = self.func_mode,
+                    ant = ant_uni,
+                    conseq = conseq_uni,
+                )
+            else:
+                return None
+
     def reduce_with(self, ant: ABCCatReady, ant_left: bool = False) -> typing.Optional[ABCCat]:
         """
         Eliminate the functor with a given antecedent.
@@ -1000,34 +1075,72 @@ class ABCCatFunctor(ABCCat):
 _cat_grammar_TLCG = r"""
 cat: (cat_simple | cat_group)
 cat_group: "<" cat_simple ">"
-cat_simple: func_left | func_right | func_vert | bot | top | atom
+cat_simple: func_left | func_right | func_vert | cat_singleton
+cat_singleton: bot | top | atom
 func_left: cat "\\" cat
 func_right: cat "/" cat
 func_vert: cat "|" cat
 bot: "⊥"
 top: "⊤"
-atom: ATOM
-ATOM: /[^\/\\|<>#\s]+/
+atom: ATOM feats?
+feats: featval
+featval: FEAT
+ATOM: /([A-Z0-9-]+|[^\/\\|<>⊥⊤#\s]+)/
+FEAT: /[a-z0-9]+/
 """
 
 _cat_grammar_DEPCCG = r"""
 cat: (cat_simple | cat_group)
 cat_group: "(" cat_simple ")"
-cat_simple: func_left | func_right | func_vert | bot | top | atom
+cat_simple: func_left | func_right | func_vert | cat_singleton
+cat_singleton: bot | top | atom
 func_left: cat "\\" cat
 func_right: cat "/" cat
 func_vert: cat "|" cat
 bot: "⊥"
 top: "⊤"
 atom: ATOM
-ATOM: /[^\/\\|()#\s]+/
+ATOM: /[^\/\\|()⊥⊤#\s]+/
 """
+
+_cat_grammar_CCG2LAMBDA = r"""
+cat: (cat_simple | cat_group)
+cat_group: "(" cat_simple ")"
+cat_simple: func_left | func_right | func_vert | cat_singleton
+cat_singleton: bot | top | atom
+func_left: cat "\\" cat
+func_right: cat "/" cat
+func_vert: cat "|" cat
+bot: "⊥"
+top: "⊤"
+atom: ATOM feats?
+feats: "[" featval ("," featval)* ","? "]"
+featval: FEAT ("=" VAL)?
+ATOM: /[^\/\\\[\]|()⊥⊤#\s]+/
+FEAT: /[^=\]]+/
+VAL: /[^\],]+/
+"""
+
 class CatParserTransformer(lark.Transformer):
     def __init__(self, mode: ABCCatReprMode = ABCCatReprMode.TLCG):
         self.mode = mode
 
-    def atom(self, args: typing.Sequence[lark.Token]):
-        return ABCCatBase(args[0].value)
+    def atom(self, args):
+        cat: lark.Token
+        feats: typing.FrozenSet[typing.Tuple[str, typing.Any]]
+
+        if len(args) == 2:
+            cat, feats = args
+        elif len(args) == 1:
+            cat, = args
+            feats = frozenset()
+        else:
+            raise ValueError
+
+        return ABCCatBase(
+            cat.value,
+            feats,
+        )
 
     def top(self, args):
         return ABCCatTop.TOP
@@ -1050,7 +1163,7 @@ class CatParserTransformer(lark.Transformer):
         )
 
     def func_left(self, args):
-        if self.mode == ABCCatReprMode.TLCG:
+        if self.mode in (ABCCatReprMode.TLCG, ABCCatReprMode.CCG2LAMBDA):
             return ABCCatFunctor(
                 ABCCatFunctorMode.LEFT,
                 args[0],
@@ -1066,11 +1179,36 @@ class CatParserTransformer(lark.Transformer):
     def cat_simple(self, args):
         return args[0]
 
+    def cat_singleton(self, args):
+        return args[0]
+
     def cat_group(self, args):
         return args[0]
 
     def cat(self, args):
         return args[0]
+
+    def feats(self, args):
+        return frozenset(args)
+
+    def featval(self, args: typing.Sequence[lark.Token]):
+        if len(args) > 1:
+            feat, val = args
+            val = val.value
+        else:
+            feat = args[0]
+            val = "true"
+
+        val_lower = val.lower()
+
+        if val_lower == "true":
+            val = True
+        elif val_lower == "false":
+            val = False
+        elif val_lower == "none":
+            val = None
+        
+        return (feat.value, val)
 
 _cat_parser: typing.Dict[ABCCatReprMode, lark.Lark] = {}
 def _init_parser(mode: ABCCatReprMode):
@@ -1087,6 +1225,13 @@ def _init_parser(mode: ABCCatReprMode):
         elif mode == ABCCatReprMode.DEPCCG:
             _cat_parser[mode] = lark.Lark(
                 _cat_grammar_DEPCCG,
+                start = "cat",
+                parser = "lalr",
+                transformer = CatParserTransformer(mode)
+            )
+        elif mode == ABCCatReprMode.CCG2LAMBDA:
+            _cat_parser[mode] = lark.Lark(
+                _cat_grammar_CCG2LAMBDA,
                 start = "cat",
                 parser = "lalr",
                 transformer = CatParserTransformer(mode)
