@@ -209,12 +209,17 @@ class _t2jg_Writer(typing.NamedTuple):
     token_span_end: int
     token_span_name: str
     is_terminal: bool = False
+    pointer: typing.Optional[et._Element] = None
 
 def tree_to_jigg(
     tree: Tree,
     ID: str = "<UNKNOWN>",
     jigg_ID: typing.Any = 0,
+    postag_dict: typing.Optional[list] = None,
 ):
+    if not postag_dict: 
+        postag_dict = []
+
     xml_pool: et._Element = et.Element(
         "sentence",
         abc_id = str(ID),
@@ -249,6 +254,7 @@ def tree_to_jigg(
             label = pointer.label()
             if not isinstance(label, abcc.Annot):
                 raise TypeError
+            label_cat = abcc.ABCCat.p(label.cat)
             
             token_span_begin = min(w.token_span_begin for w in return_values)
             token_span_end = min(w.token_span_end for w in return_values)
@@ -258,7 +264,7 @@ def tree_to_jigg(
             xml_span = et.SubElement(
                 xml_ccgs,
                 "span",
-                category = abcc.ABCCat.p(label.cat).pprint(
+                category = label_cat.pprint(
                     mode = abcc.ABCCatReprMode.CCG2LAMBDA
                 ),
                 begin = str(token_span_begin),
@@ -328,11 +334,25 @@ def tree_to_jigg(
 
             if len(return_values) == 1:
                 return_unary_child, = return_values
-                if return_unary_child.is_terminal:
+                pointer_token = return_unary_child.pointer
+                if (
+                    return_unary_child.is_terminal
+                    and pointer_token is not None
+                ):
                     xml_span.set(
                         "terminal",
                         return_unary_child.token_span_name,
                     )
+                    # add additional POS
+                    # match with
+                    for tag in postag_dict:
+                        if (
+                            label_cat.unify(tag["category"])
+                            and pointer_token.attrib["base"] in tag["base"]
+                        ):
+                            pointer_token.set("pos", tag["pos"])
+                            break
+
                 else:
                     xml_span.set(
                         "child",
@@ -358,7 +378,7 @@ def tree_to_jigg(
             )
 
             span_id_count += 1
-        else:
+        else: # not
             if isinstance(pointer, Tree):
                 # The tree is non-terminal:
                 call_stack.append((pointer, True))
@@ -369,7 +389,7 @@ def tree_to_jigg(
                 token_id_count_end = token_id_count + 1
                 token_offset_count_end = token_offset_count + len(pointer)
                 token_name = f"s{jigg_ID}_{token_id_count}"
-                et.SubElement(
+                token_xml = et.SubElement(
                     xml_tokens,
                     "token",
                     base = pointer,
@@ -384,6 +404,7 @@ def tree_to_jigg(
                         token_span_end = token_id_count_end,
                         token_span_name = token_name,
                         is_terminal = True,
+                        pointer = token_xml,
                     )
                 )
 

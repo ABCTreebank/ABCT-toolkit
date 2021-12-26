@@ -1,4 +1,7 @@
+import importlib.resources
 import logging
+
+from abctk.types.ABCCat import ABCCat, ABCCatReprMode
 logger = logging.getLogger(__name__)
 import os
 import pathlib
@@ -7,7 +10,7 @@ import tempfile
 import typing
 
 import lxml.etree as et
-
+import ruamel.yaml as yaml
 import typer
 
 import abctk.transform_ABC.jigg as jg
@@ -73,10 +76,38 @@ def cmd_from_file(
         The destination. `-` indicates STDOUT.
         """
     ),
+    use_postag: bool = typer.Option(
+        True, "--use-postag", "-p",
+    ),
+    postag_path: typing.Optional[pathlib.Path] = typer.Option(
+        None, "--postag-path", 
+        file_okay = True,
+        exists = True,
+        help = """
+        An additional POS tag dictionary.
+        """
+    )
 ):
     """
     Convert ABC Treebank trees coming from STDIN to a JIGG tree file.
     """
+
+    # collect postag rules
+    postag = None
+    if use_postag:
+        if postag_path:
+            with open(postag_path) as f_postag:
+                postag = yaml.safe_load(f_postag)
+        else:
+            with importlib.resources.open_text("abctk.ccg2lambda", "semtag.yaml") as f_postag:
+                postag = yaml.safe_load(f_postag)
+    
+        # parse categories beforehand
+        for i in range(len(postag)):
+            postag[i]["category"] = ABCCat.parse(
+                postag[i]["category"],
+                ABCCatReprMode.CCG2LAMBDA
+            )
 
     with tempfile.TemporaryDirectory(prefix = "abct_jigg_") as temp_folder:
         temp_file: typing.Optional[typing.IO[str]] = None
@@ -98,7 +129,9 @@ def cmd_from_file(
             xml_doc = et.SubElement(xml_root, "document", id = "d0")
             xml_sentences = et.SubElement(xml_doc, "sentences")
             for num, (keyaki_id, tree) in enumerate(tb):
-                xml_sentences.append(jg.tree_to_jigg(tree, str(keyaki_id), num))
+                xml_sentences.append(
+                    jg.tree_to_jigg(tree, str(keyaki_id), num, postag)
+                )
 
             dest_path_str = str(dest_path)
             if dest_path_str == "-":

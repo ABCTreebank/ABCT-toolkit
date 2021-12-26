@@ -1,0 +1,488 @@
+# ========================
+# == Verbs
+# ========================
+
+# ------------------------
+# === Light verbs
+# ------------------------
+# === VB0 する
+- category: S\S
+  pos: EMPTY
+  base:
+  - さ
+  - し
+  - する
+  - すれ
+  - せよ
+  - せ
+  - しろ
+
+  # === VB0 ある
+- category: S\S
+  base:
+  - あら
+  - あり
+  - あっ
+  - ある
+  - あれ
+  - あろ
+  pos: EMPTY
+
+  # === Copulas
+- category: S\S
+  pos: EMPTY
+  base:
+  - です
+  - でし
+  - でしょ
+  - だ
+  - で
+  - の
+  - な
+  - に
+  - ます
+  - まし
+  - ませ
+  - ましょ
+
+- category: (N/N)\(N/N)
+  pos: EMPTY
+  base:
+    - の
+
+- category: S[rel=true]\S[rel=true]
+  pos: EMPTY
+  base:
+    - な
+  # 簡単な
+
+- category: S[sub=true]\CP[t=true]
+  pos: EMPTY
+  base:
+    - と
+    # 43_textbook_djg_advanced
+# ------------------------
+# === Main Verbs: Argument Structures 
+# ------------------------
+
+# ------------------------
+# === Scrambling
+# ------------------------
+
+# ------------------------
+# === Negation
+# ------------------------
+- category: S\S
+  pos: NEG
+  base:
+  - ない
+  - ん
+  
+- category: (PP[s=true]\S)\(PP[s=true]\S)
+  pos: NEG
+  base:
+    - ない
+  
+- category: (PP[o1=true]\(PP[s=true]\S))\(PP[o1=true]\(PP[s=true]\S))
+  pos: NEG
+  base:
+    - ない
+
+- category: (PP[o2=true]\(PP[o1=true]\(PP[s=true]\S)))\(PP[o2=true]\(PP[o1=true]\(PP[s=true]\S)))
+  pos: NEG
+  base:
+    - ない
+
+- category: (CP\(PP[s=true]\S))\(CP\(PP[s=true]\S))
+  pos: NEG
+  base:
+    - ない
+
+# ------------------------
+# === Modal Verbs
+# ------------------------
+# MODAL
+- category: S\S
+  pos: MODAL
+  base:
+    - なければならない
+
+# ------------------------
+# === Complex predicates
+# ------------------------
+# CONTROL
+- category: (PP[s=true]\S)\(PP[s=true]\S)
+  pos: CONTROL
+  base:
+    - あげる
+
+# ------------------------
+# === Verbs as Adverbials
+# ------------------------
+
+# ------------------------
+# === Ad-adverbials
+# ------------------------
+- category: (S/S)\(S/S)
+  base:
+  - は
+  # 1145_misc_JSeM_beta
+  pos: P-ADADV-TORITATE
+
+- category: ((PP\S)/(PP\S))\((PP\S)/(PP\S))
+  base:
+  - は
+  # 930_misc_JSeM_beta
+  - だって
+  - も
+  pos: P-ADADV-TORITATE
+
+# ==== vacuous AX
+- category: (S/S)\(S/S)
+  base:
+  - に
+  pos: P-AX
+
+- category: ((PP\S)/(PP\S))\((PP\S)/(PP\S))
+  base:
+  - と
+  - に
+  pos: P-AX
+
+# # === the te-form
+# - category: S\S
+#   base:
+#   - て
+#   - で
+#   pos: EMPTY
+
+# === AX に after ADJI/ADJN
+# 374_misc_JSeM
+- category: ((PP[o1=true]\(PP[s=true]\S))/(PP[o1=true]\(PP[s=true]\S)))\((PP[o1=true]\(PP[s=true]\S))/(PP[o1=true]\(PP[s=true]\S)))
+  base:
+  - に
+  pos: EMPTY
+# ------------------------
+# === Verbs as Adnominal Modification
+# ------------------------
+
+# ========================
+# == Adverbial Postpositions, or subordinate coordinators
+# ========================
+
+# ------------------------ 
+# === Defaults
+# ------------------------ 
+
+# ------------------------ 
+# === Conditionals
+# ------------------------ 
+- category: (S[a=true]\((PP[s=true]\S)/(PP[s=true]\S)))
+  base:
+  - ば
+  - なら
+  pos: SCON-CND
+
+# ========================
+# == Numerals & Noun Classifiers
+# ========================
+
+# ------------------------ 
+# === NUM
+# ------------------------
+- category: NUM
+  base:
+  - 一人
+  pos: NUM-NUMCL
+# ------------------------ 
+# === CL
+# ------------------------ 
+
+# ========================
+# == Ns
+# ========================
+# REF
+# - category: N
+#   pos: REF
+#   base:
+#     - 私
+#     - 僕
+    
+# ------------------------ 
+# === Ns modifying NUMCLPs
+# ------------------------ 
+# ------------------------
+# === Ns predicated of N/NRs
+# ------------------------
+- category: (Ns\N)
+  base:
+  - 末
+  pos: N-NRED
+  
+# ------------------------
+# === Possessive pronouns
+# ------------------------
+- category: (PRO\N)
+  base:
+  - の
+  pos: N-POSS
+
+- category: (N\N)
+  base:
+  - の
+  pos: N-POSS
+
+# ------------------------ 
+# === Floating Quantifiers
+# ------------------------ 
+
+
+# ========================
+# == NPs
+# ========================
+
+# ------------------------ 
+# === NPs as adverbials 
+# ------------------------ 
+
+
+# ========================
+# == Adnominal Postpositions
+# ========================
+- category: (NP\(N/N))
+  base:
+  - か
+  - も
+  pos: P-ADN-QUANT
+# ------------------------ 
+# === Default: Vacuous
+# ------------------------ 
+
+# ------------------------
+# === Stacked Particles: Vacuous by default
+# ------------------------
+
+  
+# ------------------------
+# === Adnominal connectives
+# ------------------------
+
+
+# ------------------------
+# === Adverbializer (NP -> S/S)
+# ------------------------
+
+
+# ------------------------
+# === PP predicates (often accopanied with copulars)
+# ------------------------
+
+
+# ========================
+# == Complementizers, Sentence-final Particles
+# ========================
+
+# ------------------------ 
+# === Default
+# ------------------------ 
+
+
+# ------------------------ 
+# === Ordinary Complementizers
+# ------------------------ 
+- category: (S[sub=true]\CP[t=true])
+  base:
+  - と
+  pos: COMP-ORD
+- category: (CP\CP[t=true])
+  base:
+  - は # 43_textbook_djg_advanced
+  - と # 106_textbook_djg_intermediate
+  pos: COMP-ORD
+  # 106_textbook_djg_intermediate
+
+# ------------------------ 
+# === Question Markers
+# ------------------------ 
+- category: (S[sub=true]\CP[q=true])
+  base:
+  - か
+  - って
+  pos: COMP-Q
+
+
+# ------------------------ 
+# === Teinei Markers
+# ------------------------ 
+- category: (CP\CP)
+  base:
+  - です
+  - でし
+  - でしょ
+  - だ
+  - ます
+  - まし
+  - ませ
+  - ましょ
+  - よ
+  pos: COMP-TEINEI
+
+# ------------------------ 
+# === Exclamatives
+# ------------------------ 
+- category: (S[sub=true]\CP[f=true])
+  base:
+  - こと
+  - か
+  pos: COMP-EXCL
+- category: (CP[f=false]\CP[f=true])
+  base:
+  - こと
+  - か
+  pos: COMP-EXCL
+- category: (CP[f=true]\CP[f=true]) # duplicated particles
+  base:
+  - こと
+  - か
+  pos: COMP-EXCL-EMPTY # treated as redundant
+
+- category: (S[sub=true]\CP[f=true])
+  base:
+  - ね
+  - よ
+  - さ
+  - な
+  - なあ
+  pos: COMP-SA
+- category: (CP\CP[f=true])
+  base:
+  - ね
+  - よ
+  - さ
+  - な
+  - なあ
+  pos: COMP-SA
+
+# ------------------------
+# === Speech-Act particles
+# ------------------------
+
+
+# ========================
+# == Speech-act Items
+# ========================
+
+# ========================
+# == Pre-speech-act Modifiers
+# ========================
+
+
+# ========================
+# == Punctuations
+# ========================
+
+# ------------------------ 
+# === Intra-sentential
+# ------------------------ 
+- category: (PP\PP)
+  base:
+  - 、
+  pos: PU
+
+- category: ((S/S)\(S/S))
+  base:
+  - 、
+  pos: PU
+
+- category: ((PP\S)/(PP\S))
+  base:
+  - 、
+  pos: PU
+
+- category: (((PP\S)/(PP\S))\((PP\S)/(PP\S)))
+  base:
+  - 、
+  pos: PU
+
+- category: (((PP\(PP\S))/(PP\(PP\S)))\((PP\(PP\S))/(PP\(PP\S))))
+  base:
+  - 、
+  pos: PU
+
+- category: (S\S)
+  base:
+  - 、
+  - 。
+  - ．
+  - ？
+  pos: PU
+
+- category: (CP\CP)
+  base:
+  - 、
+  - 。
+  - ？
+  pos: PU
+
+- category: PU
+  base:
+  - 。
+  - ？
+  pos: PU
+
+# ------------------------ 
+# === Pre-sentential
+# ------------------------ 
+- category: (S/S)
+  base:
+  - 、
+  pos: PU
+  
+- category: (CP/CP)
+  base:
+  - 、
+  pos: PU
+
+# ------------------------ 
+# === Parentheses
+# ------------------------ 
+- category: (N/N)
+  base: 
+  - （
+  - 「
+  - 『
+  - 【
+  - 〈
+  pos: PU
+
+- category: (N\N)
+  base:
+  - ）
+  - 」
+  - 』
+  - 】
+  - 〉
+  pos: PU
+
+- category: (S/S)
+  base:
+  - （
+  - 「
+  - 『
+  - 【
+  - 〈
+  pos: PU
+
+- category: (S\S)
+  base:
+  - ）
+  - 」
+  - 』
+  - 】
+  - 〉
+  pos: PU
+
+# ========================
+# == Roots
+# ========================
+
