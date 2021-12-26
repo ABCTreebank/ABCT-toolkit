@@ -77,7 +77,10 @@ def cmd_from_file(
         """
     ),
     use_postag: bool = typer.Option(
-        True, "--use-postag", "-p",
+        True, "--use-postag/--no-use-posttag",
+        help = """
+        Enable or disable the preparatory POS tagging.
+        """
     ),
     postag_path: typing.Optional[pathlib.Path] = typer.Option(
         None, "--postag-path", 
