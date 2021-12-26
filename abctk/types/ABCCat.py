@@ -1023,7 +1023,7 @@ class ABCCatFunctor(ABCCat):
         if isinstance(other, ABCCatFunctor):
             if (
                 self.func_mode == other.func_mode
-                and (ant_uni := self.ant.unify(other.unify))
+                and (ant_uni := self.ant.unify(other.ant))
                 and (conseq_uni := self.conseq.unify(other.conseq))
             ):
                 return ABCCatFunctor(
