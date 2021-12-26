@@ -87,10 +87,12 @@
 - category: (S|PP) # parentheses cannot be dropped
   rule: "|-intro-cont1"
   semantics: \M. lam(T11, M)
-
 - category: ((S|PP)|((PP\S)/(PP\S)))
   rule: "|-intro-prej1"
   semantics: \M. lam(T21, M)
+- category: (((S|PP)|((PP\S)/(PP\S)))|((PP\S)/(PP\S)))
+  rule: "|-intro-diff1"
+  semantics: \M. lam(T31, M)
 
 - category: (S|PP[s=true]) 
   rule: "|-intro-rel1"
@@ -99,10 +101,16 @@
 - category: PP
   semantics: \E. T11
   base: "*TRACE-cont1*"
-- category: ((PP\S)/(PP\S))
+- &comp-trace-prej
+  category: ((PP\S)/(PP\S))
   semantics: \E. T21
   base: "*TRACE-prej1*"
-  
+- <<: *comp-trace-prej
+  category: (S/S)
+- category: ((PP\S)/(PP\S))
+  semantics: \E. T31
+  base: "*TRACE-diff1*"
+
 # =======
 # Punctuations 
 # =======

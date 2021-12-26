@@ -1305,17 +1305,33 @@
   base: ある
 
 # 1: cont, 2:prej
-- &trace-cont-1
-  category: PP
+- category: (S|PP) # parentheses cannot be dropped
+  rule: "|-intro-cont1"
+  semantics: \M. lam(T11, M)
+- category: ((S|PP)|((PP\S)/(PP\S)))
+  rule: "|-intro-prej1"
+  semantics: \M. lam(T21, M)
+- category: (((S|PP)|((PP\S)/(PP\S)))|((PP\S)/(PP\S)))
+  rule: "|-intro-diff1"
+  semantics: \M. lam(T31, M)
+
+- category: (S|PP[s=true]) 
+  rule: "|-intro-rel1"
+  semantics: \M. lam(T101, M)
+
+- category: PP
   semantics: \E. T11
   base: "*TRACE-cont1*"
-- <<: *trace-cont-1
-  category: N
-- <<: *trace-cont-1
-  category: NP
-- category: ((PP\S)/(PP\S))
+- &comp-trace-prej
+  category: ((PP\S)/(PP\S))
   semantics: \E. T21
   base: "*TRACE-prej1*"
+- <<: *comp-trace-prej
+  category: (S/S)
+- base: "*TRACE-diff1*"
+  category: ((PP\S)/(PP\S))
+  semantics: \E. T31
+  
 
 
 # =======
