@@ -308,8 +308,8 @@ def tree_to_jigg(
                             # try to automatically find it
                             if children_num == 2:
                                 child_1, child_2 = pointer
-                                child_1_cat: abcc.ABCCat = child_1.label().cat
-                                child_2_cat: abcc.ABCCat= child_2.label().cat
+                                child_1_cat: abcc.ABCCat = abcc.ABCCat.parse(child_1.label().cat)
+                                child_2_cat: abcc.ABCCat= abcc.ABCCat.parse(child_2.label().cat)
                                 simp_candidates = abcc.ABCCat.simplify_exh(child_1_cat, child_2_cat)
                                 if simp_candidates:
                                     _, simp_elimtype = next(iter(simp_candidates))
