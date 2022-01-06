@@ -83,6 +83,19 @@
       )
 - <<: *yori-S
   base: より
+- &yori-npdeg
+  category: ((((S[m=true]|PP[s=true])|(((S[m=true]|PP[s=true])|((PP[s=true]\S[m=true])/(PP[s=true]\S[m=true])))|((PP[s=true]\S[m=true])/(PP[s=true]\S[m=true]))))|DEG)|NP)
+  base: よりも
+  semantics: |
+    \X.
+      \C1 D S N. yori(
+        C1,
+        S(N),
+        D
+      )
+- <<: *yori-npdeg
+  base: より
+
 # 1: cont, 2:prej
 - category: (S|PP) # parentheses cannot be dropped
   rule: "|-intro-cont1"
