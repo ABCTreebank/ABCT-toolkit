@@ -1261,7 +1261,8 @@
     \X.
       \C1 S C0 K. yori(
         S(C1, \e. True),
-        S(C0, K)
+        S(C0, K),
+        0
       )
   # C1: NP
   # S: (VP → VP) → VP
@@ -1294,11 +1295,24 @@
     \X.
       \C1 S N K. yori(
         C1(\e. True),
-        S(N, K)
+        S(N, K),
+        0
       )
 - <<: *yori-S
   base: より
-#
+- &yori-npdeg
+  category: ((((S[m=true]|PP[s=true])|(((S[m=true]|PP[s=true])|((PP[s=true]\S[m=true])/(PP[s=true]\S[m=true])))|((PP[s=true]\S[m=true])/(PP[s=true]\S[m=true]))))|DEG)|NP)
+  base: よりも
+  semantics: |
+    \X.
+      \C1 D S N K. yori(
+        C1(\e. True),
+        S(N, K),
+        D
+      )
+- <<: *yori-npdeg
+  base: より
+
 - category: (PP[o1=true]\(PP[s=true]\S))\(PP[s=true]\S)
   semantics: \E.E
   # semantics: \E V2 N.exists x.V2(x,N)
