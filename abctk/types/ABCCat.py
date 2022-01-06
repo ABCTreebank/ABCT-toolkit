@@ -329,7 +329,7 @@ class ABCCat():
     This feature will enable a readable and succint coding and manupilation of `ABCCat` objects.
     """
 
-    @functools.lru_cache()
+    @functools.cache
     def adjunct(self, func_mode: ABCCatFunctorMode) -> "ABCCatFunctor":
         """
         Make a self adjunction from a category.
@@ -373,7 +373,7 @@ class ABCCat():
         """
         return self.adjunct(ABCCatFunctorMode.VERT)
 
-    @functools.lru_cache()
+    @functools.cache
     def v(self, ant: ABCCatReady) -> "ABCCatFunctor":
         """
         An iconic method to create a vertical functor cateogry.
@@ -408,7 +408,7 @@ class ABCCat():
     def __or__(self, other: ABCCatReady):
         return self.v(other)
 
-    @functools.lru_cache()
+    @functools.cache
     def r(self, ant: ABCCatReady) -> "ABCCatFunctor":
         """
         An iconic method to create a right functor cateogry.
@@ -443,7 +443,7 @@ class ABCCat():
     def __truediv__(self, others):
         return self.r(others)
 
-    @functools.lru_cache()
+    @functools.cache
     def l(self, conseq: ABCCatReady) -> "ABCCatFunctor":
         """
         An iconic method to create a left functor cateogry.
@@ -585,7 +585,7 @@ class ABCCat():
     # === END ===
 
     @classmethod
-    @functools.lru_cache()
+    @functools.cache
     def simplify_exh(
         cls,
         left: ABCCatReady,
@@ -651,7 +651,7 @@ class ABCCat():
         return f"<{self.__class__}: {self.pprint()} >"
 
     @classmethod
-    @functools.lru_cache()
+    @functools.cache
     def parse(
         cls, 
         source: ABCCatReady,
@@ -706,7 +706,7 @@ class ABCCat():
         return cls.parse(source, mode)
 
     @classmethod
-    @functools.lru_cache()
+    @functools.cache
     def _lexer(
         cls,
         source: str,
@@ -825,7 +825,7 @@ class ABCCatBase(ABCCat):
         factory = frozenset
     )
 
-    @functools.lru_cache()
+    @functools.cache
     def pprint(
         self, 
         mode: ABCCatReprMode = ABCCatReprMode.TLCG
@@ -942,7 +942,7 @@ class ABCCatFunctor(ABCCat):
     The consequence.
     """
 
-    @functools.lru_cache()
+    @functools.cache
     def pprint(
         self, 
         mode: ABCCatReprMode = ABCCatReprMode.TLCG
