@@ -1,0 +1,136 @@
+
+%「よりも」「よりは」一語化
+(__=yori < より=yori_lex) $ (__=mo < も)
+
+relabel yori_lex よりも
+excise yori yori
+delete mo
+
+(__=yori < より=yori_lex) $ (__=wa < は)
+
+relabel yori_lex よりは
+excise yori yori
+delete wa
+
+
+%「に/と くらべ/比べ て」一語化
+%
+%不要なunary node削除
+
+__ <: (__=x < (__ < /^(くらべ|比べ)$/))
+
+excise x x
+
+
+__=x < (__ < に=ni) $ (__ < くらべ=kurabe)
+
+excise x x
+relabel kurabe にくらべ
+prune ni
+
+__=x < (__ < と=ni) $ (__ < くらべ=kurabe)
+
+excise x x
+relabel kurabe とくらべ
+prune ni
+
+__=x < (__ < に=ni) $ (__ < 比べ=kurabe)
+
+excise x x
+relabel kurabe に比べ
+prune ni
+
+__=x < (__ < と=ni) $ (__ < 比べ=kurabe)
+
+excise x x
+relabel kurabe と比べ
+prune ni
+
+
+__=x < (__ < にくらべ=kurabe) $ (__ < て=te)
+
+excise x x
+relabel kurabe にくらべて
+prune te
+
+__=x < (__ < とくらべ=kurabe) $ (__ < て=te)
+
+excise x x
+relabel kurabe とくらべて
+prune te
+
+
+__=x < (__ < に比べ=kurabe) $ (__ < て=te)
+
+excise x x
+relabel kurabe に比べて
+prune te
+
+__=x < (__ < と比べ=kurabe) $ (__ < て=te)
+
+excise x x
+relabel kurabe と比べて
+prune te
+
+
+
+%regex matchingの箇所で，/some(expression)or_others/#1\%feat=scope のように名付けておいて，
+%relabelにおいては，/^.*$/\%{feat}/ のように呼び出します．
+
+/(.*)#comp=1,root/#1\%scopeCat=scope << /(.*)#comp=1,cont/#1\%contCat=cont
+    !: /#cont-moved=1/
+
+adjoinF (=scope-higher @) scope % make a scope hatch above S
+relabel scope-higher /^.*$/={scope}#cont-moved=1/ % label the adjunction
+insert cont >1 scope-higher % copy the cont
+insert (=cont-trace-label *TRACE-cont1*) $+ cont % add a trace to the left of the original site of the cont
+relabel cont-trace-label /^.*$/={cont}/ % relabel the category of the trace
+delete cont % delete the original quantifier
+adjoinF (=scope-higher2 @) scope
+relabel scope-higher2 /^.*$/<\%{scopeCat}|\%{contCat}>#comp=1,cont,bind/
+
+
+/#comp=1,root/=scope <2 /(.*)#(.*)/#1\%scope2Cat=scope2 << /(.*)#comp=1,prej/#1\%prejCat=prej
+    !: /#prej-moved=1/
+
+adjoinF (=scope-higher @) scope2 % make a scope hatch above S
+insert prej >1 scope-higher % copy the prejacent
+insert (=prej-trace-label *TRACE-prej1*) $+ prej % add a trace to the left of the original site of the prejacent
+relabel prej-trace-label /^.*$/={prej}/ % relabel the category of the trace
+delete prej % delete the original quantifier
+adjoinF (=scope-higher2 @) scope2
+relabel scope-higher2 /^.*$/<\%{scope2Cat}|\%{prejCat}>#comp=1,prej,bind/
+relabel scope-higher /^.*$/\%{scope2Cat}#prej-moved=1/ % label the adjunction
+
+
+/(.*)#(.*)/#1\%mCat < (/#comp=1,prej/=prej-moved $. /(.*)#comp=1,prej,bind/#1\%prejBindCat <1 __=yoriArg <2 __=yori)
+
+relabel prej-moved /^.*$/<\%{mCat}|\%{prejBindCat}>/
+relabel yori /^.*$/<\%{mCat}|\%{prejBindCat}>|={yoriArg}/
+
+
+%%%%%%
+
+/(.*)#prej-moved=1/#1\%scope3Cat=scope3
+    <1 (__=yori < (__=yori-lex < /^(より|よりも|よりは|にくらべ|とくらべ|にくらべて|とくらべて|に比べ|と比べ|に比べて|と比べて)$/ $ /(.*)/#1\%yoriSisterCat))
+    <2 (/(.*)#(.*)/#1\%scopeLowerCat=scope-lower << /(.*)#comp=1,diff/#1\%diffCat=diff)
+    !: /#diff-moved=1/
+
+adjoinF (=yori-higher @) yori 
+insert diff $- yori
+adjoinF (=scope-higher @) scope-lower % make a scope hatch above S
+relabel scope-higher /^.*$/<\%{scopeLowerCat}|\%{diffCat}>#comp=1,diff,bind/
+relabel yori-higher /^.*$/<\%{scope3Cat}|<\%{scopeLowerCat}|\%{diffCat}>>/
+relabel yori /^.*$/<\%{scope3Cat}|<\%{scopeLowerCat}|\%{diffCat}>>|DEG/
+relabel yori-lex /^.*$/<<\%{scope3Cat}|<\%{scopeLowerCat}|\%{diffCat}>>|DEG>|\%{yoriSisterCat}/
+relabel scope3 /^.*$/\%{scope3Cat}#prej-moved=1#diff-moved=1/ % label the adjunction
+insert (=diff-trace-label *TRACE-diff1*) $+ diff % add a trace to the left of the original site of the diff
+relabel diff-trace-label /^.*$/={diff}/ % relabel the category of the diff
+delete diff % delete the original quantifier
+
+
+/(.*)#comp=1,diff$/=diff !< *TRACE-diff1*
+
+relabel diff /^.*$/DEG#comp=1,diff,arg/
+
+.R

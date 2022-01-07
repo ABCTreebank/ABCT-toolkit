@@ -18,60 +18,79 @@
 #   # semantics: \E S. S(\e.True)
 #   base: 。
 
+
 # ========================
 # == Comparatives
 # ========================
 
-# yori-NP
-# (
-#    (
-#      (S[m=true]|PP[s=true] # arg2)
-#      |
-#      (
-#        (S[m=true]|PP[s=true])
-#        |
-#        (
-#          (PP[s=true]\S[m=true])
-#          /
-#          (PP[s=true]\S[m=true])
-#        )
-#      ) # arg1
-#    )
-#    |
-#    NP # arg0
-#  )
-- &yori-np
-  category: (((S|PP[s=true])|((S|PP[s=true])|((PP[s=true]\S)/(PP[s=true]\S))))|NP)
-  base: よりも
+- &yori-np-cont-np
+  category: (((S|NP)|((S|NP)|((PP[s=true]\S)/(PP[s=true]\S))))|NP)
+  base: より
   semantics: |
     \X.
       \C1 S C0. yori(
-        S(C1),
-        S(C0)
+        S(\Y. Y)(C1),
+        S(\Y. Y)(C0)
+      )
+  # C1: NP
+  # S: (VP → VP) → VP
+  # C0: PPs
+- <<: *yori-np-cont-np
+  base: よりも
+- <<: *yori-np-cont-np
+  base: よりは
+
+- &yori-np
+  category: (((S|PP[s=true])|((S|PP[s=true])|((PP[s=true]\S)/(PP[s=true]\S))))|NP)
+  base: より
+  semantics: |
+    \X.
+      \C1 S C0. yori(
+        S(\Y. Y)(C1),
+        S(\Y. Y)(C0)
       )
   # C1: NP
   # S: (VP → VP) → VP
   # C0: PPs
 - <<: *yori-np
+  base: よりも
+- <<: *yori-np
+  base: よりは
+
+- &yori-np-cont-s-fs-s
+  category: (((S|((PP[s=true]\S)/(PP[s=true]\S)))|((S|((PP[s=true]\S)/(PP[s=true]\S)))|((PP[s=true]\S)/(PP[s=true]\S))))|NP)
   base: より
-# yori-S
-#  (
-#    (
-#      (S[m=true]|PP[s=true])
-#      |
-#      (
-#        (S[m=true]|PP[s=true])
-#        |
-#        (
-#          (PP[s=true]\S[m=true])
-#          /
-#          (PP[s=true]\S[m=true])
-#        )
-#      )
-#    )
-#    |
-#    S[nml=true]
-#  )
+  semantics: |
+    \X.
+      \C1 S C0. yori(
+        S(\Y. Y)(C1),
+        S(\Y. Y)(C0)
+      )
+  # C1: NP
+  # S: (VP → VP) → VP
+  # C0: PPs
+- <<: *yori-np-cont-s-fs-s
+  base: よりも
+- <<: *yori-np-cont-s-fs-s
+  base: よりは
+
+- &yori-np-prej-s-fs-s
+  category: (((S|PP[s=true])|((S|PP[s=true])|(S/S)))|NP)
+  base: より
+  semantics: |
+    \X.
+      \C1 S C0. yori(
+        S(\Y. Y)(C1),
+        S(\Z. Z)(C0)
+      )
+  # C1: NP
+  # S: (VP → VP) → VP
+  # C0: PPs
+- <<: *yori-np-prej-s-fs-s
+  base: よりも
+- <<: *yori-np-prej-s-fs-s
+  base: よりは
+
 - &yori-S
   category: (((S[m=true]|PP[s=true])|((S[m=true]|PP[s=true])|((PP[s=true]\S[m=true])/(PP[s=true]\S[m=true]))))|S[nml=true])
   base: よりも
@@ -83,46 +102,90 @@
       )
 - <<: *yori-S
   base: より
+  
 - &yori-npdeg
-  category: ((((S[m=true]|PP[s=true])|(((S[m=true]|PP[s=true])|((PP[s=true]\S[m=true])/(PP[s=true]\S[m=true])))|((PP[s=true]\S[m=true])/(PP[s=true]\S[m=true]))))|DEG)|NP)
-  base: よりも
+  category: ((((S|PP[s=true])|(((S|PP[s=true])|((PP[s=true]\S)/(PP[s=true]\S)))|((PP[s=true]\S)/(PP[s=true]\S))))|DEG)|NP)
+  base: より
   semantics: |
     \X.
-      \C1 D S N. yori(
-        C1,
-        S(N),
-        D
-      )
+      \C1 D S C0. yori_mp(S(\Y. Y)(\Z. Z)(C1), S(\Y. Y)(\Z. Z)(C0), D)
 - <<: *yori-npdeg
+  base: よりも
+- <<: *yori-npdeg
+  base: よりは
+
+- &yori-npdeg-prej-s-fs-s
+  category: ((((S|PP[s=true])|(((S|PP[s=true])|(S/S))|((PP[s=true]\S)/(PP[s=true]\S))))|DEG)|NP)
   base: より
+  semantics: |
+    \X.
+      \C1 D S C0. yori_mp(S(\Y. Y)(\Z. Z)(C1), S(\Y. Y)(\Z. Z)(C0), D)
+- <<: *yori-npdeg-prej-s-fs-s
+  base: よりも
+- <<: *yori-npdeg-prej-s-fs-s
+  base: よりは
+
+### TRACE周り
 
 # 1: cont, 2:prej
-- category: (S|PP) # parentheses cannot be dropped
+
+## cont導入
+- &comp-intro-cont
+  category: (S|PP) # parentheses cannot be dropped
   rule: "|-intro-cont1"
   semantics: \M. lam(T11, M)
-- category: ((S|PP)|((PP\S)/(PP\S)))
+- <<: *comp-intro-cont
+  category: (S|((PP\S)/(PP\S))) # parentheses cannot be dropped
+
+
+## prej導入
+- &comp-intro-prej
+  category: ((S|PP)|((PP\S)/(PP\S)))
   rule: "|-intro-prej1"
   semantics: \M. lam(T21, M)
-- category: (((S|PP)|((PP\S)/(PP\S)))|((PP\S)/(PP\S)))
+- <<: *comp-intro-prej
+  category: ((S|PP)|(S/S))
+- <<: *comp-intro-prej
+  category: ((S|((PP\S)/(PP\S)))|((PP\S)/(PP\S)))
+  
+
+## diff導入
+- &comp-intro-diff
+  category: (((S|PP)|((PP\S)/(PP\S)))|((PP\S)/(PP\S)))
   rule: "|-intro-diff1"
   semantics: \M. lam(T31, M)
+- <<: *comp-intro-diff
+  category: (((S|PP)|(S/S))|((PP\S)/(PP\S)))
 
+
+## rel導入
 - category: (S|PP[s=true]) 
   rule: "|-intro-rel1"
   semantics: \M. lam(T101, M)
 
+
+## contトレース
 - category: PP
   semantics: \E. T11
   base: "*TRACE-cont1*"
+- category: ((PP\S)/(PP\S)) 
+  semantics: \E. T11
+  base: "*TRACE-cont1*"
+  
+## prejトレース
 - &comp-trace-prej
   category: ((PP\S)/(PP\S))
   semantics: \E. T21
   base: "*TRACE-prej1*"
 - <<: *comp-trace-prej
   category: (S/S)
+  
+## diffトレース
 - category: ((PP\S)/(PP\S))
   semantics: \E. T31
   base: "*TRACE-diff1*"
+
+
 
 # =======
 # Punctuations 
@@ -582,3 +645,9 @@
 - {category: '((S[sub=true]/S[sub=true])\(S[sub=true]/S[sub=true]))', pos0: "\u8A18\u53F7",
   semantics: \E O. O}
 - {category: SYM, pos0: "\u8A18\u53F7", semantics: \E O. O}
+
+## other stuff
+- category: S\S
+  semantics: \X P. past(P)
+  base: た
+
