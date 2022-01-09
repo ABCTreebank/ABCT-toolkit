@@ -2,24 +2,54 @@
 # coding: utf-8
 
 #空白で区切ってcont, prej, diffそれぞれの可能なカテゴリをリストアップする
-cont_list = 'NP PP ((PP[s=true]\S)/(PP[s=true]\S))'.split(" ")
-prej_list = 'NP PP (S/S) ((PP[s=true]\S)/(PP[s=true]\S))'.split(" ")
-diff_list = 'PP (S/S) ((PP[s=true]\S)/(PP[s=true]\S))'.split(" ")
+cont_list = 'NP PP (S/S) ((PP[s=true]\S)/(PP[s=true]\S))'.split(" ")
+prej_list = 'NP PP (S/S) (N/N) S (PP[s=true]\S) ((PP[s=true]\S)/(PP[s=true]\S)) ((PP[o1=true]\(PP[s=true]\S))/(PP[o1=true]\(PP[s=true]\S)))'.split(" ")
+diff_list = 'N PP NP NUMCLP (S/S) (N/N) (PP[o1=true]\(PP[s=true]\S)) (PP[s=true]\S) ((PP[s=true]\S)/(PP[s=true]\S))'.split(" ")
 
 diff_sem = '\X. \C1 D S C0. yori_mp(S(\Y. Y)(\Z. Z)(C1), S(\Y. Y)(\Z. Z)(C0), D)'
 no_diff_sem = '\X. \C1 S C0. yori(S(\Y. Y)(C1), S(\Y. Y)(C0))'
 
+diff_sem_kurabe = '\X. \C1 D S C0. kurabe_mp(S(\Y. Y)(\Z. Z)(C1), S(\Y. Y)(\Z. Z)(C0), D)'
+no_diff_sem_kurabe = '\X. \C1 S C0. kurabe(S(\Y. Y)(C1), S(\Y. Y)(C0))'
+
+
 def comp_template(cat, sem)
+  label = cat.to_label
   <<-EOS
-- &#{cat.to_label}
+- &#{label}
   category: #{cat}
   base: より
   semantics: |
     #{sem}
-- <<: *#{cat.to_label}
+- <<: *#{label}
   base: よりも
-- <<: *#{cat.to_label}
+- <<: *#{label}
   base: よりは
+  EOS
+end
+
+def kurabe_template(cat, sem)
+  label = cat.to_label + "kurabe"
+  <<-EOS
+- &#{label}
+  category: #{cat}
+  base: に比べ
+  semantics: |
+    #{sem}
+- <<: *#{label}
+  base: に比べて
+- <<: *#{label}
+  base: にくらべ
+- <<: *#{label}
+  base: にくらべて
+- <<: *#{label}
+  base: と比べ
+- <<: *#{label}
+  base: と比べて
+- <<: *#{label}
+  base: とくらべ
+- <<: *#{label}
+  base: とくらべて
   EOS
 end
 
@@ -139,10 +169,16 @@ diff = diff_cat.map { |x| comp_template(x, diff_sem) }
 
 comp = (no_diff | diff).join("\n") 
 
+no_diff_kurabe = no_diff_cat.map { |x| kurabe_template(x, no_diff_sem_kurabe) }
+diff_kurabe = diff_cat.map { |x| kurabe_template(x, diff_sem_kurabe) }
+
+kurabe = (no_diff_kurabe | diff_kurabe).join("\n") 
+
+
+#traceのテンプレートを作る
 catlist_label_trace_triples = [cont_list, prej_list, diff_list]
                                 .zip(["cont", "prej", "diff"], ["T11", "T21", "T31"])
 
-#traceのテンプレートを作る
 trace = catlist_label_trace_triples
           .map { |arg| trace_template(*arg) }
           .join("")
@@ -158,7 +194,7 @@ intro_diff = intro_diff_template(cont_prej_diff_pair, "diff", "T31")
 intro = intro_cont + intro_prej + intro_diff 
   
 #全部つなげる  
-result = comp + trace + intro 
+result = comp + kurabe + trace + intro 
 
 puts result 
 
