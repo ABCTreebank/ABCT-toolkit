@@ -1,0 +1,494 @@
+
+# Semantic Lexicon for Keyaki-ABC Treebank
+
+### Semantic templates for HOL representations ###
+
+# oblique case
+- category: (NP\((PP\S)/(PP\S)))
+  semantics: \E N V. V(N(E))
+
+- category: (S\(S/S))
+  semantics: \E S1 S2. E(S1, S2)
+
+# - category: S\S
+#   semantics: \E S.-S
+#   pos: NEG
+
+# - category: S[m=true]\S[m=true]
+#   semantics: \E S. S
+#   # semantics: \E S. S(\e.True)
+#   base: 。
+
+
+### TRACE周り
+
+## rel導入
+- category: (S|PP[s=true]) 
+  rule: "|-intro-rel1"
+  semantics: \M. lam(T101, M)
+
+
+# =======
+# Punctuations 
+# =======
+# Genearated by https://gist.github.com/aslemen/a986ed21799f7355c9e6ddcd6c3b6c8d
+
+- {category: (ADVP\ADVP), pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: (CONJP\CONJP), pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '(CP[f=true]/CP[f=true])', pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '(CP[f=true]\CP[f=true])', pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '((CP[f=true]/CP[f=true])\(CP[f=true]/CP[f=true]))', pos0: "\u8A18\u53F7",
+  semantics: \E O. O}
+- {category: '(((CP[f=true]/CP[f=true])/(CP[f=true]/CP[f=true]))\((CP[f=true]/CP[f=true])/(CP[f=true]/CP[f=true])))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '(((CP[f=true]\CP[t=true])/(CP[f=true]\CP[t=true]))\((CP[f=true]\CP[t=true])/(CP[f=true]\CP[t=true])))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '(CP[q=true]/CP[q=true])', pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '(CP[q=true]\CP[q=true])', pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '((CP[q=true]/CP[q=true])\(CP[q=true]/CP[q=true]))', pos0: "\u8A18\u53F7",
+  semantics: \E O. O}
+- {category: '(((CP[q=true]\CP[t=true])/(CP[q=true]\CP[t=true]))\((CP[q=true]\CP[t=true])/(CP[q=true]\CP[t=true])))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '(((CP[q=true]\(PP[s=true]\S[e=true]))/(CP[q=true]\(PP[s=true]\S[e=true])))\((CP[q=true]\(PP[s=true]\S[e=true]))/(CP[q=true]\(PP[s=true]\S[e=true]))))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '(((CP[q=true]\S[sub=true])/(CP[q=true]\S[sub=true]))\((CP[q=true]\S[sub=true])/(CP[q=true]\S[sub=true])))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '(CP[t=true]/CP[t=true])', pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '(CP[t=true]\CP[t=true])', pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '((CP[t=true]/CP[t=true])\(CP[t=true]/CP[t=true]))', pos0: "\u8A18\u53F7",
+  semantics: \E O. O}
+- {category: '((CP[t=true]\N)/(CP[t=true]\N))', pos0: "\u8A18\u53F7", semantics: \E
+    O. O}
+- {category: '(((CP[t=true]\N)/(CP[t=true]\N))\((CP[t=true]\N)/(CP[t=true]\N)))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '(((CP[t=true]\(PP[s=true]\S[m=true]))/(CP[t=true]\(PP[s=true]\S[m=true])))\((CP[t=true]\(PP[s=true]\S[m=true]))/(CP[t=true]\(PP[s=true]\S[m=true]))))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '((CP[t=true]\(PP[s=true]\S[smc=true]))/(CP[t=true]\(PP[s=true]\S[smc=true])))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '((CP[t=true]\(PP[s=true]\S[sub=true]))/(CP[t=true]\(PP[s=true]\S[sub=true])))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '(((CP[t=true]\S[m=true])/(CP[t=true]\S[m=true]))\((CP[t=true]\S[m=true])/(CP[t=true]\S[m=true])))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '(CP[x=true]\CP[x=true])', pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: (FRAG/FRAG), pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: (FRAG\FRAG), pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: (FS\FS), pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '((INTJP\CP[t=true])/(INTJP\CP[t=true]))', pos0: "\u8A18\u53F7", semantics: \E
+    O. O}
+- {category: '(((INTJP\CP[t=true])/(INTJP\CP[t=true]))\((INTJP\CP[t=true])/(INTJP\CP[t=true])))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: (INTJP/INTJP), pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: (INTJP\INTJP), pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: LRB, pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: LS, pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: (LST/LST), pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: (LST\LST), pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '(((multi-sentence\CP[t=true])/(multi-sentence\CP[t=true]))\((multi-sentence\CP[t=true])/(multi-sentence\CP[t=true])))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: (multi-sentence/multi-sentence), pos0: "\u8A18\u53F7", semantics: \E
+    O. O}
+- {category: (multi-sentence\multi-sentence), pos0: "\u8A18\u53F7", semantics: \E
+    O. O}
+- {category: ((multi-sentence/multi-sentence)/(multi-sentence/multi-sentence)), pos0: "\u8A18\u53F7",
+  semantics: \E O. O}
+- {category: ((multi-sentence/multi-sentence)\(multi-sentence/multi-sentence)), pos0: "\u8A18\u53F7",
+  semantics: \E O. O}
+- {category: N, pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: (N/N), pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: (N\N), pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: ((N/N)/(N/N)), pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: ((N/N)\(N/N)), pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: ((N\N)/(N\N)), pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: (((N/N)/(N/N))/((N/N)/(N/N))), pos0: "\u8A18\u53F7", semantics: \E O.
+    O}
+- {category: (((N/N)/(N/N))\((N/N)/(N/N))), pos0: "\u8A18\u53F7", semantics: \E O.
+    O}
+- {category: ((((N/N)/(N/N))/((N/N)/(N/N)))\(((N/N)/(N/N))/((N/N)/(N/N)))), pos0: "\u8A18\u53F7",
+  semantics: \E O. O}
+- {category: ((NP\(N/N))/(NP\(N/N))), pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: ((NP\N)/(NP\N)), pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: (((NP\N)/(NP\N))\((NP\N)/(NP\N))), pos0: "\u8A18\u53F7", semantics: \E
+    O. O}
+- {category: (NP/NP), pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: (NP\NP), pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: ((NP\(NP\N))/(NP\(NP\N))), pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: (((NP\(NP\N))/(NP\(NP\N)))\((NP\(NP\N))/(NP\(NP\N)))), pos0: "\u8A18\u53F7",
+  semantics: \E O. O}
+- {category: ((NP\(NP\(NP\N)))/(NP\(NP\(NP\N)))), pos0: "\u8A18\u53F7", semantics: \E
+    O. O}
+- {category: ((NP\(NP\(NP\(NP\N))))/(NP\(NP\(NP\(NP\N))))), pos0: "\u8A18\u53F7",
+  semantics: \E O. O}
+- {category: ((NP\(NP\(NP\(NP\(NP\N)))))/(NP\(NP\(NP\(NP\(NP\N)))))), pos0: "\u8A18\u53F7",
+  semantics: \E O. O}
+- {category: ((NP\(NP\(NP\(NP\(NP\(NP\N))))))/(NP\(NP\(NP\(NP\(NP\(NP\N))))))), pos0: "\u8A18\u53F7",
+  semantics: \E O. O}
+- {category: ((NP\(NP\(NP\(NP\(NP\(NP\(NP\N)))))))/(NP\(NP\(NP\(NP\(NP\(NP\(NP\N)))))))),
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: ((NP\(NP\(NP\(NP\(NP\(NP\(NP\(NP\N))))))))/(NP\(NP\(NP\(NP\(NP\(NP\(NP\(NP\N))))))))),
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: ((NP\(NP\(NP\(NP\(NP\(NP\(NP\(NP\(NP\N)))))))))/(NP\(NP\(NP\(NP\(NP\(NP\(NP\(NP\(NP\N)))))))))),
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: ((NP\PP)/(NP\PP)), pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '((NP\PP[o1=true])/(NP\PP[o1=true]))', pos0: "\u8A18\u53F7", semantics: \E
+    O. O}
+- {category: '((NP\PP[o2=true])/(NP\PP[o2=true]))', pos0: "\u8A18\u53F7", semantics: \E
+    O. O}
+- {category: '((NP\PP[s=true])/(NP\PP[s=true]))', pos0: "\u8A18\u53F7", semantics: \E
+    O. O}
+- {category: '((NP[q=true]\N)/(NP[q=true]\N))', pos0: "\u8A18\u53F7", semantics: \E
+    O. O}
+- {category: '(((NP[q=true]\N)/(NP[q=true]\N))\((NP[q=true]\N)/(NP[q=true]\N)))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '((NP[q=true]\(NP\(NP\N)))/(NP[q=true]\(NP\(NP\N))))', pos0: "\u8A18\u53F7",
+  semantics: \E O. O}
+- {category: '(NP[q=true]\NP[q=true])', pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '(((NP[q=true]\PP[s=true])/(NP[q=true]\PP[s=true]))/((NP[q=true]\PP[s=true])/(NP[q=true]\PP[s=true])))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '(((NP[q=true]\PP[s=true])/(NP[q=true]\PP[s=true]))\((NP[q=true]\PP[s=true])/(NP[q=true]\PP[s=true])))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: ((NPR\N)/(NPR\N)), pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: (((NPR\N)/(NPR\N))\((NPR\N)/(NPR\N))), pos0: "\u8A18\u53F7", semantics: \E
+    O. O}
+- {category: ((NPR\(NP\N))/(NPR\(NP\N))), pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: ((NPR\(NPR\N))/(NPR\(NPR\N))), pos0: "\u8A18\u53F7", semantics: \E O.
+    O}
+- {category: (((NPR\(NPR\N))/(NPR\(NPR\N)))\((NPR\(NPR\N))/(NPR\(NPR\N)))), pos0: "\u8A18\u53F7",
+  semantics: \E O. O}
+- {category: ((NPR\(NPR\(NPR\N)))/(NPR\(NPR\(NPR\N)))), pos0: "\u8A18\u53F7", semantics: \E
+    O. O}
+- {category: '((NPR\(N[s=true]\N))/(NPR\(N[s=true]\N)))', pos0: "\u8A18\u53F7", semantics: \E
+    O. O}
+- {category: '(((NPR\(N[s=true]\N))/(NPR\(N[s=true]\N)))\((NPR\(N[s=true]\N))/(NPR\(N[s=true]\N))))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '((NP\(S[m=true]/S[m=true]))/(NP\(S[m=true]/S[m=true])))', pos0: "\u8A18\u53F7",
+  semantics: \E O. O}
+- {category: '(N[s=true]\N)', pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '((N[s=true]\N)/(N[s=true]\N))', pos0: "\u8A18\u53F7", semantics: \E
+    O. O}
+- {category: '(((N[s=true]\N)/(N[s=true]\N))\((N[s=true]\N)/(N[s=true]\N)))', pos0: "\u8A18\u53F7",
+  semantics: \E O. O}
+- {category: '((N[s=true]\(NP[q=true]\N))/(N[s=true]\(NP[q=true]\N)))', pos0: "\u8A18\u53F7",
+  semantics: \E O. O}
+- {category: '((N[s=true]\(NPR\N))/(N[s=true]\(NPR\N)))', pos0: "\u8A18\u53F7", semantics: \E
+    O. O}
+- {category: '((N[s=true]\(NPR\(NPR\N)))/(N[s=true]\(NPR\(NPR\N))))', pos0: "\u8A18\u53F7",
+  semantics: \E O. O}
+- {category: '((N[s=true]\(N[s=true]\N))/(N[s=true]\(N[s=true]\N)))', pos0: "\u8A18\u53F7",
+  semantics: \E O. O}
+- {category: '(((N[s=true]\(N[s=true]\N))/(N[s=true]\(N[s=true]\N)))\((N[s=true]\(N[s=true]\N))/(N[s=true]\(N[s=true]\N))))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '((N[s=true]\(N[s=true]\(N[s=true]\(NPR\(N[s=true]\N)))))/(N[s=true]\(N[s=true]\(N[s=true]\(NPR\(N[s=true]\N))))))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '((N[s=true]\(NUMCLP\N))/(N[s=true]\(NUMCLP\N)))', pos0: "\u8A18\u53F7",
+  semantics: \E O. O}
+- {category: '((N[s=true]\(S[e=true]\N))/(N[s=true]\(S[e=true]\N)))', pos0: "\u8A18\u53F7",
+  semantics: \E O. O}
+- {category: ((NUMCLP\N)/(NUMCLP\N)), pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '((NUMCLP\(NPR\(N[s=true]\N)))/(NUMCLP\(NPR\(N[s=true]\N))))', pos0: "\u8A18\u53F7",
+  semantics: \E O. O}
+- {category: '((NUMCLP\(N[s=true]\N))/(NUMCLP\(N[s=true]\N)))', pos0: "\u8A18\u53F7",
+  semantics: \E O. O}
+- {category: (NUMCLP/NUMCLP), pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: (NUMCLP\NUMCLP), pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: ((NUMCLP\(NUMCLP\N))/(NUMCLP\(NUMCLP\N))), pos0: "\u8A18\u53F7", semantics: \E
+    O. O}
+- {category: (NUM\N), pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: ((NUM\N)/(NUM\N)), pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: (((NUM\N)/(NUM\N))\((NUM\N)/(NUM\N))), pos0: "\u8A18\u53F7", semantics: \E
+    O. O}
+- {category: (NUM\NUMCLP), pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: (PP-ADV\PP-ADV), pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: (PP-CND\PP-CND), pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: (PP-CONJ\PP-CONJ), pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: (PP-LGS\PP-LGS), pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '(((PP-LGS\(PP[s=true]\S[a=true]))/(PP-LGS\(PP[s=true]\S[a=true])))\((PP-LGS\(PP[s=true]\S[a=true]))/(PP-LGS\(PP[s=true]\S[a=true]))))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '(((PP-LGS\(PP[s=true]\S[e=true]))/(PP-LGS\(PP[s=true]\S[e=true])))\((PP-LGS\(PP[s=true]\S[e=true]))/(PP-LGS\(PP[s=true]\S[e=true]))))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '((PP-LGS\(PP[s=true]\S[m=true]))/(PP-LGS\(PP[s=true]\S[m=true])))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '(((PP-LGS\(PP[s=true]\S[m=true]))/(PP-LGS\(PP[s=true]\S[m=true])))\((PP-LGS\(PP[s=true]\S[m=true]))/(PP-LGS\(PP[s=true]\S[m=true]))))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '((PP-LGS\(PP[s=true]\S[rel=true]))/(PP-LGS\(PP[s=true]\S[rel=true])))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '(((PP-LGS\(PP[s=true]\S[sub=true]))/(PP-LGS\(PP[s=true]\S[sub=true])))\((PP-LGS\(PP[s=true]\S[sub=true]))/(PP-LGS\(PP[s=true]\S[sub=true]))))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '((PP-LGS\S[a=true])/(PP-LGS\S[a=true]))', pos0: "\u8A18\u53F7", semantics: \E
+    O. O}
+- {category: '(((PP-LGS\S[e=true])/(PP-LGS\S[e=true]))\((PP-LGS\S[e=true])/(PP-LGS\S[e=true])))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '(((PP-LGS\S[m=true])/(PP-LGS\S[m=true]))\((PP-LGS\S[m=true])/(PP-LGS\S[m=true])))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '(PP[o1=true]/PP[o1=true])', pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '(PP[o1=true]\PP[o1=true])', pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '((PP[o1=true]/PP[o1=true])/(PP[o1=true]/PP[o1=true]))', pos0: "\u8A18\u53F7",
+  semantics: \E O. O}
+- {category: '((PP[o1=true]/PP[o1=true])\(PP[o1=true]/PP[o1=true]))', pos0: "\u8A18\u53F7",
+  semantics: \E O. O}
+- {category: '(((PP[o1=true]\(PP[o2=true]\(PP[s=true]\S[sub=true])))/(PP[o1=true]\(PP[o2=true]\(PP[s=true]\S[sub=true]))))\((PP[o1=true]\(PP[o2=true]\(PP[s=true]\S[sub=true])))/(PP[o1=true]\(PP[o2=true]\(PP[s=true]\S[sub=true])))))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '((PP[o1=true]\(PP[s=true]\(PP[o2=true]\S[rel=true])))/(PP[o1=true]\(PP[s=true]\(PP[o2=true]\S[rel=true]))))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '(((PP[o1=true]\(PP[s=true]\(PP[o2=true]\S[rel=true])))/(PP[o1=true]\(PP[s=true]\(PP[o2=true]\S[rel=true]))))\((PP[o1=true]\(PP[s=true]\(PP[o2=true]\S[rel=true])))/(PP[o1=true]\(PP[s=true]\(PP[o2=true]\S[rel=true])))))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '((PP[o1=true]\(PP[s=true]\S[a=true]))/(PP[o1=true]\(PP[s=true]\S[a=true])))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '(((PP[o1=true]\(PP[s=true]\S[a=true]))/(PP[o1=true]\(PP[s=true]\S[a=true])))/((PP[o1=true]\(PP[s=true]\S[a=true]))/(PP[o1=true]\(PP[s=true]\S[a=true]))))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '(((PP[o1=true]\(PP[s=true]\S[a=true]))/(PP[o1=true]\(PP[s=true]\S[a=true])))\((PP[o1=true]\(PP[s=true]\S[a=true]))/(PP[o1=true]\(PP[s=true]\S[a=true]))))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '((PP[o1=true]\(PP[s=true]\S[e=true]))/(PP[o1=true]\(PP[s=true]\S[e=true])))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '(((PP[o1=true]\(PP[s=true]\S[e=true]))/(PP[o1=true]\(PP[s=true]\S[e=true])))\((PP[o1=true]\(PP[s=true]\S[e=true]))/(PP[o1=true]\(PP[s=true]\S[e=true]))))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '((PP[o1=true]\(PP[s=true]\S[imp=true]))/(PP[o1=true]\(PP[s=true]\S[imp=true])))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '(((PP[o1=true]\(PP[s=true]\S[imp=true]))/(PP[o1=true]\(PP[s=true]\S[imp=true])))\((PP[o1=true]\(PP[s=true]\S[imp=true]))/(PP[o1=true]\(PP[s=true]\S[imp=true]))))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '((PP[o1=true]\(PP[s=true]\S[m=true]))/(PP[o1=true]\(PP[s=true]\S[m=true])))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '(((PP[o1=true]\(PP[s=true]\S[m=true]))/(PP[o1=true]\(PP[s=true]\S[m=true])))/((PP[o1=true]\(PP[s=true]\S[m=true]))/(PP[o1=true]\(PP[s=true]\S[m=true]))))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '(((PP[o1=true]\(PP[s=true]\S[m=true]))/(PP[o1=true]\(PP[s=true]\S[m=true])))\((PP[o1=true]\(PP[s=true]\S[m=true]))/(PP[o1=true]\(PP[s=true]\S[m=true]))))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '((PP[o1=true]\(PP[s=true]\S[rel=true]))/(PP[o1=true]\(PP[s=true]\S[rel=true])))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '(((PP[o1=true]\(PP[s=true]\S[rel=true]))/(PP[o1=true]\(PP[s=true]\S[rel=true])))/((PP[o1=true]\(PP[s=true]\S[rel=true]))/(PP[o1=true]\(PP[s=true]\S[rel=true]))))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '(((PP[o1=true]\(PP[s=true]\S[rel=true]))/(PP[o1=true]\(PP[s=true]\S[rel=true])))\((PP[o1=true]\(PP[s=true]\S[rel=true]))/(PP[o1=true]\(PP[s=true]\S[rel=true]))))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '((PP[o1=true]\(PP[s=true]\S[smc=true]))/(PP[o1=true]\(PP[s=true]\S[smc=true])))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '(((PP[o1=true]\(PP[s=true]\S[smc=true]))/(PP[o1=true]\(PP[s=true]\S[smc=true])))\((PP[o1=true]\(PP[s=true]\S[smc=true]))/(PP[o1=true]\(PP[s=true]\S[smc=true]))))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '((PP[o1=true]\(PP[s=true]\S[sub=true]))/(PP[o1=true]\(PP[s=true]\S[sub=true])))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '(((PP[o1=true]\(PP[s=true]\S[sub=true]))/(PP[o1=true]\(PP[s=true]\S[sub=true])))\((PP[o1=true]\(PP[s=true]\S[sub=true]))/(PP[o1=true]\(PP[s=true]\S[sub=true]))))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '((PP[o1=true]\S[m=true])/(PP[o1=true]\S[m=true]))', pos0: "\u8A18\u53F7",
+  semantics: \E O. O}
+- {category: '(((PP[o1=true]\S[m=true])/(PP[o1=true]\S[m=true]))\((PP[o1=true]\S[m=true])/(PP[o1=true]\S[m=true])))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '((PP[o1=true]\S[rel=true])/(PP[o1=true]\S[rel=true]))', pos0: "\u8A18\u53F7",
+  semantics: \E O. O}
+- {category: '(((PP[o1=true]\S[rel=true])/(PP[o1=true]\S[rel=true]))\((PP[o1=true]\S[rel=true])/(PP[o1=true]\S[rel=true])))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '((PP[o1=true]\S[smc=true])/(PP[o1=true]\S[smc=true]))', pos0: "\u8A18\u53F7",
+  semantics: \E O. O}
+- {category: '((PP[o1=true]\S[sub=true])/(PP[o1=true]\S[sub=true]))', pos0: "\u8A18\u53F7",
+  semantics: \E O. O}
+- {category: '(((PP[o1=true]\S[sub=true])/(PP[o1=true]\S[sub=true]))\((PP[o1=true]\S[sub=true])/(PP[o1=true]\S[sub=true])))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '(((PP[o2=true]\(PP[o1=true]\(PP[s=true]\S[e=true])))/(PP[o2=true]\(PP[o1=true]\(PP[s=true]\S[e=true]))))\((PP[o2=true]\(PP[o1=true]\(PP[s=true]\S[e=true])))/(PP[o2=true]\(PP[o1=true]\(PP[s=true]\S[e=true])))))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '(((PP[o2=true]\(PP[o1=true]\(PP[s=true]\S[m=true])))/(PP[o2=true]\(PP[o1=true]\(PP[s=true]\S[m=true]))))\((PP[o2=true]\(PP[o1=true]\(PP[s=true]\S[m=true])))/(PP[o2=true]\(PP[o1=true]\(PP[s=true]\S[m=true])))))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '(PP[o2=true]/PP[o2=true])', pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '(PP[o2=true]\PP[o2=true])', pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '((PP[o2=true]\(PP[s=true]\S[a=true]))/(PP[o2=true]\(PP[s=true]\S[a=true])))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '((PP[o2=true]\(PP[s=true]\S[imp=true]))/(PP[o2=true]\(PP[s=true]\S[imp=true])))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '(((PP[o2=true]\(PP[s=true]\S[imp=true]))/(PP[o2=true]\(PP[s=true]\S[imp=true])))\((PP[o2=true]\(PP[s=true]\S[imp=true]))/(PP[o2=true]\(PP[s=true]\S[imp=true]))))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '((PP[o2=true]\(PP[s=true]\S[m=true]))/(PP[o2=true]\(PP[s=true]\S[m=true])))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '(((PP[o2=true]\(PP[s=true]\S[m=true]))/(PP[o2=true]\(PP[s=true]\S[m=true])))\((PP[o2=true]\(PP[s=true]\S[m=true]))/(PP[o2=true]\(PP[s=true]\S[m=true]))))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '((PP[o2=true]\(PP[s=true]\S[sub=true]))/(PP[o2=true]\(PP[s=true]\S[sub=true])))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '(((PP[o2=true]\(PP[s=true]\S[sub=true]))/(PP[o2=true]\(PP[s=true]\S[sub=true])))\((PP[o2=true]\(PP[s=true]\S[sub=true]))/(PP[o2=true]\(PP[s=true]\S[sub=true]))))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '(((PP[o2=true]\S[rel=true])/(PP[o2=true]\S[rel=true]))\((PP[o2=true]\S[rel=true])/(PP[o2=true]\S[rel=true])))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: (PP/PP), pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: (PP\PP), pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '(PP[s2=true]\PP[s2=true])', pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '(((PP[s2=true]\(PP[s=true]\S[a=true]))/(PP[s2=true]\(PP[s=true]\S[a=true])))\((PP[s2=true]\(PP[s=true]\S[a=true]))/(PP[s2=true]\(PP[s=true]\S[a=true]))))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '(((PP[s2=true]\S[m=true])/(PP[s2=true]\S[m=true]))\((PP[s2=true]\S[m=true])/(PP[s2=true]\S[m=true])))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: (PP-SCON/PP-SCON), pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: (PP-SCON\PP-SCON), pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '((PP[s=true]\(CP[f=true]/CP[f=true]))/(PP[s=true]\(CP[f=true]/CP[f=true])))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '(((PP[s=true]\(CP[f=true]/CP[f=true]))/(PP[s=true]\(CP[f=true]/CP[f=true])))\((PP[s=true]\(CP[f=true]/CP[f=true]))/(PP[s=true]\(CP[f=true]/CP[f=true]))))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '((PP[s=true]\CP[q=true])/(PP[s=true]\CP[q=true]))', pos0: "\u8A18\u53F7",
+  semantics: \E O. O}
+- {category: '(((PP[s=true]\CP[t=true])/(PP[s=true]\CP[t=true]))\((PP[s=true]\CP[t=true])/(PP[s=true]\CP[t=true])))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '(((PP[s=true]\(CP[t=true]\S[m=true]))/(PP[s=true]\(CP[t=true]\S[m=true])))\((PP[s=true]\(CP[t=true]\S[m=true]))/(PP[s=true]\(CP[t=true]\S[m=true]))))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '((PP[s=true]\(multi-sentence/multi-sentence))/(PP[s=true]\(multi-sentence/multi-sentence)))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '(((PP[s=true]\(multi-sentence/multi-sentence))/(PP[s=true]\(multi-sentence/multi-sentence)))\((PP[s=true]\(multi-sentence/multi-sentence))/(PP[s=true]\(multi-sentence/multi-sentence))))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '((PP[s=true]\((N/N)/(N/N)))/(PP[s=true]\((N/N)/(N/N))))', pos0: "\u8A18\u53F7",
+  semantics: \E O. O}
+- {category: '(((PP[s=true]\((N/N)/(N/N)))/(PP[s=true]\((N/N)/(N/N))))\((PP[s=true]\((N/N)/(N/N)))/(PP[s=true]\((N/N)/(N/N)))))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '((PP[s=true]\(N\N))/(PP[s=true]\(N\N)))', pos0: "\u8A18\u53F7", semantics: \E
+    O. O}
+- {category: '((PP[s=true]\((NPR\N)/(NPR\N)))/(PP[s=true]\((NPR\N)/(NPR\N))))', pos0: "\u8A18\u53F7",
+  semantics: \E O. O}
+- {category: '(((PP[s=true]\(PP[o1=true]\S[a=true]))/(PP[s=true]\(PP[o1=true]\S[a=true])))\((PP[s=true]\(PP[o1=true]\S[a=true]))/(PP[s=true]\(PP[o1=true]\S[a=true]))))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '(((PP[s=true]\(PP[o1=true]\S[e=true]))/(PP[s=true]\(PP[o1=true]\S[e=true])))\((PP[s=true]\(PP[o1=true]\S[e=true]))/(PP[s=true]\(PP[o1=true]\S[e=true]))))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '(((PP[s=true]\(PP[o1=true]\S[m=true]))/(PP[s=true]\(PP[o1=true]\S[m=true])))\((PP[s=true]\(PP[o1=true]\S[m=true]))/(PP[s=true]\(PP[o1=true]\S[m=true]))))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '((PP[s=true]\(PP[o1=true]\S[rel=true]))/(PP[s=true]\(PP[o1=true]\S[rel=true])))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '(((PP[s=true]\(PP[o1=true]\S[rel=true]))/(PP[s=true]\(PP[o1=true]\S[rel=true])))\((PP[s=true]\(PP[o1=true]\S[rel=true]))/(PP[s=true]\(PP[o1=true]\S[rel=true]))))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '((((PP[s=true]\(PP[o1=true]\S[rel=true]))/(PP[s=true]\(PP[o1=true]\S[rel=true])))/((PP[s=true]\(PP[o1=true]\S[rel=true]))/(PP[s=true]\(PP[o1=true]\S[rel=true]))))\(((PP[s=true]\(PP[o1=true]\S[rel=true]))/(PP[s=true]\(PP[o1=true]\S[rel=true])))/((PP[s=true]\(PP[o1=true]\S[rel=true]))/(PP[s=true]\(PP[o1=true]\S[rel=true])))))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '(((PP[s=true]\(PP[o1=true]\S[sub=true]))/(PP[s=true]\(PP[o1=true]\S[sub=true])))\((PP[s=true]\(PP[o1=true]\S[sub=true]))/(PP[s=true]\(PP[o1=true]\S[sub=true]))))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '(PP[s=true]/PP[s=true])', pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '(PP[s=true]\PP[s=true])', pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '(((PP[s=true]\(PP[s2=true]\S[sub=true]))/(PP[s=true]\(PP[s2=true]\S[sub=true])))\((PP[s=true]\(PP[s2=true]\S[sub=true]))/(PP[s=true]\(PP[s2=true]\S[sub=true]))))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '((PP[s=true]/PP[s=true])/(PP[s=true]/PP[s=true]))', pos0: "\u8A18\u53F7",
+  semantics: \E O. O}
+- {category: '((PP[s=true]/PP[s=true])\(PP[s=true]/PP[s=true]))', pos0: "\u8A18\u53F7",
+  semantics: \E O. O}
+- {category: '(((PP[s=true]/PP[s=true])/(PP[s=true]/PP[s=true]))\((PP[s=true]/PP[s=true])/(PP[s=true]/PP[s=true])))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '((PP[s=true]\S[a=true])/(PP[s=true]\S[a=true]))', pos0: "\u8A18\u53F7",
+  semantics: \E O. O}
+- {category: '(((PP[s=true]\S[a=true])/(PP[s=true]\S[a=true]))/((PP[s=true]\S[a=true])/(PP[s=true]\S[a=true])))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '(((PP[s=true]\S[a=true])/(PP[s=true]\S[a=true]))\((PP[s=true]\S[a=true])/(PP[s=true]\S[a=true])))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '((((PP[s=true]\S[a=true])/(PP[s=true]\S[a=true]))/((PP[s=true]\S[a=true])/(PP[s=true]\S[a=true])))/(((PP[s=true]\S[a=true])/(PP[s=true]\S[a=true]))/((PP[s=true]\S[a=true])/(PP[s=true]\S[a=true]))))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '((((PP[s=true]\S[a=true])/(PP[s=true]\S[a=true]))/((PP[s=true]\S[a=true])/(PP[s=true]\S[a=true])))\(((PP[s=true]\S[a=true])/(PP[s=true]\S[a=true]))/((PP[s=true]\S[a=true])/(PP[s=true]\S[a=true]))))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '((PP[s=true]\S[e=true])/(PP[s=true]\S[e=true]))', pos0: "\u8A18\u53F7",
+  semantics: \E O. O}
+- {category: '(((PP[s=true]\S[e=true])/(PP[s=true]\S[e=true]))/((PP[s=true]\S[e=true])/(PP[s=true]\S[e=true])))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '(((PP[s=true]\S[e=true])/(PP[s=true]\S[e=true]))\((PP[s=true]\S[e=true])/(PP[s=true]\S[e=true])))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '(((PP[s=true]\S[imp=true])/PP[o1=true])\((PP[s=true]\S[imp=true])/PP[o1=true]))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '((PP[s=true]\S[imp=true])/(PP[s=true]\S[imp=true]))', pos0: "\u8A18\u53F7",
+  semantics: \E O. O}
+- {category: '(((PP[s=true]\S[imp=true])/(PP[s=true]\S[imp=true]))\((PP[s=true]\S[imp=true])/(PP[s=true]\S[imp=true])))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '((PP[s=true]\S[m=true])/(PP[s=true]\S[m=true]))', pos0: "\u8A18\u53F7",
+  semantics: \E O. O}
+- {category: '(((PP[s=true]\S[m=true])/(PP[s=true]\S[m=true]))/((PP[s=true]\S[m=true])/(PP[s=true]\S[m=true])))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '(((PP[s=true]\S[m=true])/(PP[s=true]\S[m=true]))\((PP[s=true]\S[m=true])/(PP[s=true]\S[m=true])))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '((((PP[s=true]\S[m=true])/(PP[s=true]\S[m=true]))/((PP[s=true]\S[m=true])/(PP[s=true]\S[m=true])))\(((PP[s=true]\S[m=true])/(PP[s=true]\S[m=true]))/((PP[s=true]\S[m=true])/(PP[s=true]\S[m=true]))))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '((PP[s=true]\S[nml=true])/(PP[s=true]\S[nml=true]))', pos0: "\u8A18\u53F7",
+  semantics: \E O. O}
+- {category: '(((PP[s=true]\S[nml=true])/(PP[s=true]\S[nml=true]))\((PP[s=true]\S[nml=true])/(PP[s=true]\S[nml=true])))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '((PP[s=true]\S[rel=true])/(PP[s=true]\S[rel=true]))', pos0: "\u8A18\u53F7",
+  semantics: \E O. O}
+- {category: '(((PP[s=true]\S[rel=true])/(PP[s=true]\S[rel=true]))\((PP[s=true]\S[rel=true])/(PP[s=true]\S[rel=true])))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '((((PP[s=true]\S[rel=true])/(PP[s=true]\S[rel=true]))/((PP[s=true]\S[rel=true])/(PP[s=true]\S[rel=true])))/(((PP[s=true]\S[rel=true])/(PP[s=true]\S[rel=true]))/((PP[s=true]\S[rel=true])/(PP[s=true]\S[rel=true]))))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '((((PP[s=true]\S[rel=true])/(PP[s=true]\S[rel=true]))/((PP[s=true]\S[rel=true])/(PP[s=true]\S[rel=true])))\(((PP[s=true]\S[rel=true])/(PP[s=true]\S[rel=true]))/((PP[s=true]\S[rel=true])/(PP[s=true]\S[rel=true]))))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '((PP[s=true]\S[smc=true])/(PP[s=true]\S[smc=true]))', pos0: "\u8A18\u53F7",
+  semantics: \E O. O}
+- {category: '(((PP[s=true]\S[smc=true])/(PP[s=true]\S[smc=true]))\((PP[s=true]\S[smc=true])/(PP[s=true]\S[smc=true])))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '(((PP[s=true]\((S[sub=true]\CP[f=true])/(S[sub=true]\CP[f=true])))/(PP[s=true]\((S[sub=true]\CP[f=true])/(S[sub=true]\CP[f=true]))))\((PP[s=true]\((S[sub=true]\CP[f=true])/(S[sub=true]\CP[f=true])))/(PP[s=true]\((S[sub=true]\CP[f=true])/(S[sub=true]\CP[f=true])))))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '((PP[s=true]\S[sub=true])/(PP[s=true]\S[sub=true]))', pos0: "\u8A18\u53F7",
+  semantics: \E O. O}
+- {category: '(((PP[s=true]\S[sub=true])/(PP[s=true]\S[sub=true]))/((PP[s=true]\S[sub=true])/(PP[s=true]\S[sub=true])))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '(((PP[s=true]\S[sub=true])/(PP[s=true]\S[sub=true]))\((PP[s=true]\S[sub=true])/(PP[s=true]\S[sub=true])))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '((((PP[s=true]\S[sub=true])/(PP[s=true]\S[sub=true]))/((PP[s=true]\S[sub=true])/(PP[s=true]\S[sub=true])))\(((PP[s=true]\S[sub=true])/(PP[s=true]\S[sub=true]))/((PP[s=true]\S[sub=true])/(PP[s=true]\S[sub=true]))))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: (PP-TMP\PP-TMP), pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: (PP-VOC\PP-VOC), pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: (PRN/PRN), pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: (PRN\PRN), pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: (((PRO\N)/(PRO\N))\((PRO\N)/(PRO\N))), pos0: "\u8A18\u53F7", semantics: \E
+    O. O}
+- {category: PU, pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: ((QN\N)/(QN\N)), pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: (((QN\N)/(QN\N))\((QN\N)/(QN\N))), pos0: "\u8A18\u53F7", semantics: \E
+    O. O}
+- {category: ((Q\N)/(Q\N)), pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: RRB, pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '((S[a=true]\PP[o2=true])/(S[a=true]\PP[o2=true]))', pos0: "\u8A18\u53F7",
+  semantics: \E O. O}
+- {category: '(S[a=true]/S[a=true])', pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '(S[a=true]\S[a=true])', pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '((S[a=true]/S[a=true])/(S[a=true]/S[a=true]))', pos0: "\u8A18\u53F7",
+  semantics: \E O. O}
+- {category: '((S[a=true]/S[a=true])\(S[a=true]/S[a=true]))', pos0: "\u8A18\u53F7",
+  semantics: \E O. O}
+- {category: '(((S[a=true]/S[a=true])/(S[a=true]/S[a=true]))/((S[a=true]/S[a=true])/(S[a=true]/S[a=true])))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '(((S[a=true]/S[a=true])/(S[a=true]/S[a=true]))\((S[a=true]/S[a=true])/(S[a=true]/S[a=true])))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '((S[e=true]\N)/(S[e=true]\N))', pos0: "\u8A18\u53F7", semantics: \E
+    O. O}
+- {category: '(((S[e=true]\N)/(S[e=true]\N))\((S[e=true]\N)/(S[e=true]\N)))', pos0: "\u8A18\u53F7",
+  semantics: \E O. O}
+- {category: '(S[e=true]/S[e=true])', pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '(S[e=true]\S[e=true])', pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '((S[e=true]/S[e=true])\(S[e=true]/S[e=true]))', pos0: "\u8A18\u53F7",
+  semantics: \E O. O}
+- {category: '((S[imp=true]/PP[s=true])\(S[imp=true]/PP[s=true]))', pos0: "\u8A18\u53F7",
+  semantics: \E O. O}
+- {category: '(S[imp=true]/S[imp=true])', pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '(S[imp=true]\S[imp=true])', pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '((S[imp=true]/S[imp=true])\(S[imp=true]/S[imp=true]))', pos0: "\u8A18\u53F7",
+  semantics: \E O. O}
+- {category: '(((S[m=true]\CP[t=true])/(S[m=true]\CP[t=true]))\((S[m=true]\CP[t=true])/(S[m=true]\CP[t=true])))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '(S[m=true]/S[m=true])', pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '(S[m=true]\S[m=true])', pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '((S[m=true]/S[m=true])/(S[m=true]/S[m=true]))', pos0: "\u8A18\u53F7",
+  semantics: \E O. O}
+- {category: '((S[m=true]/S[m=true])\(S[m=true]/S[m=true]))', pos0: "\u8A18\u53F7",
+  semantics: \E O. O}
+- {category: '((S[m=true]\S[m=true])/(S[m=true]\S[m=true]))', pos0: "\u8A18\u53F7",
+  semantics: \E O. O}
+- {category: '(((S[m=true]/S[m=true])/(S[m=true]/S[m=true]))/((S[m=true]/S[m=true])/(S[m=true]/S[m=true])))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '(((S[m=true]/S[m=true])/(S[m=true]/S[m=true]))\((S[m=true]/S[m=true])/(S[m=true]/S[m=true])))',
+  pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '(S[nml=true]/S[nml=true])', pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '(S[nml=true]\S[nml=true])', pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '((S[nml=true]/S[nml=true])\(S[nml=true]/S[nml=true]))', pos0: "\u8A18\u53F7",
+  semantics: \E O. O}
+- {category: '(S[rel=true]/S[rel=true])', pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '(S[rel=true]\S[rel=true])', pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '((S[rel=true]/S[rel=true])\(S[rel=true]/S[rel=true]))', pos0: "\u8A18\u53F7",
+  semantics: \E O. O}
+- {category: '(S[smc=true]\S[smc=true])', pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '((S[smc=true]/S[smc=true])\(S[smc=true]/S[smc=true]))', pos0: "\u8A18\u53F7",
+  semantics: \E O. O}
+- {category: '((S[sub=true]\CP[f=true])/(S[sub=true]\CP[f=true]))', pos0: "\u8A18\u53F7",
+  semantics: \E O. O}
+- {category: '((S[sub=true]/PP[s=true])\(S[sub=true]/PP[s=true]))', pos0: "\u8A18\u53F7",
+  semantics: \E O. O}
+- {category: '(S[sub=true]/S[sub=true])', pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '(S[sub=true]\S[sub=true])', pos0: "\u8A18\u53F7", semantics: \E O. O}
+- {category: '((S[sub=true]/S[sub=true])/(S[sub=true]/S[sub=true]))', pos0: "\u8A18\u53F7",
+  semantics: \E O. O}
+- {category: '((S[sub=true]/S[sub=true])\(S[sub=true]/S[sub=true]))', pos0: "\u8A18\u53F7",
+  semantics: \E O. O}
+- {category: SYM, pos0: "\u8A18\u53F7", semantics: \E O. O}
+
+## other stuff
+- category: S\S
+  semantics: \X P. past(P)
+  base: た
+
