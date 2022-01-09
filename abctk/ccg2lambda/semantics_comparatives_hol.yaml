@@ -1,3 +1,623 @@
+- &SNPSNPNPNP
+  category: (((S|NP)|((S|NP)|NP))|NP)
+  base: より
+  semantics: |
+    \X. \C1 S C0. yori(S(\Y. Y)(C1), S(\Y. Y)(C0))
+- <<: *SNPSNPNPNP
+  base: よりも
+- <<: *SNPSNPNPNP
+  base: よりは
+
+- &SNPSNPPPNP
+  category: (((S|NP)|((S|NP)|PP))|NP)
+  base: より
+  semantics: |
+    \X. \C1 S C0. yori(S(\Y. Y)(C1), S(\Y. Y)(C0))
+- <<: *SNPSNPPPNP
+  base: よりも
+- <<: *SNPSNPPPNP
+  base: よりは
+
+- &SNPSNPS-fs-SNP
+  category: (((S|NP)|((S|NP)|(S/S)))|NP)
+  base: より
+  semantics: |
+    \X. \C1 S C0. yori(S(\Y. Y)(C1), S(\Y. Y)(C0))
+- <<: *SNPSNPS-fs-SNP
+  base: よりも
+- <<: *SNPSNPS-fs-SNP
+  base: よりは
+
+- &SNPSNPPPstrue-bs-S-fs-PPstrue-bs-SNP
+  category: (((S|NP)|((S|NP)|((PP[s=true]\S)/(PP[s=true]\S))))|NP)
+  base: より
+  semantics: |
+    \X. \C1 S C0. yori(S(\Y. Y)(C1), S(\Y. Y)(C0))
+- <<: *SNPSNPPPstrue-bs-S-fs-PPstrue-bs-SNP
+  base: よりも
+- <<: *SNPSNPPPstrue-bs-S-fs-PPstrue-bs-SNP
+  base: よりは
+
+- &SPPSPPNPNP
+  category: (((S|PP)|((S|PP)|NP))|NP)
+  base: より
+  semantics: |
+    \X. \C1 S C0. yori(S(\Y. Y)(C1), S(\Y. Y)(C0))
+- <<: *SPPSPPNPNP
+  base: よりも
+- <<: *SPPSPPNPNP
+  base: よりは
+
+- &SPPSPPPPNP
+  category: (((S|PP)|((S|PP)|PP))|NP)
+  base: より
+  semantics: |
+    \X. \C1 S C0. yori(S(\Y. Y)(C1), S(\Y. Y)(C0))
+- <<: *SPPSPPPPNP
+  base: よりも
+- <<: *SPPSPPPPNP
+  base: よりは
+
+- &SPPSPPS-fs-SNP
+  category: (((S|PP)|((S|PP)|(S/S)))|NP)
+  base: より
+  semantics: |
+    \X. \C1 S C0. yori(S(\Y. Y)(C1), S(\Y. Y)(C0))
+- <<: *SPPSPPS-fs-SNP
+  base: よりも
+- <<: *SPPSPPS-fs-SNP
+  base: よりは
+
+- &SPPSPPPPstrue-bs-S-fs-PPstrue-bs-SNP
+  category: (((S|PP)|((S|PP)|((PP[s=true]\S)/(PP[s=true]\S))))|NP)
+  base: より
+  semantics: |
+    \X. \C1 S C0. yori(S(\Y. Y)(C1), S(\Y. Y)(C0))
+- <<: *SPPSPPPPstrue-bs-S-fs-PPstrue-bs-SNP
+  base: よりも
+- <<: *SPPSPPPPstrue-bs-S-fs-PPstrue-bs-SNP
+  base: よりは
+
+- &SPPstrue-bs-S-fs-PPstrue-bs-SSPPstrue-bs-S-fs-PPstrue-bs-SNPNP
+  category: (((S|((PP[s=true]\S)/(PP[s=true]\S)))|((S|((PP[s=true]\S)/(PP[s=true]\S)))|NP))|NP)
+  base: より
+  semantics: |
+    \X. \C1 S C0. yori(S(\Y. Y)(C1), S(\Y. Y)(C0))
+- <<: *SPPstrue-bs-S-fs-PPstrue-bs-SSPPstrue-bs-S-fs-PPstrue-bs-SNPNP
+  base: よりも
+- <<: *SPPstrue-bs-S-fs-PPstrue-bs-SSPPstrue-bs-S-fs-PPstrue-bs-SNPNP
+  base: よりは
+
+- &SPPstrue-bs-S-fs-PPstrue-bs-SSPPstrue-bs-S-fs-PPstrue-bs-SPPNP
+  category: (((S|((PP[s=true]\S)/(PP[s=true]\S)))|((S|((PP[s=true]\S)/(PP[s=true]\S)))|PP))|NP)
+  base: より
+  semantics: |
+    \X. \C1 S C0. yori(S(\Y. Y)(C1), S(\Y. Y)(C0))
+- <<: *SPPstrue-bs-S-fs-PPstrue-bs-SSPPstrue-bs-S-fs-PPstrue-bs-SPPNP
+  base: よりも
+- <<: *SPPstrue-bs-S-fs-PPstrue-bs-SSPPstrue-bs-S-fs-PPstrue-bs-SPPNP
+  base: よりは
+
+- &SPPstrue-bs-S-fs-PPstrue-bs-SSPPstrue-bs-S-fs-PPstrue-bs-SS-fs-SNP
+  category: (((S|((PP[s=true]\S)/(PP[s=true]\S)))|((S|((PP[s=true]\S)/(PP[s=true]\S)))|(S/S)))|NP)
+  base: より
+  semantics: |
+    \X. \C1 S C0. yori(S(\Y. Y)(C1), S(\Y. Y)(C0))
+- <<: *SPPstrue-bs-S-fs-PPstrue-bs-SSPPstrue-bs-S-fs-PPstrue-bs-SS-fs-SNP
+  base: よりも
+- <<: *SPPstrue-bs-S-fs-PPstrue-bs-SSPPstrue-bs-S-fs-PPstrue-bs-SS-fs-SNP
+  base: よりは
+
+- &SPPstrue-bs-S-fs-PPstrue-bs-SSPPstrue-bs-S-fs-PPstrue-bs-SPPstrue-bs-S-fs-PPstrue-bs-SNP
+  category: (((S|((PP[s=true]\S)/(PP[s=true]\S)))|((S|((PP[s=true]\S)/(PP[s=true]\S)))|((PP[s=true]\S)/(PP[s=true]\S))))|NP)
+  base: より
+  semantics: |
+    \X. \C1 S C0. yori(S(\Y. Y)(C1), S(\Y. Y)(C0))
+- <<: *SPPstrue-bs-S-fs-PPstrue-bs-SSPPstrue-bs-S-fs-PPstrue-bs-SPPstrue-bs-S-fs-PPstrue-bs-SNP
+  base: よりも
+- <<: *SPPstrue-bs-S-fs-PPstrue-bs-SSPPstrue-bs-S-fs-PPstrue-bs-SPPstrue-bs-S-fs-PPstrue-bs-SNP
+  base: よりは
+
+- &SNPSNPNPPPDEGNP
+  category: ((((S|NP)|(((S|NP)|NP)|PP))|DEG)|NP)
+  base: より
+  semantics: |
+    \X. \C1 D S C0. yori_mp(S(\Y. Y)(\Z. Z)(C1), S(\Y. Y)(\Z. Z)(C0), D)
+- <<: *SNPSNPNPPPDEGNP
+  base: よりも
+- <<: *SNPSNPNPPPDEGNP
+  base: よりは
+
+- &SNPSNPNPS-fs-SDEGNP
+  category: ((((S|NP)|(((S|NP)|NP)|(S/S)))|DEG)|NP)
+  base: より
+  semantics: |
+    \X. \C1 D S C0. yori_mp(S(\Y. Y)(\Z. Z)(C1), S(\Y. Y)(\Z. Z)(C0), D)
+- <<: *SNPSNPNPS-fs-SDEGNP
+  base: よりも
+- <<: *SNPSNPNPS-fs-SDEGNP
+  base: よりは
+
+- &SNPSNPNPPPstrue-bs-S-fs-PPstrue-bs-SDEGNP
+  category: ((((S|NP)|(((S|NP)|NP)|((PP[s=true]\S)/(PP[s=true]\S))))|DEG)|NP)
+  base: より
+  semantics: |
+    \X. \C1 D S C0. yori_mp(S(\Y. Y)(\Z. Z)(C1), S(\Y. Y)(\Z. Z)(C0), D)
+- <<: *SNPSNPNPPPstrue-bs-S-fs-PPstrue-bs-SDEGNP
+  base: よりも
+- <<: *SNPSNPNPPPstrue-bs-S-fs-PPstrue-bs-SDEGNP
+  base: よりは
+
+- &SNPSNPPPPPDEGNP
+  category: ((((S|NP)|(((S|NP)|PP)|PP))|DEG)|NP)
+  base: より
+  semantics: |
+    \X. \C1 D S C0. yori_mp(S(\Y. Y)(\Z. Z)(C1), S(\Y. Y)(\Z. Z)(C0), D)
+- <<: *SNPSNPPPPPDEGNP
+  base: よりも
+- <<: *SNPSNPPPPPDEGNP
+  base: よりは
+
+- &SNPSNPPPS-fs-SDEGNP
+  category: ((((S|NP)|(((S|NP)|PP)|(S/S)))|DEG)|NP)
+  base: より
+  semantics: |
+    \X. \C1 D S C0. yori_mp(S(\Y. Y)(\Z. Z)(C1), S(\Y. Y)(\Z. Z)(C0), D)
+- <<: *SNPSNPPPS-fs-SDEGNP
+  base: よりも
+- <<: *SNPSNPPPS-fs-SDEGNP
+  base: よりは
+
+- &SNPSNPPPPPstrue-bs-S-fs-PPstrue-bs-SDEGNP
+  category: ((((S|NP)|(((S|NP)|PP)|((PP[s=true]\S)/(PP[s=true]\S))))|DEG)|NP)
+  base: より
+  semantics: |
+    \X. \C1 D S C0. yori_mp(S(\Y. Y)(\Z. Z)(C1), S(\Y. Y)(\Z. Z)(C0), D)
+- <<: *SNPSNPPPPPstrue-bs-S-fs-PPstrue-bs-SDEGNP
+  base: よりも
+- <<: *SNPSNPPPPPstrue-bs-S-fs-PPstrue-bs-SDEGNP
+  base: よりは
+
+- &SNPSNPS-fs-SPPDEGNP
+  category: ((((S|NP)|(((S|NP)|(S/S))|PP))|DEG)|NP)
+  base: より
+  semantics: |
+    \X. \C1 D S C0. yori_mp(S(\Y. Y)(\Z. Z)(C1), S(\Y. Y)(\Z. Z)(C0), D)
+- <<: *SNPSNPS-fs-SPPDEGNP
+  base: よりも
+- <<: *SNPSNPS-fs-SPPDEGNP
+  base: よりは
+
+- &SNPSNPS-fs-SS-fs-SDEGNP
+  category: ((((S|NP)|(((S|NP)|(S/S))|(S/S)))|DEG)|NP)
+  base: より
+  semantics: |
+    \X. \C1 D S C0. yori_mp(S(\Y. Y)(\Z. Z)(C1), S(\Y. Y)(\Z. Z)(C0), D)
+- <<: *SNPSNPS-fs-SS-fs-SDEGNP
+  base: よりも
+- <<: *SNPSNPS-fs-SS-fs-SDEGNP
+  base: よりは
+
+- &SNPSNPS-fs-SPPstrue-bs-S-fs-PPstrue-bs-SDEGNP
+  category: ((((S|NP)|(((S|NP)|(S/S))|((PP[s=true]\S)/(PP[s=true]\S))))|DEG)|NP)
+  base: より
+  semantics: |
+    \X. \C1 D S C0. yori_mp(S(\Y. Y)(\Z. Z)(C1), S(\Y. Y)(\Z. Z)(C0), D)
+- <<: *SNPSNPS-fs-SPPstrue-bs-S-fs-PPstrue-bs-SDEGNP
+  base: よりも
+- <<: *SNPSNPS-fs-SPPstrue-bs-S-fs-PPstrue-bs-SDEGNP
+  base: よりは
+
+- &SNPSNPPPstrue-bs-S-fs-PPstrue-bs-SPPDEGNP
+  category: ((((S|NP)|(((S|NP)|((PP[s=true]\S)/(PP[s=true]\S)))|PP))|DEG)|NP)
+  base: より
+  semantics: |
+    \X. \C1 D S C0. yori_mp(S(\Y. Y)(\Z. Z)(C1), S(\Y. Y)(\Z. Z)(C0), D)
+- <<: *SNPSNPPPstrue-bs-S-fs-PPstrue-bs-SPPDEGNP
+  base: よりも
+- <<: *SNPSNPPPstrue-bs-S-fs-PPstrue-bs-SPPDEGNP
+  base: よりは
+
+- &SNPSNPPPstrue-bs-S-fs-PPstrue-bs-SS-fs-SDEGNP
+  category: ((((S|NP)|(((S|NP)|((PP[s=true]\S)/(PP[s=true]\S)))|(S/S)))|DEG)|NP)
+  base: より
+  semantics: |
+    \X. \C1 D S C0. yori_mp(S(\Y. Y)(\Z. Z)(C1), S(\Y. Y)(\Z. Z)(C0), D)
+- <<: *SNPSNPPPstrue-bs-S-fs-PPstrue-bs-SS-fs-SDEGNP
+  base: よりも
+- <<: *SNPSNPPPstrue-bs-S-fs-PPstrue-bs-SS-fs-SDEGNP
+  base: よりは
+
+- &SNPSNPPPstrue-bs-S-fs-PPstrue-bs-SPPstrue-bs-S-fs-PPstrue-bs-SDEGNP
+  category: ((((S|NP)|(((S|NP)|((PP[s=true]\S)/(PP[s=true]\S)))|((PP[s=true]\S)/(PP[s=true]\S))))|DEG)|NP)
+  base: より
+  semantics: |
+    \X. \C1 D S C0. yori_mp(S(\Y. Y)(\Z. Z)(C1), S(\Y. Y)(\Z. Z)(C0), D)
+- <<: *SNPSNPPPstrue-bs-S-fs-PPstrue-bs-SPPstrue-bs-S-fs-PPstrue-bs-SDEGNP
+  base: よりも
+- <<: *SNPSNPPPstrue-bs-S-fs-PPstrue-bs-SPPstrue-bs-S-fs-PPstrue-bs-SDEGNP
+  base: よりは
+
+- &SPPSPPNPPPDEGNP
+  category: ((((S|PP)|(((S|PP)|NP)|PP))|DEG)|NP)
+  base: より
+  semantics: |
+    \X. \C1 D S C0. yori_mp(S(\Y. Y)(\Z. Z)(C1), S(\Y. Y)(\Z. Z)(C0), D)
+- <<: *SPPSPPNPPPDEGNP
+  base: よりも
+- <<: *SPPSPPNPPPDEGNP
+  base: よりは
+
+- &SPPSPPNPS-fs-SDEGNP
+  category: ((((S|PP)|(((S|PP)|NP)|(S/S)))|DEG)|NP)
+  base: より
+  semantics: |
+    \X. \C1 D S C0. yori_mp(S(\Y. Y)(\Z. Z)(C1), S(\Y. Y)(\Z. Z)(C0), D)
+- <<: *SPPSPPNPS-fs-SDEGNP
+  base: よりも
+- <<: *SPPSPPNPS-fs-SDEGNP
+  base: よりは
+
+- &SPPSPPNPPPstrue-bs-S-fs-PPstrue-bs-SDEGNP
+  category: ((((S|PP)|(((S|PP)|NP)|((PP[s=true]\S)/(PP[s=true]\S))))|DEG)|NP)
+  base: より
+  semantics: |
+    \X. \C1 D S C0. yori_mp(S(\Y. Y)(\Z. Z)(C1), S(\Y. Y)(\Z. Z)(C0), D)
+- <<: *SPPSPPNPPPstrue-bs-S-fs-PPstrue-bs-SDEGNP
+  base: よりも
+- <<: *SPPSPPNPPPstrue-bs-S-fs-PPstrue-bs-SDEGNP
+  base: よりは
+
+- &SPPSPPPPPPDEGNP
+  category: ((((S|PP)|(((S|PP)|PP)|PP))|DEG)|NP)
+  base: より
+  semantics: |
+    \X. \C1 D S C0. yori_mp(S(\Y. Y)(\Z. Z)(C1), S(\Y. Y)(\Z. Z)(C0), D)
+- <<: *SPPSPPPPPPDEGNP
+  base: よりも
+- <<: *SPPSPPPPPPDEGNP
+  base: よりは
+
+- &SPPSPPPPS-fs-SDEGNP
+  category: ((((S|PP)|(((S|PP)|PP)|(S/S)))|DEG)|NP)
+  base: より
+  semantics: |
+    \X. \C1 D S C0. yori_mp(S(\Y. Y)(\Z. Z)(C1), S(\Y. Y)(\Z. Z)(C0), D)
+- <<: *SPPSPPPPS-fs-SDEGNP
+  base: よりも
+- <<: *SPPSPPPPS-fs-SDEGNP
+  base: よりは
+
+- &SPPSPPPPPPstrue-bs-S-fs-PPstrue-bs-SDEGNP
+  category: ((((S|PP)|(((S|PP)|PP)|((PP[s=true]\S)/(PP[s=true]\S))))|DEG)|NP)
+  base: より
+  semantics: |
+    \X. \C1 D S C0. yori_mp(S(\Y. Y)(\Z. Z)(C1), S(\Y. Y)(\Z. Z)(C0), D)
+- <<: *SPPSPPPPPPstrue-bs-S-fs-PPstrue-bs-SDEGNP
+  base: よりも
+- <<: *SPPSPPPPPPstrue-bs-S-fs-PPstrue-bs-SDEGNP
+  base: よりは
+
+- &SPPSPPS-fs-SPPDEGNP
+  category: ((((S|PP)|(((S|PP)|(S/S))|PP))|DEG)|NP)
+  base: より
+  semantics: |
+    \X. \C1 D S C0. yori_mp(S(\Y. Y)(\Z. Z)(C1), S(\Y. Y)(\Z. Z)(C0), D)
+- <<: *SPPSPPS-fs-SPPDEGNP
+  base: よりも
+- <<: *SPPSPPS-fs-SPPDEGNP
+  base: よりは
+
+- &SPPSPPS-fs-SS-fs-SDEGNP
+  category: ((((S|PP)|(((S|PP)|(S/S))|(S/S)))|DEG)|NP)
+  base: より
+  semantics: |
+    \X. \C1 D S C0. yori_mp(S(\Y. Y)(\Z. Z)(C1), S(\Y. Y)(\Z. Z)(C0), D)
+- <<: *SPPSPPS-fs-SS-fs-SDEGNP
+  base: よりも
+- <<: *SPPSPPS-fs-SS-fs-SDEGNP
+  base: よりは
+
+- &SPPSPPS-fs-SPPstrue-bs-S-fs-PPstrue-bs-SDEGNP
+  category: ((((S|PP)|(((S|PP)|(S/S))|((PP[s=true]\S)/(PP[s=true]\S))))|DEG)|NP)
+  base: より
+  semantics: |
+    \X. \C1 D S C0. yori_mp(S(\Y. Y)(\Z. Z)(C1), S(\Y. Y)(\Z. Z)(C0), D)
+- <<: *SPPSPPS-fs-SPPstrue-bs-S-fs-PPstrue-bs-SDEGNP
+  base: よりも
+- <<: *SPPSPPS-fs-SPPstrue-bs-S-fs-PPstrue-bs-SDEGNP
+  base: よりは
+
+- &SPPSPPPPstrue-bs-S-fs-PPstrue-bs-SPPDEGNP
+  category: ((((S|PP)|(((S|PP)|((PP[s=true]\S)/(PP[s=true]\S)))|PP))|DEG)|NP)
+  base: より
+  semantics: |
+    \X. \C1 D S C0. yori_mp(S(\Y. Y)(\Z. Z)(C1), S(\Y. Y)(\Z. Z)(C0), D)
+- <<: *SPPSPPPPstrue-bs-S-fs-PPstrue-bs-SPPDEGNP
+  base: よりも
+- <<: *SPPSPPPPstrue-bs-S-fs-PPstrue-bs-SPPDEGNP
+  base: よりは
+
+- &SPPSPPPPstrue-bs-S-fs-PPstrue-bs-SS-fs-SDEGNP
+  category: ((((S|PP)|(((S|PP)|((PP[s=true]\S)/(PP[s=true]\S)))|(S/S)))|DEG)|NP)
+  base: より
+  semantics: |
+    \X. \C1 D S C0. yori_mp(S(\Y. Y)(\Z. Z)(C1), S(\Y. Y)(\Z. Z)(C0), D)
+- <<: *SPPSPPPPstrue-bs-S-fs-PPstrue-bs-SS-fs-SDEGNP
+  base: よりも
+- <<: *SPPSPPPPstrue-bs-S-fs-PPstrue-bs-SS-fs-SDEGNP
+  base: よりは
+
+- &SPPSPPPPstrue-bs-S-fs-PPstrue-bs-SPPstrue-bs-S-fs-PPstrue-bs-SDEGNP
+  category: ((((S|PP)|(((S|PP)|((PP[s=true]\S)/(PP[s=true]\S)))|((PP[s=true]\S)/(PP[s=true]\S))))|DEG)|NP)
+  base: より
+  semantics: |
+    \X. \C1 D S C0. yori_mp(S(\Y. Y)(\Z. Z)(C1), S(\Y. Y)(\Z. Z)(C0), D)
+- <<: *SPPSPPPPstrue-bs-S-fs-PPstrue-bs-SPPstrue-bs-S-fs-PPstrue-bs-SDEGNP
+  base: よりも
+- <<: *SPPSPPPPstrue-bs-S-fs-PPstrue-bs-SPPstrue-bs-S-fs-PPstrue-bs-SDEGNP
+  base: よりは
+
+- &SPPstrue-bs-S-fs-PPstrue-bs-SSPPstrue-bs-S-fs-PPstrue-bs-SNPPPDEGNP
+  category: ((((S|((PP[s=true]\S)/(PP[s=true]\S)))|(((S|((PP[s=true]\S)/(PP[s=true]\S)))|NP)|PP))|DEG)|NP)
+  base: より
+  semantics: |
+    \X. \C1 D S C0. yori_mp(S(\Y. Y)(\Z. Z)(C1), S(\Y. Y)(\Z. Z)(C0), D)
+- <<: *SPPstrue-bs-S-fs-PPstrue-bs-SSPPstrue-bs-S-fs-PPstrue-bs-SNPPPDEGNP
+  base: よりも
+- <<: *SPPstrue-bs-S-fs-PPstrue-bs-SSPPstrue-bs-S-fs-PPstrue-bs-SNPPPDEGNP
+  base: よりは
+
+- &SPPstrue-bs-S-fs-PPstrue-bs-SSPPstrue-bs-S-fs-PPstrue-bs-SNPS-fs-SDEGNP
+  category: ((((S|((PP[s=true]\S)/(PP[s=true]\S)))|(((S|((PP[s=true]\S)/(PP[s=true]\S)))|NP)|(S/S)))|DEG)|NP)
+  base: より
+  semantics: |
+    \X. \C1 D S C0. yori_mp(S(\Y. Y)(\Z. Z)(C1), S(\Y. Y)(\Z. Z)(C0), D)
+- <<: *SPPstrue-bs-S-fs-PPstrue-bs-SSPPstrue-bs-S-fs-PPstrue-bs-SNPS-fs-SDEGNP
+  base: よりも
+- <<: *SPPstrue-bs-S-fs-PPstrue-bs-SSPPstrue-bs-S-fs-PPstrue-bs-SNPS-fs-SDEGNP
+  base: よりは
+
+- &SPPstrue-bs-S-fs-PPstrue-bs-SSPPstrue-bs-S-fs-PPstrue-bs-SNPPPstrue-bs-S-fs-PPstrue-bs-SDEGNP
+  category: ((((S|((PP[s=true]\S)/(PP[s=true]\S)))|(((S|((PP[s=true]\S)/(PP[s=true]\S)))|NP)|((PP[s=true]\S)/(PP[s=true]\S))))|DEG)|NP)
+  base: より
+  semantics: |
+    \X. \C1 D S C0. yori_mp(S(\Y. Y)(\Z. Z)(C1), S(\Y. Y)(\Z. Z)(C0), D)
+- <<: *SPPstrue-bs-S-fs-PPstrue-bs-SSPPstrue-bs-S-fs-PPstrue-bs-SNPPPstrue-bs-S-fs-PPstrue-bs-SDEGNP
+  base: よりも
+- <<: *SPPstrue-bs-S-fs-PPstrue-bs-SSPPstrue-bs-S-fs-PPstrue-bs-SNPPPstrue-bs-S-fs-PPstrue-bs-SDEGNP
+  base: よりは
+
+- &SPPstrue-bs-S-fs-PPstrue-bs-SSPPstrue-bs-S-fs-PPstrue-bs-SPPPPDEGNP
+  category: ((((S|((PP[s=true]\S)/(PP[s=true]\S)))|(((S|((PP[s=true]\S)/(PP[s=true]\S)))|PP)|PP))|DEG)|NP)
+  base: より
+  semantics: |
+    \X. \C1 D S C0. yori_mp(S(\Y. Y)(\Z. Z)(C1), S(\Y. Y)(\Z. Z)(C0), D)
+- <<: *SPPstrue-bs-S-fs-PPstrue-bs-SSPPstrue-bs-S-fs-PPstrue-bs-SPPPPDEGNP
+  base: よりも
+- <<: *SPPstrue-bs-S-fs-PPstrue-bs-SSPPstrue-bs-S-fs-PPstrue-bs-SPPPPDEGNP
+  base: よりは
+
+- &SPPstrue-bs-S-fs-PPstrue-bs-SSPPstrue-bs-S-fs-PPstrue-bs-SPPS-fs-SDEGNP
+  category: ((((S|((PP[s=true]\S)/(PP[s=true]\S)))|(((S|((PP[s=true]\S)/(PP[s=true]\S)))|PP)|(S/S)))|DEG)|NP)
+  base: より
+  semantics: |
+    \X. \C1 D S C0. yori_mp(S(\Y. Y)(\Z. Z)(C1), S(\Y. Y)(\Z. Z)(C0), D)
+- <<: *SPPstrue-bs-S-fs-PPstrue-bs-SSPPstrue-bs-S-fs-PPstrue-bs-SPPS-fs-SDEGNP
+  base: よりも
+- <<: *SPPstrue-bs-S-fs-PPstrue-bs-SSPPstrue-bs-S-fs-PPstrue-bs-SPPS-fs-SDEGNP
+  base: よりは
+
+- &SPPstrue-bs-S-fs-PPstrue-bs-SSPPstrue-bs-S-fs-PPstrue-bs-SPPPPstrue-bs-S-fs-PPstrue-bs-SDEGNP
+  category: ((((S|((PP[s=true]\S)/(PP[s=true]\S)))|(((S|((PP[s=true]\S)/(PP[s=true]\S)))|PP)|((PP[s=true]\S)/(PP[s=true]\S))))|DEG)|NP)
+  base: より
+  semantics: |
+    \X. \C1 D S C0. yori_mp(S(\Y. Y)(\Z. Z)(C1), S(\Y. Y)(\Z. Z)(C0), D)
+- <<: *SPPstrue-bs-S-fs-PPstrue-bs-SSPPstrue-bs-S-fs-PPstrue-bs-SPPPPstrue-bs-S-fs-PPstrue-bs-SDEGNP
+  base: よりも
+- <<: *SPPstrue-bs-S-fs-PPstrue-bs-SSPPstrue-bs-S-fs-PPstrue-bs-SPPPPstrue-bs-S-fs-PPstrue-bs-SDEGNP
+  base: よりは
+
+- &SPPstrue-bs-S-fs-PPstrue-bs-SSPPstrue-bs-S-fs-PPstrue-bs-SS-fs-SPPDEGNP
+  category: ((((S|((PP[s=true]\S)/(PP[s=true]\S)))|(((S|((PP[s=true]\S)/(PP[s=true]\S)))|(S/S))|PP))|DEG)|NP)
+  base: より
+  semantics: |
+    \X. \C1 D S C0. yori_mp(S(\Y. Y)(\Z. Z)(C1), S(\Y. Y)(\Z. Z)(C0), D)
+- <<: *SPPstrue-bs-S-fs-PPstrue-bs-SSPPstrue-bs-S-fs-PPstrue-bs-SS-fs-SPPDEGNP
+  base: よりも
+- <<: *SPPstrue-bs-S-fs-PPstrue-bs-SSPPstrue-bs-S-fs-PPstrue-bs-SS-fs-SPPDEGNP
+  base: よりは
+
+- &SPPstrue-bs-S-fs-PPstrue-bs-SSPPstrue-bs-S-fs-PPstrue-bs-SS-fs-SS-fs-SDEGNP
+  category: ((((S|((PP[s=true]\S)/(PP[s=true]\S)))|(((S|((PP[s=true]\S)/(PP[s=true]\S)))|(S/S))|(S/S)))|DEG)|NP)
+  base: より
+  semantics: |
+    \X. \C1 D S C0. yori_mp(S(\Y. Y)(\Z. Z)(C1), S(\Y. Y)(\Z. Z)(C0), D)
+- <<: *SPPstrue-bs-S-fs-PPstrue-bs-SSPPstrue-bs-S-fs-PPstrue-bs-SS-fs-SS-fs-SDEGNP
+  base: よりも
+- <<: *SPPstrue-bs-S-fs-PPstrue-bs-SSPPstrue-bs-S-fs-PPstrue-bs-SS-fs-SS-fs-SDEGNP
+  base: よりは
+
+- &SPPstrue-bs-S-fs-PPstrue-bs-SSPPstrue-bs-S-fs-PPstrue-bs-SS-fs-SPPstrue-bs-S-fs-PPstrue-bs-SDEGNP
+  category: ((((S|((PP[s=true]\S)/(PP[s=true]\S)))|(((S|((PP[s=true]\S)/(PP[s=true]\S)))|(S/S))|((PP[s=true]\S)/(PP[s=true]\S))))|DEG)|NP)
+  base: より
+  semantics: |
+    \X. \C1 D S C0. yori_mp(S(\Y. Y)(\Z. Z)(C1), S(\Y. Y)(\Z. Z)(C0), D)
+- <<: *SPPstrue-bs-S-fs-PPstrue-bs-SSPPstrue-bs-S-fs-PPstrue-bs-SS-fs-SPPstrue-bs-S-fs-PPstrue-bs-SDEGNP
+  base: よりも
+- <<: *SPPstrue-bs-S-fs-PPstrue-bs-SSPPstrue-bs-S-fs-PPstrue-bs-SS-fs-SPPstrue-bs-S-fs-PPstrue-bs-SDEGNP
+  base: よりは
+
+- &SPPstrue-bs-S-fs-PPstrue-bs-SSPPstrue-bs-S-fs-PPstrue-bs-SPPstrue-bs-S-fs-PPstrue-bs-SPPDEGNP
+  category: ((((S|((PP[s=true]\S)/(PP[s=true]\S)))|(((S|((PP[s=true]\S)/(PP[s=true]\S)))|((PP[s=true]\S)/(PP[s=true]\S)))|PP))|DEG)|NP)
+  base: より
+  semantics: |
+    \X. \C1 D S C0. yori_mp(S(\Y. Y)(\Z. Z)(C1), S(\Y. Y)(\Z. Z)(C0), D)
+- <<: *SPPstrue-bs-S-fs-PPstrue-bs-SSPPstrue-bs-S-fs-PPstrue-bs-SPPstrue-bs-S-fs-PPstrue-bs-SPPDEGNP
+  base: よりも
+- <<: *SPPstrue-bs-S-fs-PPstrue-bs-SSPPstrue-bs-S-fs-PPstrue-bs-SPPstrue-bs-S-fs-PPstrue-bs-SPPDEGNP
+  base: よりは
+
+- &SPPstrue-bs-S-fs-PPstrue-bs-SSPPstrue-bs-S-fs-PPstrue-bs-SPPstrue-bs-S-fs-PPstrue-bs-SS-fs-SDEGNP
+  category: ((((S|((PP[s=true]\S)/(PP[s=true]\S)))|(((S|((PP[s=true]\S)/(PP[s=true]\S)))|((PP[s=true]\S)/(PP[s=true]\S)))|(S/S)))|DEG)|NP)
+  base: より
+  semantics: |
+    \X. \C1 D S C0. yori_mp(S(\Y. Y)(\Z. Z)(C1), S(\Y. Y)(\Z. Z)(C0), D)
+- <<: *SPPstrue-bs-S-fs-PPstrue-bs-SSPPstrue-bs-S-fs-PPstrue-bs-SPPstrue-bs-S-fs-PPstrue-bs-SS-fs-SDEGNP
+  base: よりも
+- <<: *SPPstrue-bs-S-fs-PPstrue-bs-SSPPstrue-bs-S-fs-PPstrue-bs-SPPstrue-bs-S-fs-PPstrue-bs-SS-fs-SDEGNP
+  base: よりは
+
+- &SPPstrue-bs-S-fs-PPstrue-bs-SSPPstrue-bs-S-fs-PPstrue-bs-SPPstrue-bs-S-fs-PPstrue-bs-SPPstrue-bs-S-fs-PPstrue-bs-SDEGNP
+  category: ((((S|((PP[s=true]\S)/(PP[s=true]\S)))|(((S|((PP[s=true]\S)/(PP[s=true]\S)))|((PP[s=true]\S)/(PP[s=true]\S)))|((PP[s=true]\S)/(PP[s=true]\S))))|DEG)|NP)
+  base: より
+  semantics: |
+    \X. \C1 D S C0. yori_mp(S(\Y. Y)(\Z. Z)(C1), S(\Y. Y)(\Z. Z)(C0), D)
+- <<: *SPPstrue-bs-S-fs-PPstrue-bs-SSPPstrue-bs-S-fs-PPstrue-bs-SPPstrue-bs-S-fs-PPstrue-bs-SPPstrue-bs-S-fs-PPstrue-bs-SDEGNP
+  base: よりも
+- <<: *SPPstrue-bs-S-fs-PPstrue-bs-SSPPstrue-bs-S-fs-PPstrue-bs-SPPstrue-bs-S-fs-PPstrue-bs-SPPstrue-bs-S-fs-PPstrue-bs-SDEGNP
+  base: よりは
+- &comp-trace-cont
+  category: NP
+  semantics: \E. T11
+  base: "*TRACE-cont1*"
+- <<: *comp-trace-cont
+  category: PP
+- <<: *comp-trace-cont
+  category: ((PP[s=true]\S)/(PP[s=true]\S))
+
+- &comp-trace-prej
+  category: NP
+  semantics: \E. T21
+  base: "*TRACE-prej1*"
+- <<: *comp-trace-prej
+  category: PP
+- <<: *comp-trace-prej
+  category: (S/S)
+- <<: *comp-trace-prej
+  category: ((PP[s=true]\S)/(PP[s=true]\S))
+
+- &comp-trace-diff
+  category: PP
+  semantics: \E. T31
+  base: "*TRACE-diff1*"
+- <<: *comp-trace-diff
+  category: (S/S)
+- <<: *comp-trace-diff
+  category: ((PP[s=true]\S)/(PP[s=true]\S))
+
+- &comp-intro-cont
+  category: (S|NP)
+  rule: "|-intro-cont1"
+  semantics: \M. lam(T11, M)
+- <<: *comp-intro-cont
+  category: (S|PP)
+- <<: *comp-intro-cont
+  category: (S|((PP[s=true]\S)/(PP[s=true]\S)))
+
+- &comp-intro-prej
+  category: ((S|NP)|NP)
+  rule: "|-intro-prej1"
+  semantics: \M. lam(T21, M)
+- <<: *comp-intro-prej
+  category: ((S|NP)|PP)
+- <<: *comp-intro-prej
+  category: ((S|NP)|(S/S))
+- <<: *comp-intro-prej
+  category: ((S|NP)|((PP[s=true]\S)/(PP[s=true]\S)))
+- <<: *comp-intro-prej
+  category: ((S|PP)|NP)
+- <<: *comp-intro-prej
+  category: ((S|PP)|PP)
+- <<: *comp-intro-prej
+  category: ((S|PP)|(S/S))
+- <<: *comp-intro-prej
+  category: ((S|PP)|((PP[s=true]\S)/(PP[s=true]\S)))
+- <<: *comp-intro-prej
+  category: ((S|((PP[s=true]\S)/(PP[s=true]\S)))|NP)
+- <<: *comp-intro-prej
+  category: ((S|((PP[s=true]\S)/(PP[s=true]\S)))|PP)
+- <<: *comp-intro-prej
+  category: ((S|((PP[s=true]\S)/(PP[s=true]\S)))|(S/S))
+- <<: *comp-intro-prej
+  category: ((S|((PP[s=true]\S)/(PP[s=true]\S)))|((PP[s=true]\S)/(PP[s=true]\S)))
+
+- &comp-intro-diff
+  category: (((S|NP)|NP)|PP)
+  rule: "|-intro-diff1"
+  semantics: \M. lam(T31, M)
+- <<: *comp-intro-diff
+  category: (((S|NP)|NP)|(S/S))
+- <<: *comp-intro-diff
+  category: (((S|NP)|NP)|((PP[s=true]\S)/(PP[s=true]\S)))
+- <<: *comp-intro-diff
+  category: (((S|NP)|PP)|PP)
+- <<: *comp-intro-diff
+  category: (((S|NP)|PP)|(S/S))
+- <<: *comp-intro-diff
+  category: (((S|NP)|PP)|((PP[s=true]\S)/(PP[s=true]\S)))
+- <<: *comp-intro-diff
+  category: (((S|NP)|(S/S))|PP)
+- <<: *comp-intro-diff
+  category: (((S|NP)|(S/S))|(S/S))
+- <<: *comp-intro-diff
+  category: (((S|NP)|(S/S))|((PP[s=true]\S)/(PP[s=true]\S)))
+- <<: *comp-intro-diff
+  category: (((S|NP)|((PP[s=true]\S)/(PP[s=true]\S)))|PP)
+- <<: *comp-intro-diff
+  category: (((S|NP)|((PP[s=true]\S)/(PP[s=true]\S)))|(S/S))
+- <<: *comp-intro-diff
+  category: (((S|NP)|((PP[s=true]\S)/(PP[s=true]\S)))|((PP[s=true]\S)/(PP[s=true]\S)))
+- <<: *comp-intro-diff
+  category: (((S|PP)|NP)|PP)
+- <<: *comp-intro-diff
+  category: (((S|PP)|NP)|(S/S))
+- <<: *comp-intro-diff
+  category: (((S|PP)|NP)|((PP[s=true]\S)/(PP[s=true]\S)))
+- <<: *comp-intro-diff
+  category: (((S|PP)|PP)|PP)
+- <<: *comp-intro-diff
+  category: (((S|PP)|PP)|(S/S))
+- <<: *comp-intro-diff
+  category: (((S|PP)|PP)|((PP[s=true]\S)/(PP[s=true]\S)))
+- <<: *comp-intro-diff
+  category: (((S|PP)|(S/S))|PP)
+- <<: *comp-intro-diff
+  category: (((S|PP)|(S/S))|(S/S))
+- <<: *comp-intro-diff
+  category: (((S|PP)|(S/S))|((PP[s=true]\S)/(PP[s=true]\S)))
+- <<: *comp-intro-diff
+  category: (((S|PP)|((PP[s=true]\S)/(PP[s=true]\S)))|PP)
+- <<: *comp-intro-diff
+  category: (((S|PP)|((PP[s=true]\S)/(PP[s=true]\S)))|(S/S))
+- <<: *comp-intro-diff
+  category: (((S|PP)|((PP[s=true]\S)/(PP[s=true]\S)))|((PP[s=true]\S)/(PP[s=true]\S)))
+- <<: *comp-intro-diff
+  category: (((S|((PP[s=true]\S)/(PP[s=true]\S)))|NP)|PP)
+- <<: *comp-intro-diff
+  category: (((S|((PP[s=true]\S)/(PP[s=true]\S)))|NP)|(S/S))
+- <<: *comp-intro-diff
+  category: (((S|((PP[s=true]\S)/(PP[s=true]\S)))|NP)|((PP[s=true]\S)/(PP[s=true]\S)))
+- <<: *comp-intro-diff
+  category: (((S|((PP[s=true]\S)/(PP[s=true]\S)))|PP)|PP)
+- <<: *comp-intro-diff
+  category: (((S|((PP[s=true]\S)/(PP[s=true]\S)))|PP)|(S/S))
+- <<: *comp-intro-diff
+  category: (((S|((PP[s=true]\S)/(PP[s=true]\S)))|PP)|((PP[s=true]\S)/(PP[s=true]\S)))
+- <<: *comp-intro-diff
+  category: (((S|((PP[s=true]\S)/(PP[s=true]\S)))|(S/S))|PP)
+- <<: *comp-intro-diff
+  category: (((S|((PP[s=true]\S)/(PP[s=true]\S)))|(S/S))|(S/S))
+- <<: *comp-intro-diff
+  category: (((S|((PP[s=true]\S)/(PP[s=true]\S)))|(S/S))|((PP[s=true]\S)/(PP[s=true]\S)))
+- <<: *comp-intro-diff
+  category: (((S|((PP[s=true]\S)/(PP[s=true]\S)))|((PP[s=true]\S)/(PP[s=true]\S)))|PP)
+- <<: *comp-intro-diff
+  category: (((S|((PP[s=true]\S)/(PP[s=true]\S)))|((PP[s=true]\S)/(PP[s=true]\S)))|(S/S))
+- <<: *comp-intro-diff
+  category: (((S|((PP[s=true]\S)/(PP[s=true]\S)))|((PP[s=true]\S)/(PP[s=true]\S)))|((PP[s=true]\S)/(PP[s=true]\S)))
+
+
 # Semantic Lexicon for Keyaki-ABC Treebank
 
 ### Semantic templates for HOL representations ###
@@ -23,168 +643,14 @@
 # == Comparatives
 # ========================
 
-- &yori-np-cont-np
-  category: (((S|NP)|((S|NP)|((PP[s=true]\S)/(PP[s=true]\S))))|NP)
-  base: より
-  semantics: |
-    \X.
-      \C1 S C0. yori(
-        S(\Y. Y)(C1),
-        S(\Y. Y)(C0)
-      )
-  # C1: NP
-  # S: (VP → VP) → VP
-  # C0: PPs
-- <<: *yori-np-cont-np
-  base: よりも
-- <<: *yori-np-cont-np
-  base: よりは
 
-- &yori-np
-  category: (((S|PP[s=true])|((S|PP[s=true])|((PP[s=true]\S)/(PP[s=true]\S))))|NP)
-  base: より
-  semantics: |
-    \X.
-      \C1 S C0. yori(
-        S(\Y. Y)(C1),
-        S(\Y. Y)(C0)
-      )
-  # C1: NP
-  # S: (VP → VP) → VP
-  # C0: PPs
-- <<: *yori-np
-  base: よりも
-- <<: *yori-np
-  base: よりは
-
-- &yori-np-cont-s-fs-s
-  category: (((S|((PP[s=true]\S)/(PP[s=true]\S)))|((S|((PP[s=true]\S)/(PP[s=true]\S)))|((PP[s=true]\S)/(PP[s=true]\S))))|NP)
-  base: より
-  semantics: |
-    \X.
-      \C1 S C0. yori(
-        S(\Y. Y)(C1),
-        S(\Y. Y)(C0)
-      )
-  # C1: NP
-  # S: (VP → VP) → VP
-  # C0: PPs
-- <<: *yori-np-cont-s-fs-s
-  base: よりも
-- <<: *yori-np-cont-s-fs-s
-  base: よりは
-
-- &yori-np-prej-s-fs-s
-  category: (((S|PP[s=true])|((S|PP[s=true])|(S/S)))|NP)
-  base: より
-  semantics: |
-    \X.
-      \C1 S C0. yori(
-        S(\Y. Y)(C1),
-        S(\Z. Z)(C0)
-      )
-  # C1: NP
-  # S: (VP → VP) → VP
-  # C0: PPs
-- <<: *yori-np-prej-s-fs-s
-  base: よりも
-- <<: *yori-np-prej-s-fs-s
-  base: よりは
-
-- &yori-S
-  category: (((S[m=true]|PP[s=true])|((S[m=true]|PP[s=true])|((PP[s=true]\S[m=true])/(PP[s=true]\S[m=true]))))|S[nml=true])
-  base: よりも
-  semantics: |
-    \X.
-      \C1 S N. yori(
-        C1,
-        S(N)
-      )
-- <<: *yori-S
-  base: より
-  
-- &yori-npdeg
-  category: ((((S|PP[s=true])|(((S|PP[s=true])|((PP[s=true]\S)/(PP[s=true]\S)))|((PP[s=true]\S)/(PP[s=true]\S))))|DEG)|NP)
-  base: より
-  semantics: |
-    \X.
-      \C1 D S C0. yori_mp(S(\Y. Y)(\Z. Z)(C1), S(\Y. Y)(\Z. Z)(C0), D)
-- <<: *yori-npdeg
-  base: よりも
-- <<: *yori-npdeg
-  base: よりは
-
-- &yori-npdeg-prej-s-fs-s
-  category: ((((S|PP[s=true])|(((S|PP[s=true])|(S/S))|((PP[s=true]\S)/(PP[s=true]\S))))|DEG)|NP)
-  base: より
-  semantics: |
-    \X.
-      \C1 D S C0. yori_mp(S(\Y. Y)(\Z. Z)(C1), S(\Y. Y)(\Z. Z)(C0), D)
-- <<: *yori-npdeg-prej-s-fs-s
-  base: よりも
-- <<: *yori-npdeg-prej-s-fs-s
-  base: よりは
 
 ### TRACE周り
-
-# 1: cont, 2:prej
-
-## cont導入
-- &comp-intro-cont
-  category: (S|PP) # parentheses cannot be dropped
-  rule: "|-intro-cont1"
-  semantics: \M. lam(T11, M)
-- <<: *comp-intro-cont
-  category: (S|((PP\S)/(PP\S))) # parentheses cannot be dropped
-
-
-## prej導入
-- &comp-intro-prej
-  category: ((S|PP)|((PP\S)/(PP\S)))
-  rule: "|-intro-prej1"
-  semantics: \M. lam(T21, M)
-- <<: *comp-intro-prej
-  category: ((S|PP)|(S/S))
-- <<: *comp-intro-prej
-  category: ((S|((PP\S)/(PP\S)))|((PP\S)/(PP\S)))
-  
-
-## diff導入
-- &comp-intro-diff
-  category: (((S|PP)|((PP\S)/(PP\S)))|((PP\S)/(PP\S)))
-  rule: "|-intro-diff1"
-  semantics: \M. lam(T31, M)
-- <<: *comp-intro-diff
-  category: (((S|PP)|(S/S))|((PP\S)/(PP\S)))
-
 
 ## rel導入
 - category: (S|PP[s=true]) 
   rule: "|-intro-rel1"
   semantics: \M. lam(T101, M)
-
-
-## contトレース
-- category: PP
-  semantics: \E. T11
-  base: "*TRACE-cont1*"
-- category: ((PP\S)/(PP\S)) 
-  semantics: \E. T11
-  base: "*TRACE-cont1*"
-  
-## prejトレース
-- &comp-trace-prej
-  category: ((PP\S)/(PP\S))
-  semantics: \E. T21
-  base: "*TRACE-prej1*"
-- <<: *comp-trace-prej
-  category: (S/S)
-  
-## diffトレース
-- category: ((PP\S)/(PP\S))
-  semantics: \E. T31
-  base: "*TRACE-diff1*"
-
 
 
 # =======
