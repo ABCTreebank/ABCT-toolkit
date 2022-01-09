@@ -302,17 +302,17 @@ def convert_sentence_to_mathml_2(
         #     ccg_tree_id += " (gold)"
         sem_tree = build_ccg_tree(xml_sem)
 
+        mathml_str += "<p>{0}: {1}</p>\n".format(
+                            sentence_label, sentence_text)
         if is_drt:
-            mathml_str += "<p>{0}: {1}</p>\n".format(
-                            sentence_label, sentence_text) \
-                        + "<p>FOL-Normalized: <font color='Blue'>" + nf_str + "</font></p>\n" \
+            mathml_str += "<p>Expression: <font color='Blue'>" + nf_str + "</font></p>\n" \
                         + "<p>DRS: <font color='Blue'>" + drs_str + "</font></p>\n" \
                         + "<p><math>" + drs_mathml + "</math></p>\n" \
                         + "<math xmlns='http://www.w3.org/1998/Math/MathML'>\n" \
                         + convert_node_to_mathml(ccg_tree, sem_tree, xml_tokens) \
                         + "</math>\n"
         else:
-            mathml_str += "<p>HOL: <font color='Blue'>" + form_str + "</font></p>\n" \
+            mathml_str += "<p>Expression: <font color='Blue'>" + form_str + "</font></p>\n" \
                         + "<math xmlns='http://www.w3.org/1998/Math/MathML'>\n" \
                         + convert_node_to_mathml(ccg_tree, sem_tree, xml_tokens) \
                         + "</math>\n"
