@@ -1,10 +1,39 @@
 #!/usr/bin/ruby
 # coding: utf-8
 
-#空白で区切ってcont, prej, diffそれぞれの可能なカテゴリをリストアップする
-cont_list = 'NP PP (S/S) ((PP[s=true]\S)/(PP[s=true]\S))'.split(" ")
-prej_list = 'NP PP (S/S) (N/N) S (PP[s=true]\S) ((PP[s=true]\S)/(PP[s=true]\S)) ((PP[o1=true]\(PP[s=true]\S))/(PP[o1=true]\(PP[s=true]\S)))'.split(" ")
-diff_list = 'N PP NP NUMCLP (S/S) (N/N) (PP[o1=true]\(PP[s=true]\S)) (PP[s=true]\S) ((PP[s=true]\S)/(PP[s=true]\S))'.split(" ")
+#改行で区切ってcont, prej, diffそれぞれの可能なカテゴリをリストアップする
+cont_list = 'N
+NP
+PP
+S
+(N/N)
+(N\N)
+(PP\S)
+(S/S)
+(S\S)
+((PP[s=true]\S)/(PP[s=true]\S))'.delete(" ").split("\n")
+
+prej_list = 'N
+PP
+(S/S)
+(N/N)
+(NP/NP)
+S
+(PP[s=true]\S)
+((PP[s=true]\S)/(PP[s=true]\S))
+((PP[o1=true]\(PP[s=true]\S))/(PP[o1=true]\(PP[s=true]\S)))'.delete(" ").split("\n")
+
+diff_list = 'N
+PP
+NP
+NUMCLP
+(S/S)
+(N/N)
+(PP[o1=true]\(PP[s=true]\S))
+(PP[s=true]\S)
+((PP[s=true]\S)/(PP[s=true]\S))
+(((PP[s=true]\S)/(PP[s=true]\S))\((PP[s=true]\S)/(PP[s=true]\S)))'.delete(" ").split("\n")
+
 
 diff_sem = '\X. \C1 D S C0. yori_mp(S(\Y. Y)(\Z. Z)(C1), S(\Y. Y)(\Z. Z)(C0), D)'
 no_diff_sem = '\X. \C1 S C0. yori(S(\Y. Y)(C1), S(\Y. Y)(C0))'
