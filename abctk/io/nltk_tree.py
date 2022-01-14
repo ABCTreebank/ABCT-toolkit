@@ -78,6 +78,20 @@ def load_Keyaki_Annot_psd(
     if prog_stream:
         prog_stream.write("\n")
 
+class InvalidABCTreeException(Exception):
+    """
+    The exception class for ABC tree loading.
+    """
+
+    ID: typing.Union[Keyaki_ID, str]
+    """ 
+    The ID of the problematic tree.
+    """
+
+    def __init__(self, ID):
+        self.ID = ID
+        super().__init__(f"Failed to parse the ABC tree (ID: {ID})")
+
 def load_ABC_psd(
     folder: typing.Union[str, pathlib.Path], 
     re_filter: typing.Union[str, typing.Pattern] = r".*\.psd$",
@@ -95,7 +109,18 @@ def load_ABC_psd(
     prog_stream:
         The stream where the progress info is redirected to and show up there.
         Feature disabled when set to `None`. 
+
+    Yields
+    ------
+    ID: Keyaki_ID
+    tree: Tree
+
+    Raises
+    ------
+    InvalidABCTreeException
+        If parsing of the given tree of categories therein fails.
     """
+
     def _parse_label(tree: Tree): 
         stack = [tree]
 
@@ -105,37 +130,35 @@ def load_ABC_psd(
                 pointer.set_label(
                     abcc.Annot.parse(
                         pointer.label(),
-                        #parser_cat = abcc.ABCCat.parse, # NOTE: too slow
+                        parser_cat = abcc.ABCCat.parse, # NOTE: too slow
                         pprinter_cat = abcc.ABCCat.pprint,
-                        # TODO: exclude terminals
                     )
                 )
 
-                if len(pointer) == 1:
-                    if not isinstance(pointer[0], Tree):
-                        continue
-                    
-                for child in tree:
-                    _parse_label(child)
+                if len(pointer) == 1 and not isinstance(pointer[0], Tree):
+                    continue
+                else:
+                    stack.extend(pointer)
             else:
                 # do nothing
                 pass
 
     for i, (ID, tree) in enumerate(
-        map(
-            _split_ID_from_Tree,
-            BracketParseCorpusReader(
-                root = str(folder),
-                fileids = re_filter,
-            ).parsed_sents()
-        )
+        _split_ID_from_Tree(tree_raw)
+        for tree_raw in BracketParseCorpusReader(
+            root = str(folder),
+            fileids = re_filter,
+        ).parsed_sents()
     ):
-        _parse_label(tree)
-        yield ID, tree
+        try:
+            _parse_label(tree)
+            yield ID, tree
 
-        if prog_stream:
-            prog_stream.write(f"\r# of tree(s) fetched: {i + 1:,}")
-            
+            if prog_stream:
+                prog_stream.write(f"\r# of tree(s) fetched: {i + 1:,}")
+        except Exception as e:
+            raise InvalidABCTreeException(ID) from e
+
     if prog_stream:
         prog_stream.write("\n")
 

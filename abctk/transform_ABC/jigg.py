@@ -226,133 +226,141 @@ def tree_to_jigg(
     )
     # NOTE: no ID yet
 
-    xml_pool.text = "".join(tree.leaves())
-    xml_tokens: et._Element = et.SubElement(xml_pool, "tokens")
-    # NOTE: no ID yet
+    try:
+        xml_pool.text = "".join(tree.leaves())
+        xml_tokens: et._Element = et.SubElement(xml_pool, "tokens")
+        # NOTE: no ID yet
 
-    xml_ccgs: et._Element = et.SubElement(xml_pool, "ccg")
-    xml_ccgs.set("id", f"{jigg_ID}_ccg0")
+        xml_ccgs: et._Element = et.SubElement(xml_pool, "ccg")
+        xml_ccgs.set("id", f"{jigg_ID}_ccg0")
 
-    # 1. Annotation creation
-    call_stack: list[tuple[Tree, bool]] = [(tree, False)]
-    return_stack: list[_t2jg_Writer] = list()
+        # 1. Annotation creation
+        call_stack: list[tuple[Tree, bool]] = [(tree, False)]
+        return_stack: list[_t2jg_Writer] = list()
 
-    token_id_count: int = 0
-    span_id_count: int = 0
-    token_offset_count: int = 0
-    while call_stack:
-        pointer, is_back = call_stack.pop()
-        if is_back:
-            # take return values
-            if not isinstance(pointer, Tree):
-                raise TypeError
+        token_id_count: int = 0
+        span_id_count: int = 0
+        token_offset_count: int = 0
+        while call_stack:
+            pointer, is_back = call_stack.pop()
+            if is_back:
+                # take return values
+                if not isinstance(pointer, Tree):
+                    raise TypeError
 
-            children_num = len(pointer)
+                children_num = len(pointer)
 
-            return_stack, return_values = return_stack[:-children_num], return_stack[-children_num:]
+                return_stack, return_values = return_stack[:-children_num], return_stack[-children_num:]
 
-            label = pointer.label()
-            if not isinstance(label, abcc.Annot):
-                raise TypeError
-            label_cat = abcc.ABCCat.p(label.cat)
-            
-            token_span_begin = min(w.token_span_begin for w in return_values)
-            token_span_end = min(w.token_span_end for w in return_values)
-            token_span_name = f"s{jigg_ID}_sp{span_id_count}"
+                label = pointer.label()
+                if not isinstance(label, abcc.Annot):
+                    raise TypeError
+                label_cat = abcc.ABCCat.p(label.cat)
+                
+                token_span_begin = min(w.token_span_begin for w in return_values)
+                token_span_end = min(w.token_span_end for w in return_values)
+                token_span_name = f"s{jigg_ID}_sp{span_id_count}"
 
 
-            xml_span = et.SubElement(
-                xml_ccgs,
-                "span",
-                category = label_cat.pprint(
-                    mode = abcc.ABCCatReprMode.CCG2LAMBDA
-                ),
-                begin = str(token_span_begin),
-                end = str(token_span_end),
-                id = token_span_name,
-            )
-
-            return_first_child = return_values[0]
-            is_subterminal = len(return_values) == 1 and return_first_child.is_terminal
-
-            # find the derivational rule of the subtree
-            if not is_subterminal:
-                span_rule = label.feats.get("deriv", "unknown")
-                # "unknown" by default
-
-                if span_rule != "unknown":
-                    # rule manually specified
-                    # do nothing
-                    pass
-                else:
-                    # find whether it is a comparative binding
-                    comparative_maybe: str = label.feats.get("comp", "")
-                    _re = re.compile(r"(?P<num>[0-9]+),(?P<role>[a-zA-Z]+),bind")
-                    comp_parsed = _re.match(comparative_maybe)
-                    if comp_parsed:
-                        # comparative binding
-                        d = comp_parsed.groupdict()
-                        # trace = f"*{d['role']}{d['num']}*"
-                        span_rule = f"|-intro-{d['role']}{d['num']}"
-                    else:
-                        # find whether it is a relative clause binding
-                        rel_maybe: str = label.feats.get("rel", "")
-                        _re = re.compile(r"(?P<num>[0-9]+),bind")
-                        rel_parsed = _re.match(rel_maybe)
-
-                        if rel_parsed:
-                            d = rel_parsed.groupdict()
-                            span_rule = f"|-intro-rel{d['num']}"
-                            # TODO: change conv rules
-                        else:
-                            # try to automatically find it
-                            if children_num == 2:
-                                child_1, child_2 = pointer
-                                child_1_cat: abcc.ABCCat = abcc.ABCCat.parse(child_1.label().cat)
-                                child_2_cat: abcc.ABCCat= abcc.ABCCat.parse(child_2.label().cat)
-                                simp_candidates = abcc.ABCCat.simplify_exh(child_1_cat, child_2_cat)
-                                if simp_candidates:
-                                    _, simp_elimtype = next(iter(simp_candidates))
-                                    span_rule = str(simp_elimtype)
-
-                                    # hack: specify direction for |-elim rules
-                                    # ccg2lambda_tools.py: 103
-                                    if span_rule == "|":
-                                        if isinstance(child_1_cat, abcc.ABCCatFunctor) and child_1_cat.ant == child_2_cat:
-                                            # (_|child_2) child_2
-                                            span_rule = "|>"
-                                        else:
-                                            span_rule = "|<"
-                            elif children_num == 1:
-                                span_rule = "unary" # the default unary rule
-
-                xml_span.set(
-                    "rule",
-                    span_rule,
+                xml_span = et.SubElement(
+                    xml_ccgs,
+                    "span",
+                    category = label_cat.pprint(
+                        mode = abcc.ABCCatReprMode.CCG2LAMBDA
+                    ),
+                    begin = str(token_span_begin),
+                    end = str(token_span_end),
+                    id = token_span_name,
                 )
-            # === END IF not is_subterminal ===
 
-            if len(return_values) == 1:
-                return_unary_child, = return_values
-                pointer_token = return_unary_child.pointer
-                if (
-                    return_unary_child.is_terminal
-                    and pointer_token is not None
-                ):
+                return_first_child = return_values[0]
+                is_subterminal = len(return_values) == 1 and return_first_child.is_terminal
+
+                # find the derivational rule of the subtree
+                if not is_subterminal:
+                    span_rule = label.feats.get("deriv", "unknown")
+                    # "unknown" by default
+
+                    if span_rule != "unknown":
+                        # rule manually specified
+                        # do nothing
+                        pass
+                    else:
+                        # find whether it is a comparative binding
+                        comparative_maybe: str = label.feats.get("comp", "")
+                        _re = re.compile(r"(?P<num>[0-9]+),(?P<role>[a-zA-Z]+),bind")
+                        comp_parsed = _re.match(comparative_maybe)
+                        if comp_parsed:
+                            # comparative binding
+                            d = comp_parsed.groupdict()
+                            # trace = f"*{d['role']}{d['num']}*"
+                            span_rule = f"|-intro-{d['role']}{d['num']}"
+                        else:
+                            # find whether it is a relative clause binding
+                            rel_maybe: str = label.feats.get("rel", "")
+                            _re = re.compile(r"(?P<num>[0-9]+),bind")
+                            rel_parsed = _re.match(rel_maybe)
+
+                            if rel_parsed:
+                                d = rel_parsed.groupdict()
+                                span_rule = f"|-intro-rel{d['num']}"
+                                # TODO: change conv rules
+                            else:
+                                # try to automatically find it
+                                if children_num == 2:
+                                    child_1, child_2 = pointer
+                                    child_1_cat: abcc.ABCCat = abcc.ABCCat.parse(child_1.label().cat)
+                                    child_2_cat: abcc.ABCCat= abcc.ABCCat.parse(child_2.label().cat)
+                                    simp_candidates = abcc.ABCCat.simplify_exh(child_1_cat, child_2_cat)
+                                    if simp_candidates:
+                                        _, simp_elimtype = next(iter(simp_candidates))
+                                        span_rule = str(simp_elimtype)
+
+                                        # hack: specify direction for |-elim rules
+                                        # ccg2lambda_tools.py: 103
+                                        if span_rule == "|":
+                                            if isinstance(child_1_cat, abcc.ABCCatFunctor) and child_1_cat.ant == child_2_cat:
+                                                # (_|child_2) child_2
+                                                span_rule = "|>"
+                                            else:
+                                                span_rule = "|<"
+                                elif children_num == 1:
+                                    span_rule = "unary" # the default unary rule
+
                     xml_span.set(
-                        "terminal",
-                        return_unary_child.token_span_name,
+                        "rule",
+                        span_rule,
                     )
-                    # add additional POS
-                    # match with
-                    for tag in postag_dict:
-                        if (
-                            label_cat.unify(tag["category"])
-                            and pointer_token.attrib["base"] in tag["base"]
-                        ):
-                            pointer_token.set("pos", tag["pos"])
-                            break
+                # === END IF not is_subterminal ===
 
+                if len(return_values) == 1:
+                    return_unary_child, = return_values
+                    pointer_token = return_unary_child.pointer
+                    if (
+                        return_unary_child.is_terminal
+                        and pointer_token is not None
+                    ):
+                        xml_span.set(
+                            "terminal",
+                            return_unary_child.token_span_name,
+                        )
+                        # add additional POS
+                        # match with
+                        for tag in postag_dict:
+                            if (
+                                label_cat.unify(tag["category"])
+                                and pointer_token.attrib["base"] in tag["base"]
+                            ):
+                                pointer_token.set("pos", tag["pos"])
+                                break
+
+                    else:
+                        xml_span.set(
+                            "child",
+                            " ".join(
+                                w.token_span_name for w in return_values
+                            ),
+                        )
                 else:
                     xml_span.set(
                         "child",
@@ -360,64 +368,59 @@ def tree_to_jigg(
                             w.token_span_name for w in return_values
                         ),
                     )
-            else:
-                xml_span.set(
-                    "child",
-                    " ".join(
-                        w.token_span_name for w in return_values
-                    ),
-                )
 
 
-            return_stack.append(
-                _t2jg_Writer(
-                    token_span_begin = token_span_begin,
-                    token_span_end = token_span_end,
-                    token_span_name = token_span_name,
-                )
-            )
-
-            span_id_count += 1
-        else: # not
-            if isinstance(pointer, Tree):
-                # The tree is non-terminal:
-                call_stack.append((pointer, True))
-                call_stack.extend((child, False) for child in reversed(pointer))
-                # child_1-call, ... , child_n-call, pointer-back, ++ ...
-            elif isinstance(pointer, str):
-                # The tree is terminal
-                token_id_count_end = token_id_count + 1
-                token_offset_count_end = token_offset_count + len(pointer)
-                token_name = f"s{jigg_ID}_{token_id_count}"
-                token_xml = et.SubElement(
-                    xml_tokens,
-                    "token",
-                    base = pointer,
-                    surf = pointer,
-                    id = token_name,
-                    offsetBegin = str(token_offset_count),
-                    offsetEnd = str(token_offset_count_end),
-                )
                 return_stack.append(
                     _t2jg_Writer(
-                        token_span_begin = token_id_count,
-                        token_span_end = token_id_count_end,
-                        token_span_name = token_name,
-                        is_terminal = True,
-                        pointer = token_xml,
+                        token_span_begin = token_span_begin,
+                        token_span_end = token_span_end,
+                        token_span_name = token_span_name,
                     )
                 )
 
-                # update counters
-                token_id_count = token_id_count_end
-                token_offset_count = token_offset_count_end
-            else:
-                raise TypeError
+                span_id_count += 1
+            else: # not
+                if isinstance(pointer, Tree):
+                    # The tree is non-terminal:
+                    call_stack.append((pointer, True))
+                    call_stack.extend((child, False) for child in reversed(pointer))
+                    # child_1-call, ... , child_n-call, pointer-back, ++ ...
+                elif isinstance(pointer, str):
+                    # The tree is terminal
+                    token_id_count_end = token_id_count + 1
+                    token_offset_count_end = token_offset_count + len(pointer)
+                    token_name = f"s{jigg_ID}_{token_id_count}"
+                    token_xml = et.SubElement(
+                        xml_tokens,
+                        "token",
+                        base = pointer,
+                        surf = pointer,
+                        id = token_name,
+                        offsetBegin = str(token_offset_count),
+                        offsetEnd = str(token_offset_count_end),
+                    )
+                    return_stack.append(
+                        _t2jg_Writer(
+                            token_span_begin = token_id_count,
+                            token_span_end = token_id_count_end,
+                            token_span_name = token_name,
+                            is_terminal = True,
+                            pointer = token_xml,
+                        )
+                    )
 
-    # get the root node
-    xml_ccgs.set("root", return_stack[0].token_span_name)
+                    # update counters
+                    token_id_count = token_id_count_end
+                    token_offset_count = token_offset_count_end
+                else:
+                    raise TypeError
 
-    # 2. Morph Analysis
-    _morph_analyze_janome(xml_tokens)
+        # get the root node
+        xml_ccgs.set("root", return_stack[0].token_span_name)
 
-    return xml_pool
+        # 2. Morph Analysis
+        _morph_analyze_janome(xml_tokens)
+
+        return xml_pool
+    except Exception as e:
+        raise Exception(ID) from e

@@ -310,6 +310,20 @@ class ElimType:
         else:
             raise ValueError
 
+class ABCCatParseError(Exception):
+    """
+    The exception class for ABC category parsing.
+    """
+
+    input: str
+    """
+    The original input that one tried to parse.
+    """
+
+    def __init__(self, input: str):
+        self.input = input
+        super().__init__(f'"{input}" cannot be parsed')
+
 ABCSimplifyRes = typing.Tuple["ABCCat", ElimType]
 
 ABCCatReady = typing.Union[str, "ABCCat"]
@@ -671,6 +685,11 @@ class ABCCat():
         -------
         parsed: ABCCat
 
+        Raises
+        ------
+        ABCCatParseException
+            When parsing fails.
+
         Examples
         --------
         >>> np: ABCCatBase = ABCCat.parse("NP")
@@ -687,7 +706,10 @@ class ABCCat():
 
         if isinstance(source, str):
             parser = _init_parser(mode)
-            return parser.parse(source)
+            try:
+                return parser.parse(source)
+            except Exception as e:
+                raise ABCCatParseError(source) from e
 
         elif isinstance(source, ABCCat):
             return source
