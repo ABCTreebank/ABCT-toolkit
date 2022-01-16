@@ -1108,7 +1108,7 @@ atom: ATOM feats?
 feats: featval
 featval: FEAT
 ATOM: /([A-Z0-9-]+|[^\/\\|<>⊥⊤#\s]+)/
-FEAT: /[a-z0-9]+/
+FEAT: /[a-z0-9][a-zA-Z0-9-]*/
 """
 
 _cat_grammar_DEPCCG = r"""
