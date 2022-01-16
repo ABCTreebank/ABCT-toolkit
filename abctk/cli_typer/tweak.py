@@ -1,3 +1,4 @@
+from contextvars import Context
 import logging
 logger = logging.getLogger(__name__)
 import os
@@ -6,121 +7,48 @@ import sys
 import tempfile
 import typing
 
-
 import fs
 from tqdm.auto import tqdm
 import typer
 from nltk.tree import Tree
 
 import abctk.io.nltk_tree as nt
-import abctk.transform_ABC.norm as norm
+import abctk.transform_ABC.norm
+import abctk.transform_ABC.elim_empty 
+import abctk.transform_ABC.elim_trace 
+# ================
+# Command for treebank
+# ================
+app_treebank = typer.Typer(chain = True)
 
-
-from abctk.transform_ABC.elim_empty import elim_empty_terminals
-from abctk.transform_ABC.elim_trace import restore_rel_trace
-
-TreeFunc = typing.Callable[
-    [Tree, str],
-    typing.Any
-]
-_COMMAND_TABLE: typing.Dict[str, typing.Tuple[TreeFunc, str]] = {
-    "bin-conj": (
-        lambda tree, ID: NotImplemented,
-        "binarize conjunctions",
-    ),
-    "flatten-conj": (
-        lambda tree, ID: NotImplemented,
-        "flatten conjunctions"
-    ),
-    "elim-empty": (
-        elim_empty_terminals,
-        "eliminate empty nodes"
-    ),
-    "restore-empty": (
-        lambda tree, ID: NotImplemented,
-        "restore empty nodes"
-    ),
-    "elim-trace": (
-        lambda tree, ID: NotImplemented,
-        "eliminate traces",
-    ),
-    "restore-trace": (
-        restore_rel_trace,
-        "restore traces",
-    ),
-    "janome": (
-        lambda tree, ID: NotImplemented,
-        "add janome morphological analyses",
-    ),
-    "del-janome": (
-        lambda tree, ID: NotImplemented,
-        "delete janome morphological analyses",
-    ),
-    "min-nodes": (
-        lambda tree, ID: NotImplemented,
-        "minimize nodes",
-    ),
-    "elab-nodes": (
-        lambda tree, ID: NotImplemented,
-        "elaborate nodes",
-    ), 
-    "obfus": (
-        lambda tree, ID: NotImplemented,
-        "obfuscate trees",
-    )
-}
-app = typer.Typer()
-
-@app.callback()
-def cmd_main():
-    """
-    Tweak ABC trees.
-    """
-
-@app.command("treebank")
+@app_treebank.callback()
 def cmd_from_treebank(
+    ctx: typer.Context,
     source_path: pathlib.Path = typer.Argument(
         ...,
         help = """
         The path to the ABC Treebank.
         """
     ),
-    dest_path: pathlib.Path = typer.Argument(
-        ...,
-        help = """
-        The destination.
-        """
-    ),
-    commands: typing.List[str] = typer.Argument(
-        ...,
-        help = """
-        A list of commands to execute upon each tree.
-        """
-    )
 ):
     """
-    Tweak the ABC Treebank as a whole.
+    Tweak the whole ABC Treebank files.
     """
-
-    # parse commands
-    logger.info("Start parsing commands")
-
     # load trees
     tb = list(nt.load_ABC_psd(source_path))
 
-    for ID, tree in tqdm(tb, desc = "Tweaking ABC trees"):
-        for com in commands:
-            func, desc = _COMMAND_TABLE[com]
-            
-            logger.info(f"Command: {desc}")
-            # apply tweaks
-            func(tree, ID)
+    # store trees in ctx
+    ctx.ensure_object(dict)
+    ctx.obj["treebank"] = tb
 
-    with fs.open_fs(str(dest_path), create = True) as folder:
-        nt.dump_ABC_to_psd(tb, folder)
-        
-@app.command("file")
+# ================
+# Command for single files
+# ================
+app_file = typer.Typer(chain = True)
+
+@app_file.callback()
 def cmd_from_file(
+    ctx: typer.Context,
     source_path: pathlib.Path = typer.Argument(
         ...,
         file_okay = True,
@@ -129,63 +57,208 @@ def cmd_from_file(
         help = """
         The path to the input file. `-` indicates STDIN.
         """
+    )
+):
+    temp_folder = tempfile.TemporaryDirectory(
+        prefix = "abct_tweak_"
+    )
+    source_file: typing.Optional[typing.IO[str]] = None
+    try:
+        if source_path.name == "-":
+            source_file = tempfile.NamedTemporaryFile(
+                "w",
+                dir = temp_folder.name
+            )
+            source_file.write(sys.stdin.read())
+            logger.info(f"STDIN loaded in {source_file.name}")
+        else:
+            source_path = source_path.resolve()
+            source_file_path = f"{temp_folder.name}/{source_path.name}"
+            os.symlink(source_path, dst = source_file_path)
+            logger.info(f"File symlinked to {source_file_path}")
+
+        tb = list(nt.load_ABC_psd(str(temp_folder.name), re_filter = ".*"))
+        
+    finally:
+        if source_file: source_file.close()
+
+    # pass to ctx
+    ctx.ensure_object(dict)
+    ctx.obj["temp_folder"] = temp_folder
+    ctx.obj["treebank"] = tb
+
+# ================
+# Subcommands
+# ================
+
+def lift_func(name: str, bar_desc: str = ""): 
+    def decorate(f: typing.Callable[[Tree, str], typing.Any]):
+        def cmd(ctx: typer.Context):
+            logger.info(f"Subcommand invoked: {name}")
+            for ID, tree in tqdm(ctx.obj["treebank"], desc = bar_desc):
+                f(tree, ID)
+        return cmd 
+    return decorate
+
+def cmd_minimize_tree(
+    ctx: typer.Context,
+    discard_trace: bool = typer.Option(
+        True,
     ),
+    reduction_check: bool = typer.Option(
+        True
+    ),
+):
+    tb: typing.Dict[str, Tree] = ctx.obj["treebank"]
+    for ID, tree in tqdm(tb, desc = "Minimizing annotations"):
+        abctk.transform_ABC.norm.minimize_tree(
+            tree, ID,
+            discard_trace,
+            reduction_check
+        )
+
+def cmd_elaborate_tree(
+    ctx: typer.Context,
+):
+    tb: typing.Dict[str, Tree] = ctx.obj["treebank"]
+    for ID, tree in tqdm(tb, desc = "Elaborating annotations"):
+        abctk.transform_ABC.norm.elaborate_tree(
+            tree, ID,
+        )
+
+_COMMAND_TABLE: typing.Dict[
+    str, 
+    typing.Tuple[
+        typing.Callable[[typer.Context], typing.Any], 
+        str,
+    ]
+] = {
+    "bin-conj": (
+        lambda ctx: NotImplemented,
+        "Binarize conjunctions.",
+        #"Binarizing CONJPs"
+    ),
+    "flatten-conj": (
+        lambda ctx: NotImplemented,
+        "Flatten conjunctions.",
+        #"Flattening CONJPs",
+    ),
+    "elim-empty": (
+        lift_func("elim-empty", "Eliminate empty nodes")(
+            abctk.transform_ABC.elim_empty.elim_empty_terminals
+        ),
+        "Eliminate nodes of empty categories.",
+    ),
+    "restore-empty": (
+        lambda ctx: NotImplemented,
+        "Restore nodes of empty categories.",
+        # "Restore empty nodes"
+    ),
+    "elim-trace": (
+        lambda ctx: NotImplemented,
+        "Eliminate traces of relative clauses.",
+        # "Eliminating *T*"
+    ),
+    "restore-trace": (
+        lift_func("restore-trace", "Restoring *T*")(
+            abctk.transform_ABC.elim_trace.restore_rel_trace
+        ),
+        "Restore traces of relative clauses.",
+    ),
+    "janome": (
+        lambda ctx: NotImplemented,
+        "Add janome morphological analyses",
+        # "Adding janome"
+    ),
+    "del-janome": (
+        lambda ctx: NotImplemented,
+        "Delete janome morphological analyses",
+        # "Deleting janome"
+    ),
+    "min-nodes": (
+        #abctk.transform_ABC.norm.elaborate_tree
+        cmd_minimize_tree,
+        "Minimize node annotations",
+    ),
+    "elab-nodes": (
+        #abctk.transform_ABC.norm.elaborate_tree,
+        cmd_elaborate_tree,
+        "Elaborate node annotations",
+    ), 
+    "obfus": (
+        lambda ctx: NotImplemented,
+        "Obfuscate trees",
+    )
+}
+
+for name, (command, desc) in _COMMAND_TABLE.items():
+    app = typer.Typer()
+    app_treebank.command(
+        name,
+        help = desc
+    )(command)
+    app_file.command(
+        name,
+        help = desc
+    )(command)
+
+def cmd_write(
+    ctx: typer.Context, 
     dest_path: pathlib.Path = typer.Argument(
         ...,
         file_okay = True,
-        dir_okay = False,
+        dir_okay = True,
         allow_dash = True,
         help = """
         The destination. `-` indicates STDOUT.
         """
     ),
-    commands: typing.List[str] = typer.Argument(
-        ...,
-        help = """
-        A list of commands to execute upon each tree.
-        """
+    force_dir: bool = typer.Option(
+        False,
+        "--force-dir/--no-force-dir",
     )
 ):
-    with tempfile.TemporaryDirectory(
-        prefix = "abct_tweak_"
-    ) as temp_folder:
-        source_file: typing.Optional[typing.IO[str]] = None
-        dest_file: typing.Optional[typing.IO[str]] = None
-        try:
-            if source_path.name == "-":
-                source_file = tempfile.NamedTemporaryFile("w", dir = temp_folder)
-                source_file.write(sys.stdin.read())
-                logger.info(f"STDIN loaded in {source_file.name}")
-            else:
-                source_path = source_path.resolve()
-                source_file_path = f"{temp_folder}/{source_path.name}"
-                os.symlink(source_path, dst = source_file_path)
-                logger.info(f"File symlinked to {source_file_path}")
+    dest_file: typing.Optional[typing.TextIO] = None
+    if dest_path.name == "-":
+        dest_file = sys.stdout
+    elif not force_dir and not dest_path.is_dir():
+        dest_file = open(str(dest_path.resolve()), "w")
 
-            tb = list(nt.load_ABC_psd(temp_folder, re_filter = ".*"))
-
-            if dest_path.name == "-":
-                dest_file = sys.stdout
-            else:
-                dest_file = open(str(dest_path.resolve()), "w")
-
-            for ID, tree in tqdm(tb, desc = "Tweaking ABC trees"):
-                for com in commands:
-                    func, desc = _COMMAND_TABLE[com]
-                    
-                    logger.info(f"Command: {desc}")
-                    # apply tweaks
-                    func(tree, ID)
-
-                # dump the tree
-                dest_file.writelines(
-                    (
-                        nt.flatten_tree_with_ID(
-                            ID, tree
-                        ),
-                        "\n",
-                    )
+    if dest_file:
+        for ID, tree in tqdm(
+            ctx.obj["treebank"], 
+            desc = "Writing out ABC trees"
+        ):
+            dest_file.writelines(
+                (
+                    nt.flatten_tree_with_ID(
+                        ID, tree
+                    ),
+                    "\n",
                 )
-        finally:
-            if source_file: source_file.close()
-            if dest_file: dest_file.close()
+            )
+    else:
+        with fs.open_fs(str(dest_path), create = True) as folder:
+            nt.dump_ABC_to_psd(ctx.obj["treebank"], folder)
+
+app_treebank.command(
+    "write",
+    help = "Write out (the current state of) the trees."
+)(cmd_write)
+app_file.command(
+    "write",
+    help = "Write out (the current state of) the trees."
+)(cmd_write)
+
+# ================
+# Main
+# ================
+app = typer.Typer()
+app.add_typer(app_treebank, name = "treebank")
+app.add_typer(app_file, name = "file")
+
+@app.callback()
+def cmd_main():
+    """
+    Tweak ABC trees.
+    """
