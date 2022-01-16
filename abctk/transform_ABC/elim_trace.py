@@ -45,7 +45,6 @@ def restore_rel_trace(
         Categories are not required to be parsed for better performance.
     ID
     """
-
     if isinstance(tree, Tree):
         label: Annot[ABCCatReady] = tree.label()
         feats = label.feats
@@ -53,7 +52,7 @@ def restore_rel_trace(
         tree_rec_pointer = tree
 
         if (
-            label.cat == "<N/N>"
+            ABCCat.parse(label.cat) == ABCCat.p("<N/N>")
             # ABCCat.p(label.cat) == ABCCat.p("<N/N>")
             and feats.get("deriv", "none") == "unary-IPREL"
         ):
