@@ -156,9 +156,6 @@ app.add_typer(crypt.app, name = "crypt")
 from . import conv
 app.add_typer(conv.app, name = "conv")
 
-from . import norm
-app.add_typer(norm.app, name = "norm")
-
 from . import tweak
 app.add_typer(tweak.app, name = "tweak")
 
