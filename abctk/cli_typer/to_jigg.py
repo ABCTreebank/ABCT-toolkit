@@ -21,7 +21,7 @@ app = typer.Typer()
 @app.callback()
 def cmd_main():
     """
-    Normalize ABC trees.
+    Convert ABC trees to the JIGG format. Useful for ccg2lambda.
     """
 
 @app.command("treebank")

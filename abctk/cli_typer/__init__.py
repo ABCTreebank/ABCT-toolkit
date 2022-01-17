@@ -228,7 +228,7 @@ def cmd_parse():
 @app.command("norm-cat")
 def cmd_normalize_category():
     """
-    Normalize ABC categories
+    Normalize ABC categories.
     """
     pass
 

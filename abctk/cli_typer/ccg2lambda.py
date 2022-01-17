@@ -17,6 +17,12 @@ import abctk.ccg2lambda.visualization_tools
 
 app = typer.Typer()
 
+@app.callback()
+def cmd():
+    """
+    Call ccg2lambda.
+    """
+
 class SemParseRecord(typing.NamedTuple):
     abc_id: str
     ccg_num: int
