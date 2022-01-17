@@ -16,6 +16,8 @@ import abctk.io.nltk_tree as nt
 import abctk.transform_ABC.norm
 import abctk.transform_ABC.elim_empty 
 import abctk.transform_ABC.elim_trace 
+import abctk.transform_ABC.morph_janome
+
 # ================
 # Command for treebank
 # ================
@@ -166,22 +168,28 @@ _COMMAND_TABLE: typing.Dict[
         "Restore traces of relative clauses.",
     ),
     "janome": (
-        lambda ctx: NotImplemented,
-        "Add janome morphological analyses",
-        # "Adding janome"
+        lift_func(
+            "janome",
+            "Adding Janome analyses"
+        )(
+            abctk.transform_ABC.morph_janome.add_morph_janome
+        ),
+        "Add Janome morphological analyses",
     ),
     "del-janome": (
-        lambda ctx: NotImplemented,
-        "Delete janome morphological analyses",
-        # "Deleting janome"
+        lift_func(
+            "janome",
+            "Removing Janome analyses"
+        )(
+            abctk.transform_ABC.morph_janome.del_morph_janome
+        ),
+        "Delete Janome morphological analyses",
     ),
     "min-nodes": (
-        #abctk.transform_ABC.norm.elaborate_tree
         cmd_minimize_tree,
         "Minimize node annotations",
     ),
     "elab-nodes": (
-        #abctk.transform_ABC.norm.elaborate_tree,
         cmd_elaborate_tree,
         "Elaborate node annotations",
     ), 
