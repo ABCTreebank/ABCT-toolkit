@@ -135,6 +135,10 @@ _COMMAND_TABLE: typing.Dict[
         str,
     ]
 ] = {
+    "relax": (
+        lambda _: None,
+        "Do nothing (Just load trees and check the annotations therein)."
+    ),
     "bin-conj": (
         lambda ctx: NotImplemented,
         "Binarize conjunctions.",
