@@ -62,6 +62,11 @@ CONF_DEFAULT = {
         "SIDB": DIR_SHARE / "corpora/sidb",
     },
     "skip-ill-trees": True,
+    "max_process_num": (
+        len(num)
+        if (num := psutil.Process().cpu_affinity())
+        else 0
+    ),
     "ml": {
         "train_test_ratio": 80,
         "trainer_settings": {
