@@ -4,6 +4,8 @@ Loaders and dumpers of the Keyaki treebank and the ABC Treebank stored in the Co
 """
 
 import itertools
+import logging
+logger = logging.getLogger(__name__)
 import operator
 import pathlib
 import sys
@@ -14,6 +16,7 @@ import fs.base
 from nltk import Tree
 from nltk.corpus.reader.bracket_parse import BracketParseCorpusReader
 
+from abctk import ABCTException
 import abctk.types.ABCCat as abcc
 from abctk.types.treebank import Keyaki_ID
 
@@ -78,7 +81,7 @@ def load_Keyaki_Annot_psd(
     if prog_stream:
         prog_stream.write("\n")
 
-class InvalidABCTreeException(Exception):
+class InvalidABCTreeException(ABCTException):
     """
     The exception class for ABC tree loading.
     """
@@ -96,6 +99,7 @@ def load_ABC_psd(
     folder: typing.Union[str, pathlib.Path], 
     re_filter: typing.Union[str, typing.Pattern] = r".*\.psd$",
     prog_stream: typing.Optional[typing.IO[str]] = sys.stderr,
+    skip_ill_trees: bool = True,
 ) -> typing.Iterator[typing.Tuple[Keyaki_ID, Tree]]:
     """
     Utilizing NLTK, load the ABC Treebank.
@@ -109,6 +113,9 @@ def load_ABC_psd(
     prog_stream:
         The stream where the progress info is redirected to and show up there.
         Feature disabled when set to `None`. 
+
+    skip_ill_trees:
+        If True, try discarding ill-formed trees and continuing the process.
 
     Yields
     ------
@@ -157,7 +164,17 @@ def load_ABC_psd(
             if prog_stream:
                 prog_stream.write(f"\r# of tree(s) fetched: {i + 1:,}")
         except Exception as e:
-            raise InvalidABCTreeException(ID) from e
+            if skip_ill_trees:
+                logger.warning(
+                    f"An exception has been raised in parsing the nodes of Tree {ID}. The tree will be discarded."
+                )
+            else:
+                logger.error(
+                    f"An exception has been raised in parsing the nodes of Tree {ID}. The process will halt and the exception will be tossed up.",
+                    exc_info = True,
+                    stack_info = True,
+                )
+                raise InvalidABCTreeException(ID) from e
 
     if prog_stream:
         prog_stream.write("\n")

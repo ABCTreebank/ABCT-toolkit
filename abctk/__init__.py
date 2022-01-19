@@ -19,3 +19,6 @@ except:
 logging.basicConfig(
     format = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
+
+class ABCTException(Exception):
+    pass

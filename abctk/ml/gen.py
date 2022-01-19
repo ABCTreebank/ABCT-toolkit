@@ -20,6 +20,7 @@ import fs
 import fs.base
 import simplejson as json
 
+from abctk import ABCTException
 import abctk.types.ABCCat as abcc
 from abctk.types.treebank import Keyaki_ID
 
@@ -41,7 +42,7 @@ The dummy token that is put at the end of a sentence.
 IGNORE = -1
 
 @attr.s(auto_attribs = True, slots = True)
-class DepCCGIneligibleTreeException(Exception):
+class DepCCGIneligibleTreeException(ABCTException):
     """
     An exception raised when a given ABC Treebank tree is not
     eligible for the purpose of the depccg model training.

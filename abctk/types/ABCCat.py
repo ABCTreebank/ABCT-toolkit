@@ -8,6 +8,8 @@ import typing
 import attr
 import lark
 
+from abctk import ABCTException
+
 class DepMk(Enum):
     """
     An inventory of dependency markings used in the Keyaki-to-ABC conversion. 
@@ -310,7 +312,7 @@ class ElimType:
         else:
             raise ValueError
 
-class ABCCatParseError(Exception):
+class ABCCatParseError(ABCTException):
     """
     The exception class for ABC category parsing.
     """

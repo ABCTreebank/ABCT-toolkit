@@ -1,3 +1,5 @@
+import logging
+logger = logging.getLogger(__name__)
 import re
 import typing
 
@@ -8,6 +10,7 @@ from janome.tokenizer import Token as JToken
 
 from nltk.tree import Tree
 import lxml.etree as et
+from abctk import ABCTException
 
 import abctk.types.ABCCat as abcc
 
@@ -210,6 +213,13 @@ class _t2jg_Writer(typing.NamedTuple):
     token_span_name: str
     is_terminal: bool = False
     pointer: typing.Optional[et._Element] = None
+
+class JIGGConvException(ABCTException):
+    ID: str
+
+    def __init__(self, ID: str):
+        self.ID = ID
+        super().__init__(f'Conversion error at Tree {ID}')
 
 def tree_to_jigg(
     tree: Tree,
@@ -423,4 +433,8 @@ def tree_to_jigg(
 
         return xml_pool
     except Exception as e:
-        raise Exception(ID) from e
+        logger.error(
+            f"Conversion error at Tree {ID}. The tree will be discarded.",
+            exc_info = True,
+        )
+        raise JIGGConvException(ID) from e

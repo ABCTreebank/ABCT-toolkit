@@ -61,7 +61,7 @@ CONF_DEFAULT = {
         "BCCWJ": DIR_SHARE / "corpora/bccwj",
         "SIDB": DIR_SHARE / "corpora/sidb",
     },
-    "max_process_num": len(psutil.Process().cpu_affinity()),
+    "skip-ill-trees": True,
     "ml": {
         "train_test_ratio": 80,
         "trainer_settings": {

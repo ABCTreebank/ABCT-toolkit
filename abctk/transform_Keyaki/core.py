@@ -12,6 +12,7 @@ import attr
 import pykakasi
 _kks: pykakasi.kakasi = None
 
+from abctk import ABCTException
 import abctk.config as CONF
 import abctk.types as at
 from . import corpus_readers
@@ -97,7 +98,7 @@ def obfuscate_file(
 @attr.s(
     auto_attribs = True
 )
-class UnmatchingDecriptionException(Exception):
+class UnmatchingDecriptionException(ABCTException):
     amount: int
 
 def decrypt_tree(
