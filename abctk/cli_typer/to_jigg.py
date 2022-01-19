@@ -197,7 +197,7 @@ def cmd_from_file(
             
             dest_path_str = str(dest_path)
             if dest_path_str == "-":
-                sys.stdout.write(
+                sys.stdout.buffer.write(
                     et.tostring(
                         xml_root,
                         xml_declaration = True,
