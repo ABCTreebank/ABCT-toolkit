@@ -226,7 +226,25 @@ def tree_to_jigg(
     ID: str = "<UNKNOWN>",
     jigg_ID: typing.Any = 0,
     postag_dict: typing.Optional[list] = None,
-):
+) -> et._Element:
+    """
+    Put an ABC Tree in the JIGG format.
+    
+    Parameters
+    ----------
+    tree
+    ID
+    jigg_ID
+    postag_dict
+
+    Returns
+    ------
+    xml
+
+    Raises
+    ------
+    JIGGConvException
+    """
     if not postag_dict: 
         postag_dict = []
 
