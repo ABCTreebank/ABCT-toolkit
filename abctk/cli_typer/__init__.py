@@ -154,7 +154,7 @@ from . import crypt
 app.add_typer(crypt.app, name = "crypt")
 
 from . import conv
-app.add_typer(conv.app, name = "conv")
+app.command("conv")(conv.cmd_main)
 
 from . import tweak
 app.add_typer(tweak.app, name = "tweak")

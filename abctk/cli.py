@@ -116,9 +116,6 @@ def cmd_main(
     ctx.obj["CONFIG"] = CONFIG
 # === END ===
 
-import abctk.conversion.cli as cli_conv
-cmd_main.add_command(cli_conv.cmd_main, name = "conv")
-
 import abctk.transform_Keyaki.cli as cli_trans_Keyaki
 cmd_main.add_command(
     cli_trans_Keyaki.cmd_main, 
