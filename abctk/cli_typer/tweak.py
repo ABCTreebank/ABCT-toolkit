@@ -14,6 +14,7 @@ from nltk.tree import Tree
 
 import abctk.io.nltk_tree as nt
 import abctk.transform_ABC.norm
+import abctk.transform_ABC.binconj
 import abctk.transform_ABC.elim_empty 
 import abctk.transform_ABC.elim_trace 
 import abctk.transform_ABC.morph_janome
@@ -102,6 +103,36 @@ def lift_func(name: str, bar_desc: str = ""):
         return cmd 
     return decorate
 
+def lift_func_newobj(name: str, bar_desc: str = ""):
+    def decorate(f: typing.Callable[[Tree, str], typing.Any]):
+        def cmd(ctx: typer.Context):
+            skip_ill_trees = ctx.obj["CONFIG"]["skip-ill-trees"]
+
+            logger.info(f"Subcommand invoked: {name}")
+        
+            def _yield(tb):
+                for ID, tree in tqdm(tb, desc = bar_desc):
+                    try:
+                        yield ID, f(tree, ID)
+                    except Exception as e:
+                        if skip_ill_trees:
+                            logger.warning(
+                                "An exception was raised by the convertion function. "
+                                f"Tree ID: {ID}. "
+                                "The tree will be abandoned."
+                            )
+                        else:
+                            logger.error(
+                                "An exception was raised by the convertion function. "
+                                f"Tree ID: {ID}. "
+                                "The process has been aborted."
+                            )
+                            raise
+
+            ctx.obj["treebank"] = list(_yield(ctx.obj["treebank"]))
+        return cmd 
+    return decorate
+
 def cmd_minimize_tree(
     ctx: typer.Context,
     discard_trace: bool = typer.Option(
@@ -140,9 +171,10 @@ _COMMAND_TABLE: typing.Dict[
         "Do nothing (Just load trees and check the annotations therein)."
     ),
     "bin-conj": (
-        lambda ctx: NotImplemented,
+        lift_func_newobj("bin-conj", "Binarize CONJPs")(
+            abctk.transform_ABC.binconj.binarize_conj_tree
+        ),
         "Binarize conjunctions.",
-        #"Binarizing CONJPs"
     ),
     "flatten-conj": (
         lambda ctx: NotImplemented,
