@@ -161,7 +161,7 @@ def restore_rel_trace(
                             Tree(
                                 Annot(
                                     ABCCat.p("Srel").v(child_cat_ant),
-                                    {},
+                                    {"rel": "bind"},
                                     pprinter_cat = ABCCat.pprint,
                                 ),
                                 [

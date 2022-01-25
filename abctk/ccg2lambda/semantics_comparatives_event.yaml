@@ -1330,7 +1330,7 @@
   semantics: \M. lam(T31, M)
 
 - category: (S|PP[s=true]) 
-  rule: "|-intro-rel1"
+  rule: "|-intro-rel"
   semantics: \M. lam(T101, M)
 
 - category: PP
@@ -1345,6 +1345,11 @@
 - base: "*TRACE-diff1*"
   category: ((PP\S)/(PP\S))
   semantics: \E. T31
+# Rel Cl trace
+# unselective binding
+- category: PP
+  base: "*T*"
+  semantics: \E. T101
 
 # =======
 # Punctuations 

@@ -326,13 +326,13 @@ def tree_to_jigg(
                         else:
                             # find whether it is a relative clause binding
                             rel_maybe: str = label.feats.get("rel", "")
-                            _re = re.compile(r"(?P<num>[0-9]+),bind")
+                            _re = re.compile(r"bind")
                             rel_parsed = _re.match(rel_maybe)
 
                             if rel_parsed:
                                 d = rel_parsed.groupdict()
-                                span_rule = f"|-intro-rel{d['num']}"
-                                # TODO: change conv rules
+                                span_rule = f"|-intro-rel"
+                                # unselective binding (to *T*)
                             else:
                                 # try to automatically find it
                                 if children_num == 2:
