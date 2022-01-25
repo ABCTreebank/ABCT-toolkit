@@ -1,8 +1,8 @@
-from contextvars import Context
 import logging
 logger = logging.getLogger(__name__)
 import os
 import pathlib
+import re
 import sys
 import tempfile
 import typing
@@ -13,11 +13,13 @@ import typer
 from nltk.tree import Tree
 
 import abctk.io.nltk_tree as nt
+from abctk.io.nltk_tree import Keyaki_ID
 import abctk.transform_ABC.norm
 import abctk.transform_ABC.binconj
 import abctk.transform_ABC.elim_empty 
 import abctk.transform_ABC.elim_trace 
 import abctk.transform_ABC.morph_janome
+import abctk.transform_Keyaki.obfuscate
 
 # ================
 # Command for treebank
@@ -36,6 +38,8 @@ def cmd_from_treebank(
 ):
     """
     Tweak the whole ABC Treebank files.
+
+    For more info of subcommands, see `abctk tweak treebank /dev/null <COMMAND> --help`.
     """
     # load trees
     tb = list(nt.load_ABC_psd(source_path))
@@ -62,6 +66,11 @@ def cmd_from_file(
         """
     )
 ):
+    """
+    Tweak a single Treebank file or trees in STDIN.
+
+    For more info of subcommands, see `abctk tweak file /dev/null <COMMAND> --help`.
+    """
     temp_folder = tempfile.TemporaryDirectory(
         prefix = "abct_tweak_"
     )
@@ -159,6 +168,49 @@ def cmd_elaborate_tree(
             tree, ID,
         )
 
+def cmd_obfuscate_tree(
+    ctx: typer.Context,
+    filter: str = typer.Option(
+        "closed",
+        help = """A regex that specifies
+the IDs of the trees to be obfuscated.
+Default to /closed/."""
+    )
+):
+    """
+    Obfuscate trees by masking characters to deal with license / copyright issues.
+
+    To restore them back, use `abctk_old trans-Keyaki`.
+    """
+
+    skip_ill_trees = ctx.obj["CONFIG"]["skip-ill-trees"]
+    tb: typing.List[typing.Tuple[Keyaki_ID, Tree]] = ctx.obj["treebank"]
+    matcher = re.compile(filter)
+    
+    def _yield(tb):
+        for ID, tree in tqdm(tb, desc = "Obfuscate trees"):
+            try:
+                if matcher.search(ID.name):
+                    yield ID, abctk.transform_Keyaki.obfuscate.obfuscate_tree(tree, ID)
+                else:
+                    yield ID, tree
+            except Exception as e:
+                if skip_ill_trees:
+                    logger.warning(
+                        "An exception was raised by the convertion function. "
+                        f"Tree ID: {ID}. "
+                        "The tree will be abandoned."
+                    )
+                else:
+                    logger.error(
+                        "An exception was raised by the convertion function. "
+                        f"Tree ID: {ID}. "
+                        "The process has been aborted."
+                    )
+                    raise
+    
+    ctx.obj["treebank"] = list(_yield(tb))
+
 _COMMAND_TABLE: typing.Dict[
     str, 
     typing.Tuple[
@@ -230,8 +282,8 @@ _COMMAND_TABLE: typing.Dict[
         "Elaborate node annotations",
     ), 
     "obfus": (
-        lambda ctx: NotImplemented,
-        "Obfuscate trees",
+        cmd_obfuscate_tree,
+        "",
     )
 }
 
@@ -239,11 +291,11 @@ for name, (command, desc) in _COMMAND_TABLE.items():
     app = typer.Typer()
     app_treebank.command(
         name,
-        help = desc
+        help = desc or None
     )(command)
     app_file.command(
         name,
-        help = desc
+        help = desc or None
     )(command)
 
 def cmd_write(

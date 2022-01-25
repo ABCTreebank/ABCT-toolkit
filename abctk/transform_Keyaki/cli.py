@@ -32,53 +32,6 @@ from . import corpus_readers
 def cmd_main(ctx):
     pass
 
-cmd_obfuscate = ct.CmdTemplate_Batch_Process_on_Tree(
-    name = "trans_obfuscate",
-    logger_orig = logger,
-    folder_prefix = "trans_obfuscate",
-    with_intermediate = False,
-    callback_preprocessing = None,
-    callback_process_file = core.obfuscate_file,
-    callback_process_rawtrees = core.obfuscate_stream,
-    short_help = "obfuscate trees"
-)
-
-def _compile_obfus_matcher(
-    ctx: click.Context,
-    param: str,
-    value: str,
-) -> typing.Pattern[str]:
-    res: typing.Pattern[str]
-
-    try: 
-        res = re.compile(value)
-    except:
-        raise click.BadParameter(f"{value} is not regex-comparable")
-    # === END TRY ===
-
-    return res
-# === END ===
-
-cmd_obfuscate.params.append(
-    click.Option(
-        param_decls = [
-            "-m",
-            "--matcher",
-        ],
-        type = str,
-        callback = _compile_obfus_matcher,
-        default = r"closed",
-        help = """A regex that specifies 
-the IDs of the trees to be obfuscated.
-Default to /closed/."""
-    )
-)
-
-cmd_main.add_command(
-    cmd_obfuscate, 
-    name = "obfuscate",
-)
-
 @cmd_main.command(
     name = "decrypt-legacy"
 )
@@ -221,19 +174,3 @@ def cmd_extract_from_corpora(ctx):
             corpus_Mai95 = path_corpora["Mainichi95"]
         )
     )
-
-cmd_kakasi = ct.CmdTemplate_Batch_Process_on_Tree(
-    name = "trans_kakasi",
-    logger_orig = logger,
-    folder_prefix = "trans_kakasi",
-    with_intermediate = False,
-    callback_preprocessing = None,
-    callback_process_file = core.kakasi_file,
-    callback_process_rawtrees = core.kakasi_stream,
-    short_help = "romanize words via pykakasi"
-)
-
-cmd_main.add_command(
-    cmd_kakasi, 
-    name = "kakasi",
-)
