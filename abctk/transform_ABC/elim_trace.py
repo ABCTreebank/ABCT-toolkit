@@ -2,8 +2,49 @@ import logging
 logger = logging.getLogger(__name__)
 
 from nltk.tree import Tree
+
+from abctk import ABCTException
 import abctk.types.ABCCat as abcc
-from abctk.types.ABCCat import ABCCat, ABCCatReady, Annot
+from abctk.types.ABCCat import ABCCat, ABCCatFunctor, ABCCatReady, Annot
+
+class ElimTraceException(ABCTException):
+    ID: str
+    subtree: Tree
+
+    def __init__(self, ID: str, subtree: Tree, reason: str = "unknown") -> None:
+        self.ID = ID
+        self.subtree = subtree
+
+        super().__init__(
+            "An illegal relativizing node is found. "
+            f"Problem: {reason}."
+            f"Tree ID: {ID}"
+        )
+
+class IllegalRelativizationSubtreeException(ElimTraceException):
+    def __init__(self, ID: str, subtree: Tree, wrong_cat: abcc.ABCCatReady):
+        if isinstance(wrong_cat, ABCCat):
+            wrong_cat_str = wrong_cat.pprint()
+        else:
+            wrong_cat_str = str(wrong_cat)
+
+        super().__init__(
+            ID, subtree,
+            f"illegal subtree category ({wrong_cat_str})"
+        )
+
+class UnexpectedLexicalNodeException(ElimTraceException):
+    def __init__(self, ID: str, subtree: Tree, word: str):
+        super().__init__(
+            ID, subtree,
+            f'unexpected lexical node "{word}"'
+        )
+class NonUnaryRelativizationSubtreeException(ElimTraceException):
+    def __init__(self, ID: str, subtree: Tree):
+        super().__init__(
+            ID, subtree,
+            f"not unary"
+        )
 
 def elim_trace(
     tree: Tree,
@@ -28,6 +69,7 @@ def elim_trace(
 def restore_rel_trace(
     tree,
     ID: str = "<UNKNOWN>",
+    generous: bool = False
 ) -> None:
     """
     Restore relative clause traces.
@@ -39,70 +81,101 @@ def restore_rel_trace(
     
     Parameters
     -------
-    tree: Tree
+    tree
         An ABC Tree.
         The category-feature bundle must be parsed as `abctk.types.ABCCat.Annot` beforehand.
         Categories are not required to be parsed for better performance.
     ID
+
+    generous
+        sdf
     """
     if isinstance(tree, Tree):
         label: Annot[ABCCatReady] = tree.label()
         feats = label.feats
 
-        tree_rec_pointer = tree
-
         if (
             ABCCat.parse(label.cat) == ABCCat.p("<N/N>")
-            # ABCCat.p(label.cat) == ABCCat.p("<N/N>")
-            and feats.get("deriv", "none") == "unary-IPREL"
+            and (
+                 generous
+                 or feats.get("deriv", "none") == "unary-IPREL"
+            )
         ):
             # Derivation of relativzation is found!
             # 1. check the number of the children
             if len(tree) != 1:
-                logger.warning(
-                    f"An illegal relativizing node is found. Problem: not unary. Tree ID: {ID}"
-                )
+                if generous:
+                    logger.info(
+                        "A subtree labeled <N/N> is deemed not to be an relativization structure. "
+                        f"Reason: non-unary. Tree ID: {ID}"
+                    )
 
-                # abort the conversion
+                    # doing nothing on this node
+                else:
+                    raise NonUnaryRelativizationSubtreeException(ID, tree)
             else:
                 # unary
                 only_child = tree[0]
 
-                if not isinstance(only_child, Tree):
-                    logger.warning(
-                        f"An illegal relativizing node is found. Problem: illegal subtree type. Tree ID: {ID}"
+                # and ABCCat.parse(child.label().cat).equiv_to(
+                #     "<PP\\S>",
+                #     ignore_feature = True,
+                # )
+                if isinstance(only_child, str):
+                    if generous:
+                        logger.info(
+                            "A subtree labeled <N/N> is deemed not to be an relativization structure. "
+                            f'Reason: unexpected lexical node "{only_child}". '
+                            f"Tree ID: {ID}"
+                        )
+                    else:
+                        raise UnexpectedLexicalNodeException(
+                            ID, tree, only_child
                     )
-
-                    # abort the conversion
-                    tree_rec_pointer = None
+                elif not isinstance(only_child, Tree):
+                    raise IllegalRelativizationSubtreeException(
+                        ID, tree,
+                        None,
+                    )
                 else:
                     child_label: Annot[ABCCatReady] = only_child.label()
                     # take the trace argument type
                     child_cat = ABCCat.p(child_label.cat)
 
                     # check the only child has the category (Xbase → Y)
-                    if not (
-                        isinstance(child_cat, abcc.ABCCatFunctor)
-                        and isinstance(child_cat.ant, abcc.ABCCatBase)
-                    ):
-                        logger.warning(
-                            f"An illegal relativizing node is found. Problem: illegal subtree category ({child_cat.pprint()}). Tree ID: {ID}"
+                    if (
+                        isinstance(child_cat, ABCCatFunctor)
+                        and child_cat.equiv_to(
+                            "<PP\\S>",
+                            ignore_feature = True,
                         )
-                    else:
-                        arg_cat_str = child_cat.ant.pprint()
+                    ):
+                        logging.info(
+                            f"Found a relativization structure in {ID}"
+                        )
+                        child_cat_ant = child_cat.ant
 
                         # rewrite the derivation
                         tree.clear()
                         tree.append(
                             Tree(
-                                Annot(f"<Srel|{arg_cat_str}>"),
-                                # ABCCat.v(ABCCat.p("Srel"), arg_cat),
+                                Annot(
+                                    ABCCat.p("Srel").v(child_cat_ant),
+                                    {},
+                                    pprinter_cat = ABCCat.pprint,
+                                ),
                                 [
                                     Tree(
-                                        Annot("Srel"),
+                                        Annot(
+                                            ABCCat.p("Srel"),
+                                            pprinter_cat = ABCCat.pprint,
+                                        ),
                                         [
                                             Tree(
-                                                Annot(arg_cat_str),
+                                                Annot(
+                                                    child_cat_ant,
+                                                    pprinter_cat = ABCCat.pprint,
+                                                ),
                                                 ["*T*"],
                                             ),
                                             only_child,
@@ -111,12 +184,22 @@ def restore_rel_trace(
                                 ]
                             )
                         )
-                    tree_rec_pointer = only_child
+                    else: 
+                        if generous:
+                            logger.info(
+                                "A subtree labeled <N/N> is deemed not to be an relativization structure. "
+                                f'Reason: category {child_cat.pprint()} not matching. '
+                                f"Tree ID: {ID}"
+                            )
+                        else:
+                            raise IllegalRelativizationSubtreeException(
+                                ID, tree,
+                                child_cat,
+                            )
 
         # propagate to children
-        if tree_rec_pointer:
-            for child in tree_rec_pointer:
-                restore_rel_trace(child, ID)
+        for child in tree:
+            restore_rel_trace(child, ID, generous)
     else:
         # not a tree
         # do nothing

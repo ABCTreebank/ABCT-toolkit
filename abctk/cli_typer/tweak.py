@@ -159,6 +159,40 @@ def cmd_minimize_tree(
             reduction_check
         )
 
+def cmd_restore_trace(
+    ctx: typer.Context,
+    generous: bool = typer.Option(
+        False,
+        "--generous/--strict",
+        help = ""
+    )
+):
+    logger.info(f"Subcommand invoked: restore-trace")
+    skip_ill_trees = ctx.obj["CONFIG"]["skip-ill-trees"]
+
+    tb: typing.List[typing.Tuple[Keyaki_ID, Tree]] = ctx.obj["treebank"]
+
+    for ID, tree in tqdm(tb, desc = "Restoring *T*"):
+        try:
+            abctk.transform_ABC.elim_trace.restore_rel_trace(
+                tree, ID,
+                generous
+            )
+        except abctk.transform_ABC.elim_trace.ElimTraceException as e:
+            if skip_ill_trees:
+                logger.warning(
+                    "An exception was raised by the convertion function. "
+                    f"Tree ID: {ID}. "
+                    "The tree will be abandoned."
+                )
+            else:
+                logger.error(
+                    "An exception was raised by the convertion function. "
+                    f"Tree ID: {ID}. "
+                    "The process has been aborted."
+                )
+                raise
+
 def cmd_elaborate_tree(
     ctx: typer.Context,
 ):
@@ -250,10 +284,8 @@ _COMMAND_TABLE: typing.Dict[
         # "Eliminating *T*"
     ),
     "restore-trace": (
-        lift_func("restore-trace", "Restoring *T*")(
-            abctk.transform_ABC.elim_trace.restore_rel_trace
-        ),
-        "Restore traces of relative clauses.",
+        cmd_restore_trace,
+        ""
     ),
     "janome": (
         lift_func(
