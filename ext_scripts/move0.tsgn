@@ -1,0 +1,128 @@
+
+%「よりも」「よりは」一語化
+(__=yori < より=yori_lex) $ (__=mo < も)
+
+relabel yori_lex よりも
+excise yori yori
+delete mo
+
+(__=yori < より=yori_lex) $ (__=wa < は)
+
+relabel yori_lex よりは
+excise yori yori
+delete wa
+
+
+%「に/と くらべ/比べ て」一語化
+%
+%不要なunary node削除
+
+__=x <: (__ < (__ < /^(くらべ|比べ)$/))
+
+excise x x
+
+
+__=x < (__ < くらべ=kurabe) < (__=te < て)
+
+prune te
+relabel kurabe くらべて
+excise x x
+
+__=x < (__ < 比べ=kurabe) < (__=te < て)
+
+prune te
+relabel kurabe 比べて
+excise x x
+
+
+__=x < (__ < くらべ=kurabe) $ (__ < て=te)
+
+excise x x
+relabel kurabe くらべて
+prune te
+
+__=x < (__ < 比べ=kurabe) $ (__ < て=te)
+
+excise x x
+relabel kurabe 比べて
+prune te
+
+
+__=x < (__ < に=ni) $ (__ < くらべ=kurabe)
+
+excise x x
+relabel kurabe にくらべ
+prune ni
+
+__=x < (__ < に=ni) $ (__ < くらべて=kurabe)
+
+excise x x
+relabel kurabe にくらべて
+prune ni
+
+__=x < (__ < と=ni) $ (__ < くらべ=kurabe)
+
+excise x x
+relabel kurabe とくらべ
+prune ni
+
+__=x < (__ < と=ni) $ (__ < くらべて=kurabe)
+
+excise x x
+relabel kurabe とくらべて
+prune ni
+
+__=x < (__ < に=ni) $ (__ < 比べ=kurabe)
+
+excise x x
+relabel kurabe に比べ
+prune ni
+
+__=x < (__ < と=ni) $ (__ < 比べ=kurabe)
+
+excise x x
+relabel kurabe と比べ
+prune ni
+
+__=x < (__ < に=ni) $ (__ < 比べて=kurabe)
+
+excise x x
+relabel kurabe に比べて
+prune ni
+
+__=x < (__ < と=ni) $ (__ < 比べて=kurabe)
+
+excise x x
+relabel kurabe と比べて
+prune ni
+
+
+__=x < (__ < にくらべ=kurabe) $ (__ < て=te)
+
+excise x x
+relabel kurabe にくらべて
+prune te
+
+__=x < (__ < とくらべ=kurabe) $ (__ < て=te)
+
+excise x x
+relabel kurabe とくらべて
+prune te
+
+
+__=x < (__ < に比べ=kurabe) $ (__ < て=te)
+
+excise x x
+relabel kurabe に比べて
+prune te
+
+__=x < (__ < と比べ=kurabe) $ (__ < て=te)
+
+excise x x
+relabel kurabe と比べて
+prune te
+
+
+
+
+.R

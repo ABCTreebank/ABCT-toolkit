@@ -24,8 +24,41 @@
 
 ## rel導入
 - category: (S|PP[s=true]) 
-  rule: "|-intro-rel1"
+  rule: "|-intro-rel"
   semantics: \M. lam(T101, M)
+
+
+# Rel Cl trace
+# unselective binding
+- category: PP
+  base: "*T*"
+  semantics: \E. T101
+
+# PP\S[rel] ==> N/N
+- category: (N/N)
+  semantics: \R N X. (R(X) & N(X))
+  rule: unary
+  child0_category: (S|PP)
+
+
+# ==== CLs modifying or quantifying bare Ns
+
+- category: Ns\N
+  rule: unary
+  child0_category: NUM
+  semantics: >-
+    \Q1 Q2 F. Q2(
+      \x. Q1(
+        \y. (quant(x, y) & F(x))
+      )
+    )
+
+# -- for NP -- N unary branching
+# -- non-Quantifier
+- category: NP
+  rule: unary
+  child0_category: N
+  semantics: \E. the(E)
 
 
 # =======
