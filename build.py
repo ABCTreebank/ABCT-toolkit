@@ -36,6 +36,14 @@ def build_ext():
         DIR_EXT_SCRIPTS / "simplify-tag.sed",
         DIR_RUNTIME / "simplify-tag.sed"
     )
+    shutil.copy(
+        DIR_EXT_SCRIPTS / "unsimplify-ABC-tags.rb",
+        DIR_RUNTIME / "unsimplify-ABC-tags.rb"
+    )
+    shutil.copy(
+        DIR_EXT_SCRIPTS / "move-comparative.tsgn",
+        DIR_RUNTIME / "move-comparative.tsgn"
+    )
 
     # Clean the decrypt folder
     DIR_RUNTIME_DECRYPT = pathlib.Path(DIR_RUNTIME / "decrypt")

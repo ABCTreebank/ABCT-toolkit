@@ -9,9 +9,11 @@ Part of the functionalities are implemented by other langauges but all wrapped w
 ### In runtime
 - System: Linux, tested with Debian 11 (bullseye)
 - Need to be installed beforehand:
-    - Java JRE (the version requirement aligns with that of [Stanford Tregex 4.2.0](https://nlp.stanford.edu/software/tregex.shtml))
+    - Java SE (>= 8)
     - m4
     - sed
+    - GNU awk
+    - Ruby (>= 3.1)
     - Python (>= 3.9) and that required packages listed in `pyproject.toml`
 - Automatically prepared in building the python bdist
     - [Stanford Tregex](https://nlp.stanford.edu/software/tregex.shtml) (tested with 4.2.0)
@@ -91,16 +93,12 @@ This repository also provides a VS Code devcontainer (based on Docker)
 ## Usage
 Refer to the help document of the `abctk` command.
 
-## The internal pipeline
-TBW
-
 ## LICENSE
 See the [LICENSE](./LICENSE) file.
 
 ## Credits
 This package reuses the following codes:
 - [Prof. Alastair Butler's](http://www.compling.jp/ajb129/index.html#) 
-    [wrapper of Tsurgeon](http://npcmj.ninjal.ac.jp/interfaces/tsurgeon_script) 
-    (included in Standford Tregex)
+    [wrapper of Tsurgeon](http://npcmj.ninjal.ac.jp/interfaces/tsurgeon_script)
 - [Prof. Yoshikawa Masashi's](https://masashi-y.github.io/) python scripts for AllenNLP model training and parsing
 - [Mr. Vijith Assar](https://www.vijithassar.com/)'s [lit](https://github.com/vijithassar/lit)

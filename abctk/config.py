@@ -1,6 +1,9 @@
+import logging
+logger = logging.getLogger(__name__)
 import importlib.util
 import pathlib
 import psutil
+import typing
 
 import xdg
 
@@ -42,6 +45,9 @@ CONF_DEFAULT = {
         "m4": "m4",
         "sed": "sed",
         "java": "java",
+        "ruby": "ruby",
+        "awk": "gawk",
+        "munge-trees": "munge-trees",
     },
     "bin-custom": {
         "abc-relabel": f"{DIR_RUNTIME / 'abc-relabel'} --oneline", 
@@ -54,6 +60,8 @@ CONF_DEFAULT = {
         "dependency-post": DIR_RUNTIME / "tsurgeon-debug/dependency-post.tsgn",
         "simplify-tag": DIR_RUNTIME / "simplify-tag.sed",
         "tregex": DIR_RUNTIME / "stanford-tregex.jar",
+        "unsimplify-ABC-tags": DIR_RUNTIME / "unsimplify-ABC-tags.rb",
+        "move-comparative": DIR_RUNTIME / "move-comparative.tsgn",
     },
     "corpora": {
         "Mainichi95": DIR_SHARE / "corpora/MAI95.TXT",
@@ -151,3 +159,47 @@ CONF_DEFAULT = {
         }
     }
 }
+
+# ========================
+# Runtime Checking
+# ========================
+def check_runtimes(
+    runtime_dict: typing.Dict[str, typing.Union[str, pathlib.Path]]
+) -> int:
+    """Check whether the necessary system runtimes exist and are accessible.
+
+        Parameters
+        ----------
+        runtime_dict : typing.Dict[str, typing.Union[None, str, pathlib.Path]]
+            Key-value pairs representing runtimes. 
+            The keys are the names of the runtime programs,
+            the values are the paths or names, which will be checked against 'shutil.which'.
+
+        Returns
+        -------
+        int
+            0 if the checking succeeds.
+            2 (ENOENT) if any of the runtimes is not found.
+    """
+    import shutil
+
+    # Check required binaries
+    bin_sys_not_found = {
+        key:pg for key, pg in runtime_dict.items()
+        if not (pg and shutil.which(pg))
+    }
+
+    if bin_sys_not_found:
+        import sys
+        for key, pg in bin_sys_not_found.items():
+            logger.error(f"Runtime not found: {key}")
+            sys.stdout.write(
+                "[ERROR] Runtime not found: "
+                f"""{key} (designated as {pg})\n"""
+            )
+        # === END FOR key, pg ===
+        return 2 # ENOENT
+    else:
+        return 0 # Successful
+    # === END IF ===
+# === END ===

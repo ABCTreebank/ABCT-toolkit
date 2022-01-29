@@ -59,7 +59,7 @@ def cmd_from_file(
 
     name_random = "".join(random.choice(string.ascii_letters) for _ in range(6))
 
-    with tempfile.TemporaryDirectory(prefix = "abct_jigg_") as temp_folder:
+    with tempfile.TemporaryDirectory(prefix = "abct_renum_") as temp_folder:
         source_file: typing.Optional[typing.IO[str]] = None
         dest_file: typing.Optional[typing.IO[str]] = None
         try:

@@ -1,9 +1,10 @@
 import functools
 import multiprocessing as mp
 import logging
-import os
-
+import tempfile
 logger = logging.getLogger(__name__)
+
+import os
 import pathlib
 import typing
 import sys
@@ -13,11 +14,12 @@ from tqdm import tqdm
 import typer
 
 from abctk.config import check_runtimes
-import abctk.conv as cr
+import abctk.gen_comp
 
 class FileConversionArgs(typing.NamedTuple):
     src: typing.Union[str, pathlib.Path]
     dest: typing.Union[str, pathlib.Path]
+    temp_folder: typing.Union[str, pathlib.Path]
     file_size: int
     log_prefix: typing.Union[str, pathlib.Path, None]
 
@@ -32,6 +34,7 @@ def _conv_file_wrapper(
             conf = conf, 
             src = args.src, 
             dest = args.dest,
+            temp_folder = args.temp_folder,
             log_prefix = args.log_prefix,
             **kwargs,
         ),
@@ -66,7 +69,7 @@ def cmd_main(
     )
 ):
     """
-    Convert Keyaki trees to ABC trees.
+    Tweak ABC trees wrt comparative.
     """
     CONF = ctx.obj["CONFIG"]
 
@@ -74,7 +77,7 @@ def cmd_main(
     check_error = check_runtimes(
         {
             k:v for k, v in CONF["bin-sys"].items()
-            if k in ("m4", "sed", "java")
+            if k in ("m4", "sed", "java", "ruby", "awk", "munge-trees")
         }
     )
     if check_error: 
@@ -90,8 +93,14 @@ def cmd_main(
         os.makedirs(intermediate_dir, exist_ok = True)
 
     if source_path.name == "-":
+        raise NotImplementedError
+
         # The source is STDIN
         if dest_path.name == "-":
+            abctk.gen_comp.convert_file(
+                f_src = sys.stdin,
+                f_dest = sys.stdout,
+            )
             cr.convert_keyaki_to_abc(
                 f_src = sys.stdin,
                 f_dest = sys.stdout,
@@ -107,8 +116,11 @@ def cmd_main(
                     log_prefix = (intermediate_dir / "output") if intermediate_dir else None,
                 )
     elif not force_dir and not source_path.is_dir():
+        raise NotImplementedError
+
         # source_path is a file
         if dest_path.name == "-":
+
             with open(source_path) as h_src:
                 cr.convert_keyaki_to_abc(
                     f_src = h_src,
@@ -117,7 +129,7 @@ def cmd_main(
                     log_prefix = (intermediate_dir / source_path.stem) if intermediate_dir else None,
                 )
         else:
-            cr.convert_keyaki_file_to_abc(
+            abctk.gen_comp.convert_treebank(
                 src = source_path,
                 dest = dest_path,
                 conf = CONF,
@@ -154,46 +166,52 @@ def cmd_main(
                 )
 
         # Write files to a folder
-        proc_num = CONF["max_process_num"]
-        with mp.Pool(processes = proc_num) as pool:
-            logger.info(f"Number of processes: {proc_num}")
 
-            flist_dest_expanded = tuple(
-                FileConversionArgs(
-                    src = source_path / filepath,
-                    dest = dest_path / filepath,
-                    file_size = os.path.getsize(source_path / filepath),
-                    log_prefix = intermediate_dir,
+        # create temporary folder
+
+        with tempfile.TemporaryDirectory(prefix = "abctk-gen-comp_") as t_folder:
+
+            proc_num = CONF["max_process_num"]
+            with mp.Pool(processes = proc_num) as pool:
+                logger.info(f"Number of processes: {proc_num}")
+
+                flist_dest_expanded = tuple(
+                    FileConversionArgs(
+                        src = source_path / filepath,
+                        dest = dest_path / filepath,
+                        temp_folder = t_folder,
+                        file_size = os.path.getsize(source_path / filepath),
+                        log_prefix = intermediate_dir,
+                    )
+                    for filepath in filelist
                 )
-                for filepath in filelist
-            )
 
-            files_total_size: int = sum(
-                x.file_size for x in flist_dest_expanded
-            )
-            
-            logger.info(
-                f"# of the files to be processed: {len(flist_dest_expanded)}, "
-                f"The total size of the files to be processed: {files_total_size}"
-            )
+                files_total_size: int = sum(
+                    x.file_size for x in flist_dest_expanded
+                )
+                
+                logger.info(
+                    f"# of the files to be processed: {len(flist_dest_expanded)}, "
+                    f"The total size of the files to be processed: {files_total_size}"
+                )
 
-            # Create jobs
-            jobs = pool.imap_unordered(
-                functools.partial(
-                    _conv_file_wrapper,
-                    f = cr.convert_keyaki_file_to_abc,
-                    conf = CONF,
-                ),
-                flist_dest_expanded,
-            )
+                # Create jobs
+                jobs = pool.imap_unordered(
+                    functools.partial(
+                        _conv_file_wrapper,
+                        f = abctk.gen_comp.convert_file,
+                        conf = CONF,
+                    ),
+                    flist_dest_expanded,
+                )
 
-            with tqdm(
-                total = files_total_size, 
-                unit = "B",
-                unit_scale = True,
-                unit_divisor = 1024
-            ) as pb:
-                pb.write("Converting Keyaki trees into ABC trees:") 
-                for _return_code, src_size in jobs:
-                    pb.update(src_size)
-            # === END WITH pb ===
+                with tqdm(
+                    total = files_total_size, 
+                    unit = "B",
+                    unit_scale = True,
+                    unit_divisor = 1024
+                ) as pb:
+                    pb.write("Converting Keyaki trees into ABC trees:") 
+                    for _return_code, src_size in jobs:
+                        pb.update(src_size)
+                # === END WITH pb ===

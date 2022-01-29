@@ -153,6 +153,9 @@ def cmd_dic():
 from . import crypt
 app.add_typer(crypt.app, name = "crypt")
 
+from . import gen_comp
+app.command("gen-comp")(gen_comp.cmd_main)
+
 from . import conv
 app.command("conv")(conv.cmd_main)
 

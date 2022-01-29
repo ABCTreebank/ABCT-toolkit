@@ -8,58 +8,6 @@ import subprocess
 import abctk.config as CONF
 
 # ========================
-# Runtimer Checking
-# ========================
-
-def check_runtimes(
-    runtime_dict: typing.Dict[str, typing.Union[str, pathlib.Path]]
-) -> int:
-    """Check whether the necessary system runtimes exist and are accessible.
-
-        Parameters
-        ----------
-        runtime_dict : typing.Dict[str, typing.Union[None, str, pathlib.Path]]
-            Key-value pairs representing runtimes. 
-            The keys are the names of the runtime programs,
-            the values are the paths or names, which will be checked against 'shutil.which'.
-
-        Returns
-        -------
-        int
-            0 if the checking succeeds.
-            2 (ENOENT) if any of the runtimes is not found.
-    """
-    import shutil
-
-    # Check required binaries
-    bin_sys_not_found = {
-        key:pg for key, pg in runtime_dict.items()
-        if not (pg and shutil.which(pg))
-    }
-
-    if bin_sys_not_found:
-        import sys
-        for key, pg in bin_sys_not_found.items():
-            logger.error(f"Runtime not found: {key}")
-            sys.stdout.write(
-                "[ERROR] Runtime not found: "
-                f"""{key} (designated as {pg})\n"""
-            )
-        # === END FOR key, pg ===
-        sys.stdout.write(
-            """To obtain the necessary runtimes:
-- m4: install with your system package manager
-- sed: install with your system package manager
-- java: install with your system package manager
-"""
-        )
-        return 2 # ENOENT
-    else:
-        return 0 # Successful
-    # === END IF ===
-# === END ===
-
-# ========================
 # Conversion Procedures
 # ========================
 def convert_keyaki_to_abc(
