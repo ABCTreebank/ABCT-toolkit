@@ -150,34 +150,47 @@ def load_ABC_psd(
                 # do nothing
                 pass
 
-    for i, (ID, tree) in enumerate(
-        _split_ID_from_Tree(tree_raw)
-        for tree_raw in BracketParseCorpusReader(
-            root = str(folder),
-            fileids = re_filter,
-        ).parsed_sents()
-    ):
-        try:
-            _parse_label(tree)
-            yield ID, tree
+    corpus_reader = BracketParseCorpusReader(
+        root = str(folder),
+        fileids = re_filter,
+    )
 
-            if prog_stream:
-                prog_stream.write(f"\r# of tree(s) fetched: {i + 1:,}")
-        except Exception as e:
-            if skip_ill_trees:
-                logger.warning(
-                    f"An exception has been raised in parsing the nodes of Tree {ID}. The tree will be discarded."
-                )
-            else:
-                logger.error(
-                    f"An exception has been raised in parsing the nodes of Tree {ID}. The process will halt and the exception will be tossed up.",
-                    exc_info = True,
-                    stack_info = True,
-                )
-                raise InvalidABCTreeException(ID) from e
+    fileids = corpus_reader.fileids()
 
-    if prog_stream:
-        prog_stream.write("\n")
+    if fileids:
+        logger.info(
+            f"With the filter {re_filter}, the following file(s) are read: {corpus_reader.fileids()}"
+        )
+
+        for i, (ID, tree) in enumerate(
+            _split_ID_from_Tree(tree_raw)
+            for tree_raw in corpus_reader.parsed_sents()
+        ):
+            try:
+                _parse_label(tree)
+                yield ID, tree
+
+                if prog_stream:
+                    prog_stream.write(f"\r# of tree(s) fetched: {i + 1:,}")
+            except Exception as e:
+                if skip_ill_trees:
+                    logger.warning(
+                        f"An exception has been raised in parsing the nodes of Tree {ID}. The tree will be discarded."
+                    )
+                else:
+                    logger.error(
+                        f"An exception has been raised in parsing the nodes of Tree {ID}. The process will halt and the exception will be tossed up.",
+                        exc_info = True,
+                        stack_info = True,
+                    )
+                    raise InvalidABCTreeException(ID) from e
+
+        if prog_stream:
+            prog_stream.write("\n")
+    else:
+        logger.info(
+            f"No file is read with the specified filter '{re_filter}'. No trees will be yielded."
+        )
 
 def dump_Keyaki_to_psd(
     tb: typing.Iterable[typing.Tuple[Keyaki_ID, Tree]],
