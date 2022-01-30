@@ -1,14 +1,93 @@
-from importlib.resources import path
 import logging
 import shutil
+
 logger = logging.getLogger(__name__)
 import pathlib
 import typing
-
+import re
 import subprocess
+
+from nltk.tree import Tree
 
 import abctk.config
 import abctk.cli_typer.renumber
+import abctk.io.nltk_tree as nt
+import abctk.types.ABCCat as abcc
+import abctk.transform_ABC.elim_trace
+
+X = typing.TypeVar("X", Tree, str)
+def restore_pro_on_demand(
+    tree: X,
+    ID: str,
+) -> X:
+    if isinstance(tree, Tree):
+        label: abcc.Annot[abcc.ABCCat] = tree.label()
+        cat = label.cat
+
+        if (
+            isinstance(cat, abcc.ABCCatFunctor) 
+            and cat.equiv_to(
+                abcc.ABCCat.p("<PP\\S>"),
+                ignore_feature = True,
+            )
+            and (feat_comp := label.feats.get("comp", None))
+            and feat_comp.find("root") >= 0
+        ):
+            ant = cat.ant
+            conseq = cat.conseq
+
+            root_new_feats = {
+                k:v for k, v in label.feats.items()
+                if k != "comp"
+            }
+            root_new_feats["comp"] = "1,root"
+
+            return Tree(
+                node = abcc.Annot(
+                    cat = conseq.v(ant),
+                    pprinter_cat = abcc.ABCCat.pprint,
+                ),
+                children = [
+                    Tree(
+                        node = abcc.Annot(
+                            cat = conseq,
+                            feats = root_new_feats,
+                            pprinter_cat = abcc.ABCCat.pprint,
+                        ),
+                        children = [
+                            Tree(
+                                node = abcc.Annot(
+                                    cat = ant,
+                                    feats = {"comp": "1,cont"},
+                                    pprinter_cat = abcc.ABCCat.pprint,
+                                ),
+                                children = ["*TRACE-pro*"]
+                            ),
+                            Tree(
+                                node = abcc.Annot(
+                                    cat = cat,
+                                    pprinter_cat = abcc.ABCCat.pprint,
+                                ),
+                                children = [
+                                    restore_pro_on_demand(child, ID)
+                                    for child in tree
+                                ]
+                            ),
+                        ]
+                    ), #unary
+                ]
+            )
+        else:
+            return Tree(
+                node = label,
+                children = [
+                    restore_pro_on_demand(child, ID)
+                    for child in tree
+                ]
+            )
+    else:
+        return tree
+
 
 # ========================
 # Conversion Procedures
@@ -32,10 +111,13 @@ def convert_io(
     if isinstance(temp_folder, pathlib.Path):
         temp_folder = str(temp_folder.resolve())
 
+    # ========================
+    # 1. Select trees
+    # ========================
     command_select = f"""
     {conf["bin-sys"]["ruby"]} {conf["runtimes"]["unsimplify-ABC-tags"]} - 
-| {conf["bin-sys"]["munge-trees"]} -w
-| {conf["bin-sys"]["awk"]} -e '/typical|関係節|連用節/'
+| {conf["bin-sys"]["munge-trees"]} -w 
+| {conf["bin-sys"]["awk"]} -e '/typical|関係節|連用節/' 
 | {conf["bin-sys"]["sed"]} -e 's/(COMMENT {{.*}})//g'
 """
     if log_prefix:
@@ -45,11 +127,11 @@ def convert_io(
         )
 
     command_select = command_select.strip().replace("\n", "")
-
+    
     logger.info(
         f"Step 1: Command to be executed: {command_select}"
     )
-    
+
     temp_file_name_selected = pathlib.Path(
         f"{temp_folder}/{basename}-00-selected.psd"
     )
@@ -74,7 +156,9 @@ def convert_io(
             )
         # === END IF ===
 
+    # ========================
     # 2. renumber trees
+    # ========================
     logger.info(
         f"Step 2: renumber trees"
     )
@@ -85,7 +169,7 @@ def convert_io(
     abctk.cli_typer.renumber.cmd_from_file(
         source_path = temp_file_name_selected,
         dest_path = temp_file_name_renumbered,
-        fmt = "{id_orig.number}_{name_random}"
+        fmt = f"{{id_orig.number}}_{basename}"
     )
     if log_prefix:
         shutil.copy(
@@ -98,16 +182,81 @@ def convert_io(
 
     logger.info(
         f"Successfully complete Step 2. "
-        f"The outcome is stored at `{temp_file_name_renumbered}'."
+        f"The outcome is stored at {temp_file_name_renumbered}."
     )
 
-    # 3. remove #role=none & move
+    # ========================
+    # 3. restore *T* and pro
+    # ========================
+    logger.info(
+        f"Step 3: restore *T* and *pro*"
+    )
+
+    filter_re = re.escape(temp_file_name_renumbered.name)
+
+    logger.info(
+        f"Try reading the file: {temp_file_name_renumbered} "
+        f"(filter: {filter_re})",
+    )
+
+    trees = list(
+        nt.load_ABC_psd(
+            temp_folder,
+            re_filter = filter_re,
+            skip_ill_trees = True,
+            prog_stream = None,
+        )
+    )
+
+    for ID, tree in trees:
+        abctk.transform_ABC.elim_trace.restore_rel_trace(
+            tree,
+            str(ID),
+            generous = True
+        )
+
+    trees = [
+        (ID, restore_pro_on_demand(tree, str(ID)))
+        for ID, tree in trees
+    ]
+
+    temp_file_restored = pathlib.Path(
+        f"{temp_folder}/{basename}-20-restored.psd"
+    )
+
+    with open(temp_file_restored, "w") as h_restored:
+        h_restored.write(
+            "\n".join(
+                nt.flatten_tree_with_ID(
+                    ID, tree
+                )
+                for ID, tree in trees
+            )
+        )
+
+    if log_prefix:
+        shutil.copy(
+            temp_file_restored,
+            f"{log_prefix}-20-restored.psd"
+        )
+        logger.info(
+            f"The trace file of Step 3 is saved at {log_prefix}-20-restored.psd"
+        )
+    
+    logger.info(
+        f"Successfully complete Step 2. "
+        f"The outcome is stored at `{temp_file_restored}'."
+    )
+
+    # ========================
+    # 4. remove #role=none & move
+    # ========================
     if log_prefix:
         command = f"""
 {conf["bin-sys"]["sed"]} -e 's/#role=none//g'
-| tee {log_prefix}-20-remrole.psd
+| tee {log_prefix}-30-remrole.psd
 | {conf["bin-custom"]["tsurgeon_script"]} {conf["runtimes"]["move-comparative"]}
-| tee {log_prefix}-30-move.psd
+| tee {log_prefix}-40-move.psd
     """
     else:
         command = f"""
@@ -118,16 +267,16 @@ def convert_io(
     command = command.strip().replace("\n", "")
 
     logger.info(
-        f"Steps 3 - 4: remove #role=none and move comp-related nodes: {command}"
+        f"Step 4: remove #role=none and move comp-related nodes: {command}"
     )
 
     with (
-        open(temp_file_name_renumbered) as f_renum,
+        open(temp_file_restored) as f_restore,
     ):
         proc = subprocess.Popen(
             command,
             shell = True,
-            stdin = f_renum,
+            stdin = f_restore,
             stdout = f_dest,
         )
         proc.wait()
@@ -138,10 +287,11 @@ def convert_io(
             logger.warning(f"warning: conversion failed: {src_name}")
         else:
             logger.info(
-                f"Successfully complete Steps 3 - 4. "
+                f"Successfully complete Step 4. "
                 f"The outcome is stored at `{dest_name}'."
             )
         # === END IF ===
+
     return return_code
 # === END ===
 
@@ -187,4 +337,4 @@ def convert_file(
     #         )
 
     return res
-# === END ===    
+# === END ===

@@ -168,7 +168,6 @@ def cmd_main(
         # Write files to a folder
 
         # create temporary folder
-
         with tempfile.TemporaryDirectory(prefix = "abctk-gen-comp_") as t_folder:
 
             proc_num = CONF["max_process_num"]
@@ -211,7 +210,7 @@ def cmd_main(
                     unit_scale = True,
                     unit_divisor = 1024
                 ) as pb:
-                    pb.write("Converting Keyaki trees into ABC trees:") 
+                    pb.write("Tweaking on comparative nodes:") 
                     for _return_code, src_size in jobs:
                         pb.update(src_size)
                 # === END WITH pb ===
