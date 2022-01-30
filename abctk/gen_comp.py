@@ -16,9 +16,37 @@ import abctk.types.ABCCat as abcc
 import abctk.transform_ABC.elim_trace
 
 X = typing.TypeVar("X", Tree, str)
-def restore_pro_on_demand(
+def restore_traces_on_demand(
+    tree: X,
+    ID: str
+) -> X:
+    if isinstance(tree, Tree):
+        label: abcc.Annot[abcc.ABCCat] = tree.label()
+
+        return Tree(
+            node = label,
+            children = [
+                _restore_pro_on_demand_inner(
+                    child,
+                    ID,
+                    label.cat,
+                    is_unary = len(tree) < 2
+                )
+                for child in tree
+            ]
+        )
+    else:
+        return tree
+
+_re_root_cont = re.compile(
+    r"(?P<index>^[0-9]+),root,cont$"
+)
+
+def _restore_pro_on_demand_inner(
     tree: X,
     ID: str,
+    parent_node_cat: abcc.ABCCat,
+    is_unary: bool,
 ) -> X:
     if isinstance(tree, Tree):
         label: abcc.Annot[abcc.ABCCat] = tree.label()
@@ -30,46 +58,71 @@ def restore_pro_on_demand(
                 abcc.ABCCat.p("<PP\\S>"),
                 ignore_feature = True,
             )
-            and (feat_comp := label.feats.get("comp", None))
-            and feat_comp.find("root") >= 0
+            and (
+                feat_comp_match 
+                := _re_root_cont.match(label.feats.get("comp", ""))
+            )
         ):
-            ant = cat.ant
-            conseq = cat.conseq
+            index = feat_comp_match.group("index")
+
+            ant = cat.ant # PP
+            conseq = cat.conseq # S
+
+            is_rel: bool = is_unary and (
+                parent_node_cat.equiv_to(
+                    abcc.ABCCat.p("<N/N>"),
+                    ignore_feature = True,
+                ) or
+                parent_node_cat.equiv_to(
+                    abcc.ABCCat.p("<NP/NP>"),
+                    ignore_feature = True,
+                )
+            )
 
             root_new_feats = {
                 k:v for k, v in label.feats.items()
                 if k != "comp"
             }
-            root_new_feats["comp"] = "1,root"
+            root_new_feats["comp"] = f"{index},root" # get rid of "cont"
 
             return Tree(
-                node = abcc.Annot(
+                node = abcc.Annot( # node: S|PP
                     cat = conseq.v(ant),
+                    feats = (
+                        {"rel": "bind"} if is_rel
+                        else {"adv-pro": "bind"}
+                    ),
                     pprinter_cat = abcc.ABCCat.pprint,
                 ),
                 children = [
                     Tree(
-                        node = abcc.Annot(
+                        node = abcc.Annot( # node: S#comp={index},root#...
                             cat = conseq,
                             feats = root_new_feats,
                             pprinter_cat = abcc.ABCCat.pprint,
                         ),
                         children = [
                             Tree(
-                                node = abcc.Annot(
+                                node = abcc.Annot( # node: PP#comp={index},cont
                                     cat = ant,
-                                    feats = {"comp": "1,cont"},
-                                    pprinter_cat = abcc.ABCCat.pprint,
-                                ),
-                                children = ["*TRACE-pro*"]
-                            ),
-                            Tree(
-                                node = abcc.Annot(
-                                    cat = cat,
+                                    feats = {"comp": f"{index},cont"},
                                     pprinter_cat = abcc.ABCCat.pprint,
                                 ),
                                 children = [
-                                    restore_pro_on_demand(child, ID)
+                                    ("*T*" if is_rel else "*TRACE-pro*")
+                                ]
+                            ),
+                            Tree(
+                                node = abcc.Annot(
+                                    cat = cat, # cat PP
+                                    pprinter_cat = abcc.ABCCat.pprint,
+                                ),
+                                children = [
+                                    _restore_pro_on_demand_inner(
+                                        child, ID,
+                                        cat,
+                                        len(tree) < 2
+                                    )
                                     for child in tree
                                 ]
                             ),
@@ -81,7 +134,10 @@ def restore_pro_on_demand(
             return Tree(
                 node = label,
                 children = [
-                    restore_pro_on_demand(child, ID)
+                    _restore_pro_on_demand_inner(
+                        child, ID,
+                        cat, len(tree) < 2
+                    )
                     for child in tree
                 ]
             )
@@ -208,15 +264,8 @@ def convert_io(
         )
     )
 
-    for ID, tree in trees:
-        abctk.transform_ABC.elim_trace.restore_rel_trace(
-            tree,
-            str(ID),
-            generous = True
-        )
-
     trees = [
-        (ID, restore_pro_on_demand(tree, str(ID)))
+        (ID, restore_traces_on_demand(tree, str(ID)))
         for ID, tree in trees
     ]
 

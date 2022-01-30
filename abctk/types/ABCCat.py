@@ -760,7 +760,7 @@ class ABCCat():
     # === END ===
 
     @abst_class.abstractmethod
-    def equiv_to(self, other, ignore_feature: bool = False):
+    def equiv_to(self, other, ignore_feature: bool = False) -> bool:
         ...
 
     @abst_class.abstractmethod
