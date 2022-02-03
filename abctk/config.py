@@ -70,6 +70,9 @@ CONF_DEFAULT = {
         "SIDB": DIR_SHARE / "corpora/sidb",
     },
     "skip-ill-trees": True,
+    "gen-comp": {
+        "tree-filter": "typical|関係節|連用節"
+    },
     "max_process_num": (
         len(num)
         if (num := psutil.Process().cpu_affinity())

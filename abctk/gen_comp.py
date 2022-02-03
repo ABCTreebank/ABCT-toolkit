@@ -170,10 +170,17 @@ def convert_io(
     # ========================
     # 1. Select trees
     # ========================
+    tree_filter = "typical|関係節|連用節"
+    if (
+        (conf_gen := conf.get("gen-comp", None))
+        and (conf_filter := conf_gen.get("tree-filter"), None)
+    ):
+        tree_filter = conf_filter
+
     command_select = f"""
     {conf["bin-sys"]["ruby"]} {conf["runtimes"]["unsimplify-ABC-tags"]} - 
 | {conf["bin-sys"]["munge-trees"]} -w 
-| {conf["bin-sys"]["awk"]} -e '/typical|関係節|連用節/' 
+| {conf["bin-sys"]["awk"]} -e '/{tree_filter}/' 
 | {conf["bin-sys"]["sed"]} -e 's/(COMMENT {{.*}})//g'
 """
     if log_prefix:
