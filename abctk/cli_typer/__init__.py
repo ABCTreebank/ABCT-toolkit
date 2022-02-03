@@ -24,6 +24,15 @@ def cmd_main(
             Latter ones override former ones.
         """
     ),
+    user_config_text: typing.List[str] = typer.Option(
+        [],
+        "--config-text",
+        help = """
+            JSON/YAML string that specifies a custom configuration.
+            
+            Higher preference is given to this option than to `--config` (config file) option.
+        """
+    ),
     root_stream_log_level: int = typer.Option(
         logging.WARNING,
         "-l", "--root-stream-log-level",
@@ -97,7 +106,7 @@ def cmd_main(
     import os
 
     CONFIG: typing.Dict[str, typing.Any] = CONF.CONF_DEFAULT
-    path_config_user: pathlib.Path = xdg.xdg_config_home() / "ABCTreebank.yaml"
+    path_config_user: pathlib.Path = xdg.xdg_config_home() / "ABCT-toolkit.yaml"
     if os.path.exists(path_config_user):
         with open(path_config_user, "r") as cu:
             CONFIG = deepmerge(CONFIG, yaml.load(cu), method = "merge")
@@ -105,8 +114,16 @@ def cmd_main(
     # === END IF ===
 
     for h_cf in user_configs:
+
         CONFIG = deepmerge(CONFIG, yaml.load(h_cf), method = "merge")
     # === END IF ===
+
+    for str_conf in user_config_text:
+        CONFIG = deepmerge(
+            CONFIG,
+            yaml.load(str_conf),
+            method = "merge"
+        )
 
     ctx.obj["CONFIG"] = CONFIG
 
