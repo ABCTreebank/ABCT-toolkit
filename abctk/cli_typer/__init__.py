@@ -100,7 +100,7 @@ def cmd_main(
     path_config_user: pathlib.Path = xdg.xdg_config_home() / "ABCTreebank.yaml"
     if os.path.exists(path_config_user):
         with open(path_config_user, "r") as cu:
-            CONFIG = deepmerge(CONFIG, cu, method = "merge")
+            CONFIG = deepmerge(CONFIG, yaml.load(cu), method = "merge")
         # === END WITH cu ===
     # === END IF ===
 
