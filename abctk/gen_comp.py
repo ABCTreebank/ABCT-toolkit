@@ -39,7 +39,7 @@ def restore_traces_on_demand(
         return tree
 
 _re_root_cont = re.compile(
-    r"(?P<index>^[0-9]+),root,cont$"
+    r"(?P<index>^[0-9]+),(root,cont|cont,root)$"
 )
 
 def _restore_pro_on_demand_inner(
