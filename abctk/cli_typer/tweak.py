@@ -106,10 +106,29 @@ def cmd_from_file(
 def lift_func(name: str, bar_desc: str = ""): 
     def decorate(f: typing.Callable[[Tree, str], typing.Any]):
         def cmd(ctx: typer.Context):
+            skip_ill_trees = ctx.obj["CONFIG"]["skip-ill-trees"]
+
             logger.info(f"Subcommand invoked: {name}")
             for ID, tree in tqdm(ctx.obj["treebank"], desc = bar_desc):
-                f(tree, ID)
-        return cmd 
+                try:
+                    f(tree, ID)
+                except Exception as e:
+                    if skip_ill_trees:
+                        logger.warning(
+                            "An exception was raised by the convertion function. "
+                            "The tree will be abandoned."
+                            f"Tree ID: {ID}. "
+                            f"Exception: {e}"
+                        )
+                    else:
+                        logger.error(
+                            "An exception was raised by the convertion function. "
+                            "The process has been aborted."
+                            f"Tree ID: {ID}. "
+                            f"Exception: {e}"
+                        )
+                        raise
+        return cmd
     return decorate
 
 def lift_func_newobj(name: str, bar_desc: str = ""):
@@ -127,14 +146,16 @@ def lift_func_newobj(name: str, bar_desc: str = ""):
                         if skip_ill_trees:
                             logger.warning(
                                 "An exception was raised by the convertion function. "
-                                f"Tree ID: {ID}. "
                                 "The tree will be abandoned."
+                                f"Tree ID: {ID}. "
+                                f"Exception: {e}"
                             )
                         else:
                             logger.error(
                                 "An exception was raised by the convertion function. "
-                                f"Tree ID: {ID}. "
                                 "The process has been aborted."
+                                f"Tree ID: {ID}. "
+                                f"Exception: {e}"
                             )
                             raise
 
