@@ -19,6 +19,7 @@ import abctk.transform_ABC.binconj
 import abctk.transform_ABC.elim_empty 
 import abctk.transform_ABC.elim_trace 
 import abctk.transform_ABC.morph_janome
+import abctk.check_comp_feat
 import abctk.transform_Keyaki.obfuscate
 
 # ================
@@ -276,6 +277,17 @@ _COMMAND_TABLE: typing.Dict[
     "relax": (
         lambda _: None,
         "Do nothing (Just load trees and check the annotations therein)."
+    ),
+    "check-comp": (
+        lift_func("check-comp", "Check #comp feats")(
+            lambda tree, ID: abctk.check_comp_feat.check_comp_feats(
+                abctk.check_comp_feat.collect_comp_feats(
+                    tree, ID,
+                ),
+                ID
+            )
+        ),
+        "Do nothing (but health-check #comp features."
     ),
     "bin-conj": (
         lift_func_newobj("bin-conj", "Binarize CONJPs")(
