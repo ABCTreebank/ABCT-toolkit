@@ -455,7 +455,7 @@ class DepCCGDataSet:
                     pg_disc.update(-1)
             except Exception as e:
                 logger.warning(
-                    f"Tree (ID: {ID}) cannot be transformed for unexpect reasons. Reason: {e}"
+                    f"Tree (ID: {ID}) cannot be transformed for unexpected reasons. Reason: {e}"
                 )
                 res = None
 
