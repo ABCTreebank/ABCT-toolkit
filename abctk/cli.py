@@ -1,9 +1,8 @@
 import typing
 import pathlib
-
-import sys
 import logging
 logger = logging.getLogger(__name__)
+import sys
 
 import click
 
@@ -45,7 +44,6 @@ def cmd_main(
     # ====================
     # Configure logging
     # ====================
-    # TODO: is this working?
     if isinstance(log_level, int):
         if log_level > 0:
             pass
@@ -64,16 +62,19 @@ def cmd_main(
         raise TypeError()
     # === END IF ===
 
+    # customize the root logger
+    logger_root = logging.getLogger()
     if logfile:
-        logging.basicConfig(
-            filename = logfile,
-            level = log_level,
+        logger_root.addHandler(
+            logging.FileHandler(logfile)
         )
-        logger.info("Verbose log enabled")
+        logger.info(f"Verbose log enabled; dumped to {logfile}")
     else:
-        logger.setLevel(log_level)
-    # === END IF ===
+        logger.info(f"No log file is designated")
 
+    logger_root.setLevel(log_level)
+        
+    # === END IF ===
     # ====================
     # Build config
     # ====================
