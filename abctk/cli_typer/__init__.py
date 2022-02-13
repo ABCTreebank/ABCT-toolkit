@@ -1,3 +1,4 @@
+from itertools import zip_longest
 import typing
 import pathlib
 
@@ -45,15 +46,21 @@ def cmd_main(
             https://docs.python.org/3/howto/logging.html#logging-levels
         """
     ),
-    logfiles: typing.List[typer.FileTextWrite] = typer.Option(
+    logfiles: typing.List[pathlib.Path] = typer.Option(
         [],
         "--logfile",
-        lazy = True,
+        exists = False,
+        file_okay = True,
+        dir_okay = False,
         help = """
             Additional log handler set to INTEGER RANGE level which is directed to FILE.
             Multiple handlers are allowed.
         """
-    )
+    ),
+    logfile_levels: typing.List[int] = typer.Option(
+        [],
+        "--logfile-level",
+    ),
 ):
     """
     A CLI toolkit to generate and manupilate the ABC Treebank.
@@ -86,7 +93,7 @@ def cmd_main(
     )
 
     # Add file handlers to the root
-    for level, hpath in logfiles:
+    for level, hpath in zip_longest(logfile_levels, logfiles, fillvalue = None):
         hd = logging.FileHandler(hpath)
         hd.setLevel(level)
         logger_root.addHandler(hd)
