@@ -17,6 +17,7 @@ exclude = ["**/docs"]
 [tool.poetry.urls]
 "Bug Tracker" = "https://github.com/ABCTreebank/ABCTreebank/issues"
 
+
 [tool.poetry.scripts]
 abctk_old = "abctk.cli:cmd_main" 
 abctk = "abctk.cli_typer:app" 
@@ -34,7 +35,7 @@ psutil = "^5.8.0"
 tqdm = "^4.62.0"
 allennlp = { version = "2.4.0", optional = true }
 allennlp-models = { version = "2.4.0", optional = true }
-depccg = { version = "^2.0.2", optional = true }
+depccg = { version = "2.0.3", optional = true }
 GitPython = "^3.1.11"
 gevent = "^21.8.0"
 importlib-metadata = "^3.3.0"
