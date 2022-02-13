@@ -885,7 +885,7 @@ class ABCCatBase(ABCCat):
                 return "{name}[{feats}]".format(
                     name = self.name,
                     feats = ",".join(
-                        f"{feat}={val.lower()}"
+                        f"{feat}={str(val).lower()}"
                         for feat, val 
                         in self.feats
                         if val == True
