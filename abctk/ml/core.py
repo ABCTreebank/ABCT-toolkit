@@ -1,6 +1,7 @@
 import typing
 import pathlib
-
+import logging
+logger = logging.getLogger(__name__)
 from . import misc
 
 def _get_rand() -> float:
@@ -63,9 +64,16 @@ def prepare_ml_data(
     ) as h_treebank_train, open(dir_temp / FILES["test.psd"],
         mode = "w"
     ) as h_treebank_test:
+        logger.info(
+            f"Temporarily tree division files opened in '{dir_temp}'."
+        )
+
+        ratio = config["train_test_ratio"]
+        logger.info(f"train/all ratio: {ratio}%")
+
         # read each tree from STDIN
         for line in source_trees:
-            if _get_rand() < config["train_test_ratio"]: # TODO: rewrite
+            if _get_rand() < ratio: # TODO: rewrite
                 h_treebank_train.write(line)
             else:
                 h_treebank_test.write(line)
