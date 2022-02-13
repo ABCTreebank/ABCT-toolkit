@@ -119,7 +119,7 @@ def build_ext():
     # === END IF ===
 
     # https://stackoverflow.com/a/17729939
-    with zipfile.ZipFile(tregex_zip_cache_path) as zf:
+    with zipfile.ZipFile(str(tregex_zip_cache_path)) as zf:
         with zf.open("stanford-tregex-2020-11-17/stanford-tregex.jar") as jar_src, open(DIR_RUNTIME / "stanford-tregex.jar", "wb") as tregex_jar:
             shutil.copyfileobj(jar_src, tregex_jar)
         # === END WITH jar_src, tregex_jar ===
