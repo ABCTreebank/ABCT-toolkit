@@ -161,7 +161,7 @@ def dump_parsed_ABCT(
     tokens,
     ID: str = "NONE",
     stream: typing.TextIO = sys.stdout,
-) -> typing.NoReturn:
+) -> None:
     for tree, prob in parsed:
         tree_enh = {
             "type": "ROOT",
@@ -195,7 +195,7 @@ def print_parsed_ABCT(
     # === END WITH sf ===
 # === END ====
 
-def dump_tree_ABCT(tree: dict, stream: typing.TextIO) -> typing.NoReturn:
+def dump_tree_ABCT(tree: dict, stream: typing.TextIO) -> None:
     cat = parse_cat_translate_TLG(tree["cat"])
 
     if "children" in tree.keys():

@@ -25,7 +25,7 @@ def print_dic_as_csv() -> str:
 
 def dump_dic_as_csv(
     stream: typing.TextIO = sys.stdout
-) -> typing.NoReturn:
+) -> None:
     for entry in generate_abc_dic():
         stream.write(convert_JanomeLexEntry_to_CSV(entry))
         stream.write("\n")

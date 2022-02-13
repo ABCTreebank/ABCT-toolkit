@@ -99,7 +99,7 @@ def convert_keyaki_to_abc(
 def convert_keyaki_file_to_abc(
     src: pathlib.Path, 
     dest: pathlib.Path
-) -> typing.NoReturn:
+) -> None:
     dest_name_bare: pathlib.Path = dest.parent / dest.stem
     dest_path_abs: str = str(dest_name_bare) + "-b2psg.psd"
 

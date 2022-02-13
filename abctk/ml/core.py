@@ -43,7 +43,7 @@ def prepare_ml_data(
     config: typing.Dict[str, typing.Any],
     dir_temp: pathlib.Path,
     dir_output: pathlib.Path,
-) -> typing.NoReturn:
+) -> None:
     # =========================
     # 0. Prepare Subdirectories
     # =========================

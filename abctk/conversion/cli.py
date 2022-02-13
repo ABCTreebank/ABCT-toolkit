@@ -48,7 +48,7 @@ def cmd_main(
     source_type: str,
     destination: typing.Optional[pathlib.Path],
     can_overwrite: bool, 
-) -> typing.NoReturn:
+) -> None:
     """
         Convert Keyaki tree(s) to ABC trees.
     """
