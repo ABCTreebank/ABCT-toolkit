@@ -270,9 +270,9 @@ class Instance:
         )
 
     def to_json_list(self):
-        ana = self.analysis
+        ana = sorted(self.analysis)
         return [
-            " ".join(word for _, word, _, _ in sorted(ana)),
+            self.spellout(),
             [
                 [cat  for _, _, cat, _  in ana],
                 [head for _, _, _, head in ana],
