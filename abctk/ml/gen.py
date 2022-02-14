@@ -19,6 +19,7 @@ import attr
 import fs
 import fs.base
 import simplejson as json
+from nltk import Tree
 
 from abctk import ABCTException
 import abctk.types.ABCCat as abcc
@@ -75,8 +76,11 @@ class DepCCGDataSetGenerationSettings:
     affix_feq_cut: int = 5
     char_freq_cut: int = 5
 
-NodeOfInstance = typing.Tuple[int, str, str, int]
-# id, word, cat (pprinted in the DepCCG format), head_id
+class NodeOfInstance(typing.NamedTuple):
+    pos: int
+    word: str
+    cat_serialized: str
+    head_pos: int
 
 @attr.s(auto_attribs = True, slots = True)
 class Instance:
@@ -104,7 +108,7 @@ class Instance:
     @classmethod
     def from_ABC_NLTK_tree(
         cls, 
-        tree: "nltk.Tree", 
+        tree: Tree,
         ID: str = "<UNKNOWN>"
     ) -> typing.Tuple[
         "Instance",
@@ -126,8 +130,6 @@ class Instance:
         DepCCGIneligibleTreeException:
             It might be raised when encountering an non-unary non-eligible branching.
         """
-        from nltk import Tree
-
         counter = 0
         stack: typing.List[
             typing.Tuple[
@@ -247,7 +249,7 @@ class Instance:
                     head_index, head_word, head_cat = lex_node_children_last
 
                     nodes_head_annotated.update(
-                        (i, w, cat, head_index)
+                        NodeOfInstance(i, w, cat, head_index)
                         for i, w, cat
                         in lex_node_children_others
                     )
@@ -261,7 +263,7 @@ class Instance:
                     raise RuntimeError
             
         nodes_head_annotated.update(
-            (i, w, cat, 0)
+            NodeOfInstance(i, w, cat, 0)
             for i, w, cat in list_node
         )
         return (
@@ -271,11 +273,12 @@ class Instance:
 
     def to_json_list(self):
         ana = sorted(self.analysis)
+
         return [
             self.spellout(),
             [
-                [cat  for _, _, cat, _  in ana],
-                [head for _, _, _, head in ana],
+                [i.cat_serialized for i in ana],
+                [i.head_pos for i in ana],
             ]
         ]
     
@@ -472,7 +475,7 @@ class DepCCGDataSet:
                 typing.List[typing.Tuple[str, str]],
                 typing.List[typing.Tuple[str, str]],
             ], ...
-            ] = tuple(
+        ] = tuple(
             filter(
                 None,
                 (
