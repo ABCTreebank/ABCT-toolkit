@@ -70,6 +70,8 @@ def cmd_semparse(
         raise RuntimeError("The number of the template arguments does not equal that of the name arguments.")
 
     # 1. Load sem template
+    logger.info("Commencing Step 1: Load semantic templates")
+
     sem_index = {}
     if drs:
         with resc.path("abctk.ccg2lambda", "semantics_comparatives_event.yaml") as sem_index_drs_path: 
@@ -95,6 +97,8 @@ def cmd_semparse(
         logger.warning("No semantics template is loaded")
 
     # 2. Parse JIGG XML
+    logger.info("Commencing Step 2: Load JIGG XML files")
+
     parser = etree.XMLParser(remove_blank_text = True)
     source_path: str = str(source)
     if source_path == "-":
@@ -114,6 +118,9 @@ def cmd_semparse(
     res: typing.List[SemParseRecord] = []
 
     # 3. For each sentence and each of its ccg parses
+    logger.info("Commencing Step 3: Semantic conversion")
+    
+    # For each sentence and each of its ccg parses
     for sent_count, sentence in tqdm(
         enumerate(sentences),
         total = len(sentences), 
@@ -176,6 +183,8 @@ def cmd_semparse(
                 record.semparses[sem_type] = sem_node
 
     # 4. Dump
+    logger.info("Commencing Step 4: Dump results")
+
     with fs.open_fs(str(dest), create = True) as folder:
         # 4.1. Dump sem.xml
         with folder.open("sem.xml", "w") as f_sem_xml:

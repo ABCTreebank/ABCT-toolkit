@@ -193,11 +193,11 @@ def combine_children_exprs(ccg_tree, tokens, semantic_index):
         ccg_tree.set('sem', str(evaluation))
     except LogicalExpressionException as e:
         logging.warning(
-            f"Illegal lambda expression, info: {e}"
+            f"Illegal lambda expression. Info: {e}"
         )
     except KeyError as e:
         logging.warning(
-            "No functional application is taken place since we lack some ingredients. info: at [place]"
+            f"No functional application is taken place since we lack some ingredients. Info: {e}"
         )
     # === END TRY ===
 

@@ -175,7 +175,7 @@ def load_ABC_psd(
             except Exception as e:
                 if skip_ill_trees:
                     logger.warning(
-                        f"An exception has been raised in parsing the nodes of Tree {ID}. The tree will be discarded."
+                        f"An exception has been raised in parsing the nodes of Tree {ID}. The tree will be discarded. Info: {e}"
                     )
                 else:
                     logger.error(
