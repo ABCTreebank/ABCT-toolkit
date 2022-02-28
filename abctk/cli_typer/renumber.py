@@ -67,6 +67,7 @@ def cmd_from_file(
                 # load from stdin
                 source_file = tempfile.NamedTemporaryFile("w", dir = temp_folder)
                 source_file.write(sys.stdin.read())
+                source_file.flush()
                 logger.info(f"STDIN loaded in {source_file.name}")
             else:
                 source_path = source_path.resolve()
