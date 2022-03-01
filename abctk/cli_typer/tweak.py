@@ -21,6 +21,7 @@ import abctk.transform_ABC.elim_trace
 import abctk.transform_ABC.morph_janome
 import abctk.check_comp_feat
 import abctk.transform_Keyaki.obfuscate
+import abctk.gen_comp
 
 # ================
 # Command for treebank
@@ -319,6 +320,15 @@ _COMMAND_TABLE: typing.Dict[
     "restore-trace": (
         cmd_restore_trace,
         ""
+    ),
+    "restore-trace-in-comp": (
+        lift_func(
+            "restore-trace-in-comp",
+            "Restore *T* *pro* in #comp"
+        )(
+            abctk.gen_comp.restore_traces_on_demand
+        ),
+        "Restore empty categories in #comp"
     ),
     "janome": (
         lift_func(
