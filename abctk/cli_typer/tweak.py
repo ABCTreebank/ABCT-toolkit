@@ -322,7 +322,7 @@ _COMMAND_TABLE: typing.Dict[
         ""
     ),
     "restore-trace-in-comp": (
-        lift_func(
+        lift_func_newobj(
             "restore-trace-in-comp",
             "Restore *T* *pro* in #comp"
         )(
