@@ -39,7 +39,7 @@ def restore_traces_on_demand(
         return tree
 
 _re_root_cont = re.compile(
-    r"(?P<index>^[0-9]+),(root,cont|cont,root)$"
+    r"(?P<index>^[0-9]+),.*root.*$"
 )
 
 def _restore_pro_on_demand_inner(
@@ -75,6 +75,14 @@ def _restore_pro_on_demand_inner(
                 ) or
                 parent_node_cat.equiv_to(
                     abcc.ABCCat.p("<NP/NP>"),
+                    ignore_feature = True,
+                ) or 
+                parent_node_cat.equiv_to(
+                    abcc.ABCCat.p("<NP\\NP>"),
+                    ignore_feature = True,
+                ) or 
+                parent_node_cat.equiv_to(
+                    abcc.ABCCat.p("<N\\N>"),
                     ignore_feature = True,
                 )
             )
