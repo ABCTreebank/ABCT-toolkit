@@ -319,13 +319,39 @@ def convert_io(
         command = f"""
 {conf["bin-sys"]["sed"]} -e 's/#role=none//g'
 | tee {log_prefix}-30-remrole.psd
-| {conf["bin-custom"]["tsurgeon_script"]} {conf["runtimes"]["move-comparative"]}
+| {conf["bin-sys"]["sed"]} 's/\\\\/\\\\\\\\/g'
+| {conf["bin-sys"]["sed"]} 's/|/\\\\|/g'
+| {conf["bin-sys"]["sed"]} 's/,/./g'
+| {conf["bin-sys"]["sed"]} 's/#/__/g'
+| {conf["bin-sys"]["sed"]} 's/（/\\\\（/g'
+| {conf["bin-sys"]["sed"]} 's/）/\\\\）/g'
+| tee {log_prefix}-35-pre-move.psd
+| {conf["bin-custom"]["move"]}
 | tee {log_prefix}-40-move.psd
+| {conf["bin-sys"]["munge-trees"]} -w
+| {conf["bin-sys"]["sed"]} 's/\\./,/g'
+| {conf["bin-sys"]["sed"]} 's/\\_\\_/#/g'
+| {conf["bin-sys"]["sed"]} 's/\\\\（/（/g'
+| {conf["bin-sys"]["sed"]} 's/\\\\）/）/g'
+| grep -v "NIL"
+| tee {log_prefix}-45-post-move.psd
     """
     else:
         command = f"""
 {conf["bin-sys"]["sed"]} -e 's/#role=none//g'
-| {conf["bin-custom"]["tsurgeon_script"]} {conf["runtimes"]["move-comparative"]}
+| {conf["bin-sys"]["sed"]} 's/\\\\/\\\\\\\\/g'
+| {conf["bin-sys"]["sed"]} 's/|/\\\\|/g'
+| {conf["bin-sys"]["sed"]} 's/,/./g'
+| {conf["bin-sys"]["sed"]} 's/#/__/g'
+| {conf["bin-sys"]["sed"]} 's/（/\\\\（/g'
+| {conf["bin-sys"]["sed"]} 's/）/\\\\）/g'
+| {conf["bin-custom"]["move"]}
+| {conf["bin-sys"]["munge-trees"]} -w
+| {conf["bin-sys"]["sed"]} 's/\\./,/g'
+| {conf["bin-sys"]["sed"]} 's/\\_\\_/#/g'
+| {conf["bin-sys"]["sed"]} 's/\\\\（/（/g'
+| {conf["bin-sys"]["sed"]} 's/\\\\）/）/g'
+| grep -v "NIL"
     """
 
     command = command.strip().replace("\n", "")

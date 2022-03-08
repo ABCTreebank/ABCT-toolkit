@@ -52,6 +52,7 @@ CONF_DEFAULT = {
     "bin-custom": {
         "abc-relabel": f"{DIR_RUNTIME / 'abc-relabel'} --oneline", 
         "tsurgeon_script": DIR_RUNTIME / "tsurgeon_script",
+        "move": DIR_RUNTIME / "move",
     },
     "runtimes": {
         "pre-relabel": DIR_RUNTIME / "pre-relabel.tsgn",
