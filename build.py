@@ -44,6 +44,10 @@ def build_ext():
         DIR_EXT_SCRIPTS / "move-comparative.tsgn",
         DIR_RUNTIME / "move-comparative.tsgn"
     )
+    shutil.copy(
+        DIR_EXT_SCRIPTS / "move0.tsgn",
+        DIR_RUNTIME / "move0.tsgn"
+    )
 
     # Clean the decrypt folder
     DIR_RUNTIME_DECRYPT = pathlib.Path(DIR_RUNTIME / "decrypt")

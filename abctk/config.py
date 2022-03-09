@@ -63,6 +63,7 @@ CONF_DEFAULT = {
         "tregex": DIR_RUNTIME / "stanford-tregex.jar",
         "unsimplify-ABC-tags": DIR_RUNTIME / "unsimplify-ABC-tags.rb",
         "move-comparative": DIR_RUNTIME / "move-comparative.tsgn",
+        "move0": DIR_RUNTIME / "move0.tsgn",
     },
     "corpora": {
         "Mainichi95": DIR_SHARE / "corpora/MAI95.TXT",
