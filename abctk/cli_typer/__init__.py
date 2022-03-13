@@ -117,20 +117,25 @@ def cmd_main(
     if os.path.exists(path_config_user):
         with open(path_config_user, "r") as cu:
             CONFIG = deepmerge(CONFIG, yaml.load(cu), method = "merge")
+            logger.info(f"The default user config file {path_config_user} is loaded")
         # === END WITH cu ===
     # === END IF ===
 
     for h_cf in user_configs:
-
         CONFIG = deepmerge(CONFIG, yaml.load(h_cf), method = "merge")
+        logger.info(f"The config file {h_cf.name} is loaded")
     # === END IF ===
 
     for str_conf in user_config_text:
+        config_from_str = yaml.load(str_conf)
+
         CONFIG = deepmerge(
             CONFIG,
-            yaml.load(str_conf),
+            config_from_str,
             method = "merge"
         )
+
+        logger.info(f"The commandline config {str_conf} is loaded as: {config_from_str}")
 
     ctx.obj["CONFIG"] = CONFIG
 
