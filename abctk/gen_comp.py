@@ -94,8 +94,11 @@ def _restore_pro_on_demand_inner(
             root_new_feats["comp"] = f"{index},root" # get rid of "cont"
 
             return Tree(
-                node = abcc.Annot( # node: S|PP
-                    cat = conseq.v(ant),
+                node = abcc.Annot( 
+                    cat = (
+                        conseq.v(ant) if is_rel # S|PP
+                        else ant.l(conseq) # PP\S
+                    ),
                     feats = (
                         {"rel": "bind"} if is_rel
                         else {"adv-pro": "bind"}

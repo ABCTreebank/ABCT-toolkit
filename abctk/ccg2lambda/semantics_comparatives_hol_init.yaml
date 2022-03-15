@@ -26,13 +26,18 @@
 - category: (S|PP[s=true]) 
   rule: "|-intro-rel"
   semantics: \M. lam(T101, M)
-
+- category: (PP[s=true]\S)
+  rule: "|-intro-adv-pro"
+  semantics: \M. lam(T111, M)
 
 # Rel Cl trace
 # unselective binding
 - category: PP
   base: "*T*"
   semantics: \E. T101
+- category: PP
+  base: "*TRACE-pro*"
+  semantics: \E. T111
 
 # PP\S[rel] ==> N/N
 - category: (N/N)

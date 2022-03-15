@@ -324,15 +324,17 @@ def tree_to_jigg(
                             # trace = f"*{d['role']}{d['num']}*"
                             span_rule = f"|-intro-{d['role']}{d['num']}"
                         else:
-                            # find whether it is a relative clause binding
-                            rel_maybe: str = label.feats.get("rel", "")
-                            _re = re.compile(r"bind")
-                            rel_parsed = _re.match(rel_maybe)
+                            # find whether it is a relative or adv clause binding
+                            binder: str = ""
+                            is_bound: bool = label.feats.get("rel", "") == "bind"
+                            if is_bound:
+                                binder = "rel"
+                            elif (is_bound := label.feats.get("adv-pro", "") == "bind"):
+                                binder = "adv-pro"
 
-                            if rel_parsed:
-                                d = rel_parsed.groupdict()
-                                span_rule = f"|-intro-rel"
-                                # unselective binding (to *T*)
+                            if is_bound:
+                                # unselective binding (to *T* and *TRACE-pro*)
+                                span_rule = f"|-intro-{binder}"
                             else:
                                 # try to automatically find it
                                 if children_num == 2:
