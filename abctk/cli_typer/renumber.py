@@ -10,8 +10,6 @@ import sys
 import tempfile
 import typing
 
-import lxml.etree as et
-
 import typer
 
 import abctk.transform_ABC.jigg as jg
@@ -75,7 +73,7 @@ def cmd_from_file(
                 os.symlink(source_path, dst = source_file_path)
                 logger.info(f"File symlinked to {source_file_path}")
 
-            tb = nt.load_ABC_psd(temp_folder, re_filter = ".*")
+            tb = nt.load_Keyaki_Annot_psd(temp_folder, re_filter = ".*")
 
             if dest_path.name == "-":
                 dest_file = sys.stdout

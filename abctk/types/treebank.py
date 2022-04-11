@@ -5,7 +5,7 @@ _parser_Keyaki_ID = re.compile(
     r"^(?P<number>[0-9]+)_(?P<name>[^;]+)(;(?P<suffix>.*))?$"
 )
 
-_counter_default: int = 1
+_counter_default: int = 0
 
 class Keyaki_ID(typing.NamedTuple):
     """
@@ -81,6 +81,13 @@ class Keyaki_ID(typing.NamedTuple):
                 number = int(d["number"]),
                 suffix = d["suffix"] or "",
                 orig = ID,
+            )
+        elif ID.isnumeric():
+            return cls(
+                name = "",
+                number = int(ID),
+                suffix = "",
+                orig = ID
             )
         else:
             _counter_default += 1

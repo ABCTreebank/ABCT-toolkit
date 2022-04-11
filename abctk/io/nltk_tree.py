@@ -21,17 +21,21 @@ import abctk.types.ABCCat as abcc
 from abctk.types.treebank import Keyaki_ID
 
 def _split_ID_from_Tree(tree) -> typing.Tuple[Keyaki_ID, Tree]:
-    if len(tree) == 2:
-        child_1, child_2 = tree
+    if len(tree) >= 2:
+        child_body, child_last = tree[:-1], tree[-1]
         if (
-            child_2.label() == "ID" 
-            and len(child_2) == 1 
-            and isinstance(child_2[0], str)
+            child_last.label() == "ID" 
+            and len(child_last) == 1 
+            and isinstance(child_last[0], str)
         ):
-            ID = Keyaki_ID.from_string(child_2[0])
-            tree = child_1
+            ID = Keyaki_ID.from_string(child_last[0])
+            if len(child_body) == 1:
+                tree = child_body[0]
+            else:
+                tree = Tree(node = "", children = child_body)
         else:
             ID = Keyaki_ID.new()
+    
     else:
         ID = Keyaki_ID.new()
     
