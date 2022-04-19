@@ -1,5 +1,5 @@
 {
-    "name": "ABC Treebank",
+    "name": "Devcontainer for the ABCT toolkit",
     "dockerFile": "Dockerfile",
     "remoteUser": "vscode",
     "extensions": [
