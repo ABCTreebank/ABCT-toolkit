@@ -5,7 +5,7 @@
 
 # oblique case
 - category: (NP\((PP\S)/(PP\S)))
-  semantics: \E N V. V(N(E))
+  semantics: \E N V. (E(N)(V))
 
 - category: (S\(S/S))
   semantics: \E S1 S2. E(S1, S2)
@@ -41,21 +41,30 @@
 
 # PP\S[rel] ==> N/N
 - category: (N/N)
-  semantics: \R N X. (R(X) & N(X))
+  semantics: \R N X. (And(R(X))(N(X)))
   rule: unary
   child0_category: (S|PP)
 
 # 連用節まわり
 - category: ((PP\S)/(PP\S))
-  semantics: \P Q X. (P(X) & Q(X))
+  semantics: \P Q X. (And(P(X))(Q(X)))
   rule: unary
   child0_category: (PP\S)
 
 - category: (S/S)
-  semantics: \P Q. (P & Q)
+  semantics: \P Q. (And(P)(Q))
   rule: unary
   child0_category: S
 
+- category: ((PP\S)/(PP\S))
+  semantics: \P Q X. (And(P)(Q(X)))
+  rule: unary
+  child0_category: S
+
+- category: (S/S)
+  semantics: \P Q. (And(exists x. P(x))(Q))
+  rule: unary
+  child0_category: (PP\S)
 
 
 # ==== CLs modifying or quantifying bare Ns
@@ -538,7 +547,42 @@
 - {category: SYM, pos0: "\u8A18\u53F7", semantics: \E O. O}
 
 ## other stuff
-- category: S\S
-  semantics: \X P. past(P)
+- category: (S\S)
+  semantics: \X P. (past(P))
   base: た
 
+- category: ((PP\S)\((PP\S)/(PP\S)))
+  semantics: \X P Q Y. (kara(P(Y))(Q(Y)))
+  base: から
+
+- category: ((PP\S)\((PP\S)/(PP\S)))
+  semantics: \X P Q Y. (But(P(Y))(Q(Y)))
+  base: が
+
+
+## other stuff
+- &final
+  category: (S\S)
+  semantics: \X P. P
+  base: で
+- <<: *final
+  base: の
+- <<: *final
+  base: だ
+- <<: *final
+  base: て
+
+
+## other stuff
+- &particle
+  category: (NP\PP)
+  semantics: \X P. P
+  base: は
+- <<: *particle
+  base: を
+- <<: *particle
+  base: が
+
+- category: (S\(S/S))
+  semantics: \X P Q. (And(P)(Q))
+  base: て
