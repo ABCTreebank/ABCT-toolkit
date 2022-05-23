@@ -45,6 +45,18 @@
   rule: unary
   child0_category: (S|PP)
 
+# 連用節まわり
+- category: ((PP\S)/(PP\S))
+  semantics: \P Q X. (P(X) & Q(X))
+  rule: unary
+  child0_category: (PP\S)
+
+- category: (S/S)
+  semantics: \P Q. (P & Q)
+  rule: unary
+  child0_category: S
+
+
 
 # ==== CLs modifying or quantifying bare Ns
 
