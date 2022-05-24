@@ -78,3 +78,8 @@ WORKDIR /home/vscode
 RUN python3.9 -m pip install --user pipx \
    && pipx ensurepath \
    && pipx install poetry
+
+RUN git clone https://github.com/ABCTreebank/amoove /home/${USERNAME}/amoove \
+    && ros init \
+    && ros install fset fiveam trivia function-cache unix-opts \
+    && ln -s /home/${USERNAME}/amoove /home/${USERNAME}/.roswell/local-projects/amoove
