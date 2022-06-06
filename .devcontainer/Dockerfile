@@ -73,7 +73,7 @@ RUN useradd --create-home \
 
 USER ${USERNAME}
 ENV PATH /home/${USERNAME}/.local/bin:${PATH}
-WORKDIR /home/vscode
+WORKDIR /home/${USERNAME}
 
 RUN python3.9 -m pip install --user pipx \
    && pipx ensurepath \
@@ -81,5 +81,5 @@ RUN python3.9 -m pip install --user pipx \
 
 RUN git clone https://github.com/ABCTreebank/amoove /home/${USERNAME}/amoove \
     && ros init \
-    && ros install fset fiveam trivia function-cache unix-opts \
+    && ros install fset fiveam trivia function-cache unix-opts yason \
     && ln -s /home/${USERNAME}/amoove /home/${USERNAME}/.roswell/local-projects/amoove
