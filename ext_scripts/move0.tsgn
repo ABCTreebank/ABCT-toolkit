@@ -122,7 +122,16 @@ excise x x
 relabel kurabe と比べて
 prune te
 
+/^NPq?$/=z < (/^NPq?$/=x < N) < /<NPq?\/NPq?>/=y
 
+adjoinF (NP @) z
+excise x x
+relabel z N
+
+
+N < /<NPq?\/NPq?>/=x
+
+relabel x /N\/N/
 
 
 .R
