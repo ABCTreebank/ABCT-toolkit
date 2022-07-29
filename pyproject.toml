@@ -34,7 +34,7 @@ psutil = "^5.8.0"
 tqdm = "^4.62.0"
 allennlp = { version = "2.4.0", optional = true }
 allennlp-models = { version = "2.4.0", optional = true }
-depccg = { version = "2.0.3", optional = true }
+depccg = { version = "2.0.3.2", optional = true }
 GitPython = "^3.1.11"
 gevent = "^21.8.0"
 importlib-metadata = "^3.3.0"
@@ -55,6 +55,7 @@ lark = "^0.11.3"
 packaging = "^21.3"
 nltk = "^3.6.5"
 PyYAML = "^6.0"
+svgling = {git = "https://github.com/rawlins/svgling"}
 
 [tool.poetry.dev-dependencies]
 pylint = "^2.6.0"
