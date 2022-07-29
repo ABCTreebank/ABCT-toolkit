@@ -49,19 +49,6 @@ def build_ext():
         DIR_RUNTIME / "move0.tsgn"
     )
 
-    # Clean the decrypt folder
-    DIR_RUNTIME_DECRYPT = pathlib.Path(DIR_RUNTIME / "decrypt")
-    if DIR_RUNTIME_DECRYPT.exists():
-        if DIR_RUNTIME_DECRYPT.is_dir():
-            shutil.rmtree(DIR_RUNTIME_DECRYPT)
-        else:
-            raise FileExistsError
-    # === END IF ===
-    shutil.copytree(
-        DIR_EXT_SCRIPTS / "decrypt",
-        DIR_RUNTIME_DECRYPT,
-    )
-
     shutil.copy(
         DIR_EXT_SCRIPTS / "supertagger_default.jsonnet",
         DIR_RUNTIME / "supertagger_default.jsonnet",

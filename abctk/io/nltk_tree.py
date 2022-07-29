@@ -41,6 +41,19 @@ def _split_ID_from_Tree(tree) -> typing.Tuple[Keyaki_ID, Tree]:
     
     return ID, tree
 
+def parse_all_labels_Keyaki_Annot(
+    tree: Tree
+):
+    stack = [tree]
+
+    while stack:
+        pointer = stack.pop()
+        if isinstance(pointer, Tree):
+            pointer.set_label(abcc.Annot.parse(pointer.label()))
+        else:
+            # do nothing
+            pass
+
 def load_Keyaki_Annot_psd(
     folder: typing.Union[str, pathlib.Path], 
     re_filter: str = r".*\.psd$",
@@ -59,17 +72,6 @@ def load_Keyaki_Annot_psd(
         The stream where the progress info is redirected to and show up there.
         Feature disabled when set to `None`. 
     """
-    def _parse_label(tree: Tree): 
-        stack = [tree]
-
-        while stack:
-            pointer = stack.pop()
-            if isinstance(pointer, Tree):
-                pointer.set_label(abcc.Annot.parse(pointer.label()))
-            else:
-                # do nothing
-                pass
-        
     for i, tree in enumerate(
         BracketParseCorpusReader(
             root = str(folder),
@@ -77,7 +79,7 @@ def load_Keyaki_Annot_psd(
         ).parsed_sents()
     ):
         ID, content = _split_ID_from_Tree(tree)
-        _parse_label(content)
+        parse_all_labels_Keyaki_Annot(content)
         yield ID, content
         if prog_stream:
             prog_stream.write(f"\r# of tree(s) fetched: {i:,}")
@@ -98,6 +100,31 @@ class InvalidABCTreeException(ABCTException):
     def __init__(self, ID):
         self.ID = ID
         super().__init__(f"Failed to parse the ABC tree (ID: {ID})")
+
+def parse_all_labels_ABC(
+    tree: Tree
+):
+    stack = [tree]
+
+    while stack:
+        pointer = stack.pop()
+        if isinstance(pointer, Tree):
+            pointer.set_label(
+                abcc.Annot.parse(
+                    pointer.label(),
+                    parser_cat = abcc.ABCCat.parse, # NOTE: too slow
+                    pprinter_cat = abcc.ABCCat.pprint,
+                )
+            )
+
+            if len(pointer) == 1 and not isinstance(pointer[0], Tree):
+                continue
+            else:
+                stack.extend(pointer)
+        else:
+            # do nothing
+            pass
+
 
 def load_ABC_psd(
     folder: typing.Union[str, pathlib.Path], 
@@ -132,28 +159,6 @@ def load_ABC_psd(
         If parsing of the given tree of categories therein fails.
     """
 
-    def _parse_label(tree: Tree): 
-        stack = [tree]
-
-        while stack:
-            pointer = stack.pop()
-            if isinstance(pointer, Tree):
-                pointer.set_label(
-                    abcc.Annot.parse(
-                        pointer.label(),
-                        parser_cat = abcc.ABCCat.parse, # NOTE: too slow
-                        pprinter_cat = abcc.ABCCat.pprint,
-                    )
-                )
-
-                if len(pointer) == 1 and not isinstance(pointer[0], Tree):
-                    continue
-                else:
-                    stack.extend(pointer)
-            else:
-                # do nothing
-                pass
-
     corpus_reader = BracketParseCorpusReader(
         root = str(folder),
         fileids = re_filter,
@@ -171,7 +176,7 @@ def load_ABC_psd(
             for tree_raw in corpus_reader.parsed_sents()
         ):
             try:
-                _parse_label(tree)
+                parse_all_labels_ABC(tree)
                 yield ID, tree
 
                 if prog_stream:

@@ -20,7 +20,7 @@ import abctk.transform_ABC.elim_empty
 import abctk.transform_ABC.elim_trace 
 import abctk.transform_ABC.morph_janome
 import abctk.check_comp_feat
-import abctk.transform_Keyaki.obfuscate
+import abctk.obfuscate
 import abctk.gen_comp
 
 # ================
@@ -41,10 +41,11 @@ def cmd_from_treebank(
     """
     Tweak the whole ABC Treebank files.
 
-    For more info of subcommands, see `abctk tweak treebank /dev/null <COMMAND> --help`.
+    For more info on each subcommand, 
+    run `abctk tweak file /dev/null <COMMAND> --help`.
     """
     # load trees
-    tb = list(nt.load_ABC_psd(source_path))
+    tb = list(nt.load_Keyaki_Annot_psd(source_path))
 
     # store trees in ctx
     ctx.ensure_object(dict)
@@ -71,7 +72,8 @@ def cmd_from_file(
     """
     Tweak a single Treebank file or trees in STDIN.
 
-    For more info of subcommands, see `abctk tweak file /dev/null <COMMAND> --help`.
+    For more info on each subcommand, 
+    run `abctk tweak file /dev/null <COMMAND> --help`.
     """
     temp_folder = tempfile.TemporaryDirectory(
         prefix = "abct_tweak_"
@@ -236,9 +238,7 @@ Default to /closed/."""
     )
 ):
     """
-    Obfuscate trees by masking characters to deal with license / copyright issues.
-
-    To restore them back, use `abctk_old trans-Keyaki`.
+    Obfuscate trees by masking characters for license / copyright reasons.
     """
 
     skip_ill_trees = ctx.obj["CONFIG"]["skip-ill-trees"]
@@ -249,7 +249,7 @@ Default to /closed/."""
         for ID, tree in tqdm(tb, desc = "Obfuscate trees"):
             try:
                 if matcher.search(ID.name):
-                    yield ID, abctk.transform_Keyaki.obfuscate.obfuscate_tree(tree, ID)
+                    yield ID, abctk.obfuscate.obfuscate_tree(tree, ID)
                 else:
                     yield ID, tree
             except Exception as e:
@@ -269,6 +269,96 @@ Default to /closed/."""
     
     ctx.obj["treebank"] = list(_yield(tb))
 
+def cmd_decrypt_tree(
+    ctx: typer.Context,
+    filter: str = typer.Option(
+        "closed",
+        help = """
+            A regex that specifies
+            the IDs of the trees to be obfuscated.
+            Default to /closed/.
+        """
+    ),
+    source: pathlib.Path = typer.Argument(
+        ...,
+        file_okay = True,
+        dir_okay = True,
+        exists = True,
+        help = """
+            A TSV file which contains decrypting texts. 
+        """
+    )
+):
+    """
+    Decrypt obfuscated trees.
+
+    To get the decrypting texts, the easiest and best way is to first
+    obtain the original Keyaki treebank and run the following script:
+
+    \b
+    ```sh
+    cat treebank/*closed*.psd \\
+        | munge-trees -y \\
+        | awk -F " " '
+    {
+        printf "%s\\t", $NF;
+        for (i = 1; i < NF; i++) {
+            if ( !($i ~ /\\*.+\\*/ || $i == "*") )  {
+                printf "%s", $i;
+            }
+        }
+        printf "\\n";
+    }
+    ' >! keyaki-closed.tsv
+    ```
+
+    You can save the yields to run decryption at any time.
+    """
+    def _parse_source(line: str):
+        line_broken = line.strip().split("\t")
+        return Keyaki_ID.from_string(line_broken[0]), line_broken[1]
+
+    with open(source) as h_source:
+        source_dict: typing.Dict[Keyaki_ID, str] = dict(
+            _parse_source(line) for line in h_source
+        )
+
+    skip_ill_trees = ctx.obj["CONFIG"]["skip-ill-trees"]
+    tb: typing.List[typing.Tuple[Keyaki_ID, Tree]] = ctx.obj["treebank"]
+    matcher = re.compile(filter)
+
+    def _yield(tb) -> typing.Iterator[typing.Tuple[Keyaki_ID, Tree]]:
+        for ID, tree in tqdm(tb, desc = "Decrypt trees"):
+            try:
+                if matcher.search(ID.name):
+                    yield (
+                        ID, 
+                        abctk.obfuscate.decrypt_tree(
+                            tree, 
+                            source_dict[ID], 
+                            ID = ID
+                        )[0],
+                    )
+                else:
+                    yield ID, tree
+            except Exception as e:
+                if skip_ill_trees:
+                    logger.warning(
+                        "An exception was raised by the convertion function. "
+                        f"Tree ID: {ID}. "
+                        "The tree will be abandoned."
+                    )
+                else:
+                    logger.error(
+                        "An exception was raised by the convertion function. "
+                        f"Tree ID: {ID}. "
+                        "The process has been aborted."
+                    )
+                    raise
+
+    ctx.obj["treebank"] = list(_yield(tb))
+
+
 _COMMAND_TABLE: typing.Dict[
     str, 
     typing.Tuple[
@@ -279,6 +369,15 @@ _COMMAND_TABLE: typing.Dict[
     "relax": (
         lambda _: None,
         "Do nothing (Just load trees and check the annotations therein)."
+    ),
+    "parse-ABC-label": (
+        lift_func("parse-ABC-label", "Parse all ABC labels")(
+            lambda tree, ID: (
+                nt.parse_all_labels_ABC(tree),
+                ID
+            ),
+        ),
+        "Parse all ABC labels in given trees."
     ),
     "check-comp": (
         lift_func("check-comp", "Check #comp feats")(
@@ -359,6 +458,10 @@ _COMMAND_TABLE: typing.Dict[
     ), 
     "obfus": (
         cmd_obfuscate_tree,
+        "",
+    ),
+    "decrypt": (
+        cmd_decrypt_tree,
         "",
     )
 }

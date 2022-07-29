@@ -179,9 +179,6 @@ def cmd_dic():
     abctk.dic.dump_dic_as_csv(sys.stdout)
 # === END ===
 
-from . import crypt
-app.add_typer(crypt.app, name = "crypt")
-
 from . import gen_comp
 app.command("gen-comp")(gen_comp.cmd_main)
 

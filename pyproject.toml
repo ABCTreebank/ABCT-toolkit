@@ -19,8 +19,7 @@ exclude = ["**/docs"]
 
 
 [tool.poetry.scripts]
-abctk_old = "abctk.cli:cmd_main" 
-abctk = "abctk.cli_typer:app" 
+abctk = "abctk.cli_typer:app"
 
 [tool.poetry.dependencies]
 python = "^3.9"

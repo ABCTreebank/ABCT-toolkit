@@ -1,5 +1,5 @@
 import typer
 
-from . import cli
+from abctk.cli_typer import app
 
-typer.run(cli.cmd_main)
+app()
