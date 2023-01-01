@@ -4,7 +4,7 @@ import typing
 
 from nltk.tree import Tree 
 
-import abctk.types.ABCCat as abcc
+import abctk.obj.ABCCat as abcc
 
 _re_P_PU = re.compile(r"^(P|PU|CONJ)$")
 

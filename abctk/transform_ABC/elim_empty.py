@@ -1,8 +1,8 @@
 import typing
 
 from nltk.tree import Tree
-import abctk.types.ABCCat as abcc
-from abctk.types.ABCCat import ABCCatBot, Annot, ABCCat
+import abctk.obj.ABCCat as abcc
+from abctk.obj.ABCCat import ABCCatBot, Annot, ABCCat
 
 def elim_empty_terminals(
     tree,

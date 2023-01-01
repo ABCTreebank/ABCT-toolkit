@@ -12,7 +12,7 @@ from nltk.tree import Tree
 import lxml.etree as et
 from abctk import ABCTException
 
-import abctk.types.ABCCat as abcc
+import abctk.obj.ABCCat as abcc
 
 class ABCMorphAnalyzer(janome.tokenizer.Tokenizer):
     def analyze(

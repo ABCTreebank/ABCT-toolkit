@@ -6,7 +6,7 @@ from janome.lattice import Node as JNode
 import janome.tokenizer
 from janome.tokenizer import Token as JToken
 
-import abctk.types.ABCCat as abcc
+import abctk.obj.ABCCat as abcc
 
 class ABCMorphAnalyzer(janome.tokenizer.Tokenizer):
     def analyze(

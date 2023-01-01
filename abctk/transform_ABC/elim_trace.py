@@ -4,8 +4,8 @@ logger = logging.getLogger(__name__)
 from nltk.tree import Tree
 
 from abctk import ABCTException
-import abctk.types.ABCCat as abcc
-from abctk.types.ABCCat import ABCCat, ABCCatFunctor, ABCCatReady, Annot
+import abctk.obj.ABCCat as abcc
+from abctk.obj.ABCCat import ABCCat, ABCCatFunctor, ABCCatReady, Annot
 
 class ElimTraceException(ABCTException):
     ID: str
@@ -83,7 +83,7 @@ def restore_rel_trace(
     -------
     tree
         An ABC Tree.
-        The category-feature bundle must be parsed as `abctk.types.ABCCat.Annot` beforehand.
+        The category-feature bundle must be parsed as `abctk.obj.ABCCat.Annot` beforehand.
         Categories are not required to be parsed for better performance.
     ID
 

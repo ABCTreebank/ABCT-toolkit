@@ -8,7 +8,7 @@ import re
 from nltk.tree import Tree
 
 from abctk import ABCTException
-from abctk.types.ABCCat import Annot
+from abctk.obj.ABCCat import Annot
 
 _re_comp = re.compile(r"^(?P<index>[0-9]),(?P<names>.+)$")
 

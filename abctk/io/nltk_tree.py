@@ -17,8 +17,8 @@ from nltk import Tree
 from nltk.corpus.reader.bracket_parse import BracketParseCorpusReader
 
 from abctk import ABCTException
-import abctk.types.ABCCat as abcc
-from abctk.types.treebank import Keyaki_ID
+import abctk.obj.ABCCat as abcc
+from abctk.obj.Keyaki import Keyaki_ID
 
 def _split_ID_from_Tree(tree) -> typing.Tuple[Keyaki_ID, Tree]:
     if len(tree) >= 2:

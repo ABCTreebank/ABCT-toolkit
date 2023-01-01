@@ -3,8 +3,8 @@ import typing
 
 from nltk import Tree
 
-from abctk.types.treebank import Keyaki_ID
-from abctk.types.ABCCat import ABCCat, ABCCatReprMode, Annot
+from abctk.obj.Keyaki import Keyaki_ID
+from abctk.obj.ABCCat import ABCCat, ABCCatReprMode, Annot
 
 def load_ABC_parsed_jsonl_psd(
     input: typing.TextIO,

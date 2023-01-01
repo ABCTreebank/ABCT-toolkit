@@ -1,7 +1,7 @@
 from nltk import Tree
 import pytest
 
-from abctk.types.ABCCat import ABCCat, ABCCatReprMode
+from abctk.obj.ABCCat import ABCCat, ABCCatReprMode
 from abctk.ml.gen import *
 
 test_trees_raw = (

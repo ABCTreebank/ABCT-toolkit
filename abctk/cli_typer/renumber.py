@@ -1,6 +1,6 @@
 import logging
 
-from abctk.types.treebank import Keyaki_ID
+from abctk.obj.Keyaki import Keyaki_ID
 logger = logging.getLogger(__name__)
 import os
 import pathlib

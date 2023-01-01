@@ -3,8 +3,8 @@ import typing
 import attr
 
 from nltk.tree import Tree
-import abctk.types.ABCCat as abcc
-from abctk.types.ABCCat import ABCCatBot, Annot, ABCCat
+import abctk.obj.ABCCat as abcc
+from abctk.obj.ABCCat import ABCCatBot, Annot, ABCCat
 
 def minimize_tree(
     tree,

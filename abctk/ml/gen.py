@@ -22,8 +22,8 @@ import simplejson as json
 from nltk import Tree
 
 from abctk import ABCTException
-import abctk.types.ABCCat as abcc
-from abctk.types.treebank import Keyaki_ID
+import abctk.obj.ABCCat as abcc
+from abctk.obj.Keyaki import Keyaki_ID
 
 UNK = "*UNKNOWN*"
 """

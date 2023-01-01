@@ -13,7 +13,7 @@ import ruamel.yaml as yaml
 import typer
 
 import abctk.transform_ABC.jigg as jg
-from abctk.types.ABCCat import ABCCat, ABCCatReprMode
+from abctk.obj.ABCCat import ABCCat, ABCCatReprMode
 import abctk.io.nltk_tree as nt
 
 app = typer.Typer()

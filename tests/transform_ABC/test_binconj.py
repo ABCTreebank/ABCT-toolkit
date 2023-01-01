@@ -4,7 +4,7 @@ import pytest
 
 from nltk.tree import Tree
 
-from abctk.types.ABCCat import Annot, ABCCat
+from abctk.obj.ABCCat import Annot, ABCCat
 import abctk.io.nltk_tree as at
 import abctk.transform_ABC.binconj as abin
 

@@ -12,7 +12,7 @@ from nltk.tree import Tree
 import abctk.config
 import abctk.cli_typer.renumber
 import abctk.io.nltk_tree as nt
-import abctk.types.ABCCat as abcc
+import abctk.obj.ABCCat as abcc
 import abctk.transform_ABC.elim_trace
 
 X = typing.TypeVar("X", Tree, str)
