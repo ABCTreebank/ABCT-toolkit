@@ -93,24 +93,6 @@ def build_ext():
     # === END IF ===
     logger.info("Successfully built abs-hs (via stack)")
 
-
-    logger.info("Build move (via SBCL / Roswell)")
-    res_ros = subprocess.Popen(
-        (
-            "ros", "dump", "executable",
-            DIR_EXT_SRC / "move.ros",
-            "-o", DIR_RUNTIME / "move", "-f",
-        )
-    )
-    res_ros.wait()
-    if res_ros.returncode: # !== 0
-        raise subprocess.CalledProcessError(
-            res_stack.returncode, 
-            res_stack.args
-        )
-    # === END IF ===
-    logger.info("Successfully built move")
-
     # === Get stanford-tregex.jar ===
     logger.info("Obtain Stanford Tregex")
     tregex_zip_cache_path = xdg.xdg_cache_home() / "ABCTreebank-build/stanford-tregex-4.2.0.zip"
