@@ -8,8 +8,8 @@ else:
 
 import logging
 
+# Get the version of the package
 # https://packaging.python.org/guides/single-sourcing-package-version/#single-sourcing-the-package-version
-
 _version_raw = im.version("abctk")
 try:
     __version__ = Version(_version_raw)
@@ -21,4 +21,7 @@ logging.basicConfig(
 )
 
 class ABCTException(Exception):
+    """
+    The base class for runtime exceptions.
+    """
     pass

@@ -62,9 +62,24 @@ _annot_cat_basic_matcher = re.compile(r"^(?P<cat>[^#]*)(?P<feats>#.*)?$")
 _annot_feat_matcher = re.compile(r"#(?P<key>[^=]+)=(?P<val>[^#]*)")
 @attr.s(auto_attribs = True, slots = True, frozen = True)
 class Annot(typing.Generic[X_co]):
+    """ 
+    Represents an annotation to a tree node label.
+    """
+
     cat: X_co
+    """
+    The label (ABC category) to annotate.
+    """
+
     feats: typing.Dict[str, typing.Any] = attr.ib(factory = dict)
+    """
+    Meta-features to annotate the label with.
+    """
+
     pprinter_cat: typing.Callable[[X_co], str] = str
+    """
+    The pretty printer of labels.
+    """
     
     def pprint(
         self, 
@@ -266,6 +281,19 @@ class ElimType:
 
     @classmethod
     def is_compatible_repr(cls, input: str) -> bool:
+        '''
+        Check whether a given string is a valid representation of an elimination type.
+        
+        Parameters
+        ----------
+        input : str
+            the string to be parsed
+        
+        Returns
+        -------
+        `True` if legitimate.
+        '''
+        
         return (
             input in ("", "none")
             or bool(_re_elimtype.match(input))

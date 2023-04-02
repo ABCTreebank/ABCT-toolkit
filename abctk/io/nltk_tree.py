@@ -41,9 +41,18 @@ def _split_ID_from_Tree(tree) -> typing.Tuple[Keyaki_ID, Tree]:
     
     return ID, tree
 
+
 def parse_all_labels_Keyaki_Annot(
     tree: Tree
 ):
+    '''
+    Parses all labels of a tree into `abcc.Annot` objects.
+    The tree is modified in situ.
+    
+    Parameters
+    ----------
+    tree : Tree
+    '''
     stack = [tree]
 
     while stack:
@@ -104,6 +113,16 @@ class InvalidABCTreeException(ABCTException):
 def parse_all_labels_ABC(
     tree: Tree
 ):
+    '''
+    Takes a tree and recursively parses the labels of all the nodes 
+        as ABC categories (with annotations).
+        The tree is modified in situ.
+    
+    Parameters
+    ----------
+    tree : Tree
+    '''
+
     stack = [tree]
 
     while stack:
@@ -206,6 +225,18 @@ def dump_Keyaki_to_psd(
     folder: typing.Union[str, pathlib.Path, fs.base.FS],
     prog_stream: typing.Optional[typing.IO[str]] = sys.stderr,
 ) -> None:
+    '''
+    Takes a bunch of Keyaki trees, and dumps them into a folder.
+    
+    Parameters
+    ----------
+    tb
+        A stream of tuples of a tree ID and a tree,
+    folder
+        The folder to dump the trees to.
+    prog_stream
+        A stream to write progress to (using tqdm).
+    '''
     def _flatten_tree(tree: typing.Union[Tree, str]):
         if isinstance(tree, Tree):
             label = tree.label()
@@ -247,8 +278,20 @@ def dump_Keyaki_to_psd(
     if prog_stream:
         prog_stream.write("\n")
 
-
 def flatten_tree(tree: typing.Union[Tree, str]):
+    '''
+    Flatten a tree and return its Penn Treebank representation.
+    
+    Parameters
+    ----------
+    tree
+        The tree to flatten.
+    
+    Returns
+    -------
+        A Penn Treebank representation of the tree.
+    '''
+
     if isinstance(tree, Tree):
         label = tree.label()
         if isinstance(label, abcc.Annot):
@@ -264,6 +307,20 @@ def flatten_tree(tree: typing.Union[Tree, str]):
         return str(tree)
 
 def flatten_tree_with_ID(ID: Keyaki_ID, tree: typing.Union[Tree, str]):
+    '''
+    Flatten a tree in the Penn Treebank format with the ID attached to the top node
+    
+    Parameters
+    ----------
+    ID
+
+    tree
+    
+    Returns
+    -------
+        An Penn Treebank representation of the tree.
+    
+    '''
     return f"(TOP {flatten_tree(tree)} (ID {ID}))"
 
 def dump_ABC_to_psd(
@@ -271,6 +328,20 @@ def dump_ABC_to_psd(
     folder: typing.Union[str, pathlib.Path, fs.base.FS],
     prog_stream: typing.Optional[typing.IO[str]] = sys.stderr,
 ) -> None:
+    
+    '''
+    Takes a bunch of ABC trees, and dumps them into a folder.
+    
+    Parameters
+    ----------
+    tb
+        A stream of tuples of a tree ID and a tree,
+    folder
+        The folder to dump the trees to.
+    prog_stream
+        A stream to write progress to (using tqdm).
+    '''
+
     bucket = list(tb)
     bucket.sort(key = operator.itemgetter(0, 1))
     bucket_grouped = itertools.groupby(
