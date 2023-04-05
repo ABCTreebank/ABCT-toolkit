@@ -128,9 +128,13 @@ def parse_all_labels_ABC(
     while stack:
         pointer = stack.pop()
         if isinstance(pointer, Tree):
+            label: str = pointer.label()
+            if not label:
+                label = "EMPTY"
+
             pointer.set_label(
                 abcc.Annot.parse(
-                    pointer.label(),
+                    label,
                     parser_cat = abcc.ABCCat.parse, # NOTE: too slow
                     pprinter_cat = abcc.ABCCat.pprint,
                 )
