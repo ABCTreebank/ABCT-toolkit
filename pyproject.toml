@@ -53,8 +53,8 @@ jsonlines = "^2.0.0"
 packaging = "^21.3"
 nltk = "^3.6.5"
 PyYAML = "^6.0"
-svgling = {git = "https://github.com/rawlins/svgling"}
-abctk-obj = {git = "https://github.com/abctreebank/abctk.obj", rev = "0.1.0"}
+svgling = {git = "https://github.com/rawlins/svgling", rev = "fb254634287fa5a73687a49217eafb718b3cd285"}
+abctk-obj = {git = "https://github.com/abctreebank/abctk.obj", rev = "0.2.1"}
 
 [tool.poetry.dev-dependencies]
 pylint = "^2.6.0"
