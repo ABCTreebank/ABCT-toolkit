@@ -261,3 +261,50 @@ def cmd_normalize_category():
     """
     pass
 
+@app.command("to-viewer")
+def cmd_to_viewer(
+    source_path: pathlib.Path = typer.Argument(
+        ...,
+        allow_dash = True,
+    ),
+    dest_path: pathlib.Path = typer.Argument(
+        ...,
+        allow_dash = True,
+    ),
+    filename_pattern: str = typer.Option(
+        r".*\.psd$"
+        "--pattern", "-p",
+    ),
+):
+    """
+    Pack ABC trees into a single JSON file for the amoove viewer.
+    """
+    import json
+    from nltk.corpus.reader.bracket_parse import BracketParseCorpusReader
+    from abctk.io.nltk_tree import split_ID_from_Tree
+    import abctk.to_viewer as v
+
+    if source_path.name == "-":
+        # The source is STDIN
+        raise NotImplementedError
+    elif source_path.is_dir():
+        corpus = BracketParseCorpusReader(
+            str(source_path), r".*\.psd$"
+        )
+
+        trees = (
+            split_ID_from_Tree(tree) 
+            for tree 
+            in corpus.parsed_sents()
+        )
+        
+        views = tuple(v.to_viewer(t, id) for id, t in trees)
+        if dest_path.name == "-":
+            # The dest is STDOUT
+            json.dump(views, sys.stdout)
+        else:
+            with open(dest_path, "w") as f:
+                json.dump(views, f)
+
+    else:
+        raise NotImplementedError
