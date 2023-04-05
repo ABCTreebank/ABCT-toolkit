@@ -20,9 +20,21 @@ from abctk import ABCTException
 import abctk.obj.ABCCat as abcc
 from abctk.obj.Keyaki import Keyaki_ID
 
-def _split_ID_from_Tree(tree) -> typing.Tuple[Keyaki_ID, Tree]:
-    if len(tree) >= 2:
-        child_body, child_last = tree[:-1], tree[-1]
+X = typing.TypeVar("X", Tree, str)
+def split_ID_from_Tree(tree: X) -> typing.Tuple[Keyaki_ID, X]:
+    '''
+    Takes a tree as input, extracts the Keyaki ID from it if it exists, and returns a
+    tuple of the ID and the remainder part of the tree.
+    
+    Returns
+    -------
+        The function `split_ID_from_Tree` returns a tuple containing two values: a `Keyaki_ID` object and a
+    `Tree` object.
+    '''
+    if isinstance(tree, Tree) and len(tree) >= 2:
+        child_body: list[Tree]= tree[:-1]
+        child_last: Tree = tree[-1]
+
         if (
             child_last.label() == "ID" 
             and len(child_last) == 1 
@@ -87,7 +99,7 @@ def load_Keyaki_Annot_psd(
             fileids = re_filter,
         ).parsed_sents()
     ):
-        ID, content = _split_ID_from_Tree(tree)
+        ID, content = split_ID_from_Tree(tree)
         parse_all_labels_Keyaki_Annot(content)
         yield ID, content
         if prog_stream:
@@ -195,7 +207,7 @@ def load_ABC_psd(
         )
 
         for i, (ID, tree) in enumerate(
-            _split_ID_from_Tree(tree_raw)
+            split_ID_from_Tree(tree_raw)
             for tree_raw in corpus_reader.parsed_sents()
         ):
             try:
