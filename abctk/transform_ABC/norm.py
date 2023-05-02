@@ -205,3 +205,59 @@ def elaborate_cat_annotations(
     else:
         # do nothing
         return None
+    
+
+def elaborate_char_spans(
+    tree: typing.Union[str, Tree],
+    ID: str = "<UNKNOWN>",
+    offset: int = 0,
+) -> typing.Tuple[int, int]:
+    """
+    Elaborate the labels of a tree with character span information.
+    Note: 
+
+    Arguments
+    ---------
+    tree: str or Tree
+    ID: str
+    start: int
+        The char offset for `tree`. For internal use only.
+
+    Returns
+    -------
+    span
+        For internal recursion only.
+
+    Notes
+    -----
+    This method is destructive in the sense that the given `tree` is modified in situ.
+    """
+
+    if isinstance(tree, Tree):
+        self_label: Annot[ABCCat] = tree.label()
+        
+        self_cat = self_label.cat
+        if isinstance(self_cat, ABCCatBase) and self_cat.name == "COMMENT":
+            return (offset, offset)
+        else:
+            span_start = offset
+            span_end = offset
+
+            for child in tree:
+                # RECURSION and collect the end
+                _, span_end = elaborate_char_spans(child, ID, offset)
+                # move the offset
+                offset = span_end
+
+            self_label.feats["char-start"] = span_start
+            self_label.feats["char-end"] = span_end
+            return (span_start, span_end)
+    elif isinstance(tree, str):
+        l = (
+            0 
+            if tree.startswith("*") or tree.startswith("__") 
+            else len(tree) 
+        )
+        return (offset, offset + l)
+    else:
+        return (offset, offset)

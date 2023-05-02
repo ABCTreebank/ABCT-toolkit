@@ -265,6 +265,13 @@ def cmd_elaborate_cat_annotations(
         abctk.transform_ABC.norm.elaborate_cat_annotations(
             tree, ID,
         )
+
+def cmd_elaborate_char_spans(
+    ctx: typer.Context,
+):
+    tb: typing.Dict[str, Tree] = ctx.obj["treebank"]
+    for ID, tree in tqdm(tb, desc = "Elaborating char span annotations"):
+        abctk.transform_ABC.norm.elaborate_char_spans(
             tree, ID,
         )
 
@@ -498,6 +505,10 @@ _COMMAND_TABLE: typing.Dict[
     "elab-cat-annots": (
         cmd_elaborate_cat_annotations,
         "Elaborate category annotations on nodes",
+    ),
+    "elab-char-spans": (
+        cmd_elaborate_char_spans,
+        "Elaborate char span annotations on nodes",
     ),
     "obfus": (
         cmd_obfuscate_tree,
