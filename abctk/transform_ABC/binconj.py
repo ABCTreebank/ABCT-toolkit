@@ -179,7 +179,7 @@ def binarize_conj_tree(
 
     Notes
     -----
-    This method always creates a new Tree instance.
+    This method is safe in the sense that it always creates a new Tree instance.
     """
     label: abcc.Annot[abcc.ABCCat] = tree.label()
     children_binarized = [

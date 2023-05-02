@@ -108,7 +108,25 @@ def cmd_from_file(
 # Subcommands
 # ================
 
+# ----------------
+# General decorators
+# ----------------
 def lift_func(name: str, bar_desc: str = ""): 
+    '''
+    A decorator that takes in a tree-modifying function 
+    and returns a new function that
+    iterates through a treebank 
+    and applies the input function to each tree, 
+    handling exceptions and logging progress.
+    
+    Parameters
+    ----------
+    name : str
+        The name of the lift function subcommand.
+    bar_desc : str
+        A string that describes the progress bar for the `tqdm` library.
+    '''
+
     def decorate(f: typing.Callable[[Tree, str], typing.Any]):
         def cmd(ctx: typer.Context):
             skip_ill_trees = ctx.obj["CONFIG"]["skip-ill-trees"]
@@ -137,6 +155,21 @@ def lift_func(name: str, bar_desc: str = ""):
     return decorate
 
 def lift_func_newobj(name: str, bar_desc: str = ""):
+    '''
+    A decorator that takes in a tree-generating function 
+    and returns a new function that
+    iterates through a treebank 
+    and applies the input function to each tree, 
+    handling exceptions and logging progress.
+    
+    Parameters
+    ----------
+    name : str
+        The name of the lift function subcommand.
+    bar_desc : str
+        A string that describes the progress bar for the `tqdm` library.
+    '''
+
     def decorate(f: typing.Callable[[Tree, str], typing.Any]):
         def cmd(ctx: typer.Context):
             skip_ill_trees = ctx.obj["CONFIG"]["skip-ill-trees"]
@@ -168,6 +201,9 @@ def lift_func_newobj(name: str, bar_desc: str = ""):
         return cmd 
     return decorate
 
+# ----------------
+# Particular functions
+# ----------------
 def cmd_minimize_tree(
     ctx: typer.Context,
     discard_trace: bool = typer.Option(
@@ -390,7 +426,7 @@ _COMMAND_TABLE: typing.Dict[
                 ID
             )
         ),
-        "Do nothing (but health-check #comp features."
+        "Do nothing (but health-check #comp features)."
     ),
     "bin-conj": (
         lift_func_newobj("bin-conj", "Binarize CONJPs")(
@@ -460,14 +496,15 @@ _COMMAND_TABLE: typing.Dict[
     ),
     "obfus": (
         cmd_obfuscate_tree,
-        "",
+        "Obfuscate lexical nodes",
     ),
     "decrypt": (
         cmd_decrypt_tree,
-        "",
+        "Decrypt lexical nodes",
     )
 }
 
+# Register all commands in `_COMMAND_TABLE`
 for name, (command, desc) in _COMMAND_TABLE.items():
     app = typer.Typer()
     app_treebank.command(
@@ -479,6 +516,9 @@ for name, (command, desc) in _COMMAND_TABLE.items():
         help = desc or None
     )(command)
 
+# ------------
+# Writer 
+# ------------
 def cmd_write(
     ctx: typer.Context, 
     dest_path: pathlib.Path = typer.Argument(
