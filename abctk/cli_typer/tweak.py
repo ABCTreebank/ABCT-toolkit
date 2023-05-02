@@ -219,12 +219,14 @@ def cmd_restore_trace(
                 )
                 raise
 
-def cmd_elaborate_tree(
+def cmd_elaborate_cat_annotations(
     ctx: typer.Context,
 ):
     tb: typing.Dict[str, Tree] = ctx.obj["treebank"]
-    for ID, tree in tqdm(tb, desc = "Elaborating annotations"):
-        abctk.transform_ABC.norm.elaborate_tree(
+    for ID, tree in tqdm(tb, desc = "Elaborating category-related annotations"):
+        abctk.transform_ABC.norm.elaborate_cat_annotations(
+            tree, ID,
+        )
             tree, ID,
         )
 
@@ -452,10 +454,10 @@ _COMMAND_TABLE: typing.Dict[
         cmd_minimize_tree,
         "Minimize node annotations",
     ),
-    "elab-nodes": (
-        cmd_elaborate_tree,
-        "Elaborate node annotations",
-    ), 
+    "elab-cat-annots": (
+        cmd_elaborate_cat_annotations,
+        "Elaborate category annotations on nodes",
+    ),
     "obfus": (
         cmd_obfuscate_tree,
         "",

@@ -4,10 +4,10 @@ import attr
 
 from nltk.tree import Tree
 import abctk.obj.ABCCat as abcc
-from abctk.obj.ABCCat import ABCCatBot, Annot, ABCCat
+from abctk.obj.ABCCat import ABCCatBot, Annot, ABCCat, ABCCatBase
 
 def minimize_tree(
-    tree,
+    tree: typing.Union[str, Tree],
     ID: str = "<UNKNOWN>",
     discard_trace: bool = True,
     reduction_check: bool = True,
@@ -23,6 +23,10 @@ def minimize_tree(
     -------
     category: ABCCat or None
         For internal recursion only.
+
+    Notes
+    -----
+    This method is destructive in the sense that the given `tree` is modified in situ.
     """
 
     if isinstance(tree, Tree):
@@ -80,12 +84,13 @@ def minimize_tree(
         # do nothing
         return None
 
-def elaborate_tree(
+def elaborate_cat_annotations(
     tree,
     ID: str = "<UNKNOWN>",
 ) -> typing.Optional[ABCCat]:
     """
     Elaborate the labels of a tree by calculating and verifying compositions.
+    Note: `tree` is modified in situ.
 
     Arguments
     ---------
@@ -102,7 +107,7 @@ def elaborate_tree(
         self_label_feats = self_label.feats
 
         children_cats = tuple(
-            elaborate_tree(child, ID)
+            elaborate_cat_annotations(child, ID)
             for child in tree
         )
         # NOTE: subtrees tampered
