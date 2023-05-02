@@ -10,6 +10,7 @@ import operator
 import pathlib
 import sys
 import typing
+from typing import Tuple
 
 import fs
 import fs.base
@@ -18,41 +19,54 @@ from nltk.corpus.reader.bracket_parse import BracketParseCorpusReader
 
 from abctk import ABCTException
 import abctk.obj.ABCCat as abcc
+from abctk.obj.ID import RecordID, SimpleRecordID
 from abctk.obj.Keyaki import Keyaki_ID
+from abctk.obj.comparative import ABCTComp_BCCWJ_ID
 
 X = typing.TypeVar("X", Tree, str)
-def split_ID_from_Tree(tree: X) -> typing.Tuple[Keyaki_ID, X]:
+def split_ID_from_Tree(tree: X) -> Tuple[RecordID, X]:
     '''
     Takes a tree as input, extracts the Keyaki ID from it if it exists, and returns a
     tuple of the ID and the remainder part of the tree.
     
     Returns
     -------
-        The function `split_ID_from_Tree` returns a tuple containing two values: a `Keyaki_ID` object and a
-    `Tree` object.
+    ID : :class:`Keyaki_ID` or class:`ABCTComp_BCCWJ_ID`
+    tree: :class:`nltk.Tree`
     '''
+
+    # Check whether there is an ID node available at the root
     if isinstance(tree, Tree) and len(tree) >= 2:
         child_body: list[Tree]= tree[:-1]
         child_last: Tree = tree[-1]
-
         if (
             child_last.label() == "ID" 
             and len(child_last) == 1 
             and isinstance(child_last[0], str)
         ):
-            ID = Keyaki_ID.from_string(child_last[0])
+            # If found
+            ID_raw: str = child_last[0] # type: ignore
+            ID = (
+                ABCTComp_BCCWJ_ID.from_string(ID_raw)
+                or Keyaki_ID.from_string(ID_raw)
+                or SimpleRecordID.from_string(ID_raw)
+            )
+            
+            # Reform the tree
             if len(child_body) == 1:
                 tree = child_body[0]
             else:
                 tree = Tree(node = "", children = child_body)
         else:
+            # If no ID node found
+            # Create a default ID
             ID = Keyaki_ID.new()
-    
     else:
+        # If no ID node found
+        # Create a default ID
         ID = Keyaki_ID.new()
     
     return ID, tree
-
 
 def parse_all_labels_Keyaki_Annot(
     tree: Tree

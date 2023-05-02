@@ -12,8 +12,10 @@ from tqdm.auto import tqdm
 import typer
 from nltk.tree import Tree
 
+from abctk.obj.ID import RecordID
+from abctk.obj.Keyaki import Keyaki_ID
+
 import abctk.io.nltk_tree as nt
-from abctk.io.nltk_tree import Keyaki_ID
 import abctk.transform_ABC.norm
 import abctk.transform_ABC.binconj
 import abctk.transform_ABC.elim_empty 
@@ -232,7 +234,7 @@ def cmd_restore_trace(
     logger.info(f"Subcommand invoked: restore-trace")
     skip_ill_trees = ctx.obj["CONFIG"]["skip-ill-trees"]
 
-    tb: typing.List[typing.Tuple[Keyaki_ID, Tree]] = ctx.obj["treebank"]
+    tb: typing.List[typing.Tuple[RecordID, Tree]] = ctx.obj["treebank"]
 
     for ID, tree in tqdm(tb, desc = "Restoring *T*"):
         try:
@@ -280,7 +282,7 @@ Default to /closed/."""
     """
 
     skip_ill_trees = ctx.obj["CONFIG"]["skip-ill-trees"]
-    tb: typing.List[typing.Tuple[Keyaki_ID, Tree]] = ctx.obj["treebank"]
+    tb: typing.List[typing.Tuple[RecordID, Tree]] = ctx.obj["treebank"]
     matcher = re.compile(filter)
     
     def _yield(tb):
@@ -354,18 +356,21 @@ def cmd_decrypt_tree(
     """
     def _parse_source(line: str):
         line_broken = line.strip().split("\t")
-        return Keyaki_ID.from_string(line_broken[0]), line_broken[1]
+        return (
+            Keyaki_ID.from_string(line_broken[0]) or Keyaki_ID.new(), 
+            line_broken[1]
+        )
 
     with open(source) as h_source:
-        source_dict: typing.Dict[Keyaki_ID, str] = dict(
+        source_dict = dict(
             _parse_source(line) for line in h_source
         )
 
     skip_ill_trees = ctx.obj["CONFIG"]["skip-ill-trees"]
-    tb: typing.List[typing.Tuple[Keyaki_ID, Tree]] = ctx.obj["treebank"]
+    tb: typing.List[typing.Tuple[RecordID, Tree]] = ctx.obj["treebank"]
     matcher = re.compile(filter)
 
-    def _yield(tb) -> typing.Iterator[typing.Tuple[Keyaki_ID, Tree]]:
+    def _yield(tb) -> typing.Iterator[typing.Tuple[RecordID, Tree]]:
         for ID, tree in tqdm(tb, desc = "Decrypt trees"):
             try:
                 if matcher.search(ID.name):
