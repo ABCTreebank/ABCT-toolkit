@@ -275,6 +275,94 @@ def cmd_elaborate_char_spans(
             tree, ID,
         )
 
+# ----------------
+# Incorporating comparative annotations
+# ----------------
+def cmd_incorporate_comps(
+    ctx: typer.Context,
+    comp_file: typer.FileText = typer.Argument(
+        ...,
+        help = "Path to a comparative annotation file"
+    ),
+    comp_file_format: str = typer.Option(
+        "yaml",
+        "--format", "-f",
+        help = "The format of the comparative annotation file"
+    ),
+):
+    import json
+    import ruamel.yaml
+
+    from abctk.obj.ID import SimpleRecordID
+    from abctk.obj.Keyaki import Keyaki_ID
+    from abctk.obj.comparative import CompRecord, ABCTComp_BCCWJ_ID
+    from abctk.transform_ABC.incorporate_comp import incorporate_all_comps
+
+    # Load file
+    comp_file_format = comp_file_format.lower()
+
+    if comp_file_format == "jsonl":
+        comp_annots_raw: typing.Iterator[dict] = (
+            json.loads(line) for line in comp_file
+        )
+    elif comp_file_format == "yaml":
+        yaml = ruamel.yaml.YAML()
+        comp_annots_raw: typing.Iterator[dict] = (
+            yaml.load(comp_file)
+        )
+    else:
+        logger.error(
+            f"Wrong option for --format: {comp_file_format}. "
+            "Choose between `yaml` and `jsonl`."
+        )
+        raise ValueError
+
+    def _parse_comp_raw(record: dict):
+        ID_raw = record["ID"]
+        ID_parsed = (
+            ABCTComp_BCCWJ_ID.from_string(ID_raw)
+            or Keyaki_ID.from_string(ID_raw)
+            or SimpleRecordID.from_string(ID_raw)
+        )
+
+        return (
+            ID_parsed,
+            CompRecord.from_brackets(
+                line = record["annot"],
+                ID_v1 = record.get("ID_v1"),
+                ID = ID_raw,
+            ).dice()
+        )
+
+    # indexing
+    comp_annots = dict(_parse_comp_raw(record) for record in comp_annots_raw)
+
+    for ID, tree in tqdm(
+        ctx.obj["treebank"], 
+        desc = "Incorporating comparative annotations"
+    ):
+        comp_record = comp_annots.get(ID)
+        if comp_record:
+            incorporate_all_comps(
+                comp_record.comp,
+                tree,
+                ID,
+            )
+        else:
+            logger.warning(
+                f"Comparative annotations are not found for the tree (ID: {ID}). "
+                f"This tree will be skipped."
+            )
+
+app_treebank.command(
+    "incorp-comps",
+    help = "Incorporate comparative annotations to trees."
+)(cmd_incorporate_comps)
+app_file.command(
+    "incorp-comps",
+    help = "Incorporate comparative annotations to trees."
+)(cmd_incorporate_comps)
+
 def cmd_obfuscate_tree(
     ctx: typer.Context,
     filter: str = typer.Option(
