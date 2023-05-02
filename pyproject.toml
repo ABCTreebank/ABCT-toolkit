@@ -15,8 +15,7 @@ include = ["ext_src/", "ext_scripts/"]
 exclude = ["**/docs"]
 
 [tool.poetry.urls]
-"Bug Tracker" = "https://github.com/ABCTreebank/ABCTreebank/issues"
-
+"Bug Tracker" = "https://github.com/ABCTreebank/ABCT-toolkit/issues"
 
 [tool.poetry.scripts]
 abctk = "abctk.cli_typer:app"
