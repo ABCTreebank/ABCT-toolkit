@@ -336,7 +336,7 @@ def flatten_tree(tree: typing.Union[Tree, str]):
     else:
         return str(tree)
 
-def flatten_tree_with_ID(ID: Keyaki_ID, tree: typing.Union[Tree, str]):
+def flatten_tree_with_ID(ID: RecordID, tree: typing.Union[Tree, str]):
     '''
     Flatten a tree in the Penn Treebank format with the ID attached to the top node
     
