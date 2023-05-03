@@ -308,7 +308,12 @@ def dump_Keyaki_to_psd(
     if prog_stream:
         prog_stream.write("\n")
 
-def flatten_tree(tree: typing.Union[Tree, str]):
+def flatten_tree(
+    tree: typing.Union[Tree, str],
+    hide_all_feats: bool = False,
+    feats_to_print: typing.Sequence[str] = tuple(),
+    verbose_role: bool = False,
+):
     '''
     Flatten a tree and return its Penn Treebank representation.
     
@@ -316,6 +321,8 @@ def flatten_tree(tree: typing.Union[Tree, str]):
     ----------
     tree
         The tree to flatten.
+    verbose_role
+        Verbosely print `#role=none` if `True`.
     
     Returns
     -------
@@ -325,38 +332,65 @@ def flatten_tree(tree: typing.Union[Tree, str]):
     if isinstance(tree, Tree):
         label = tree.label()
         if isinstance(label, abcc.Annot):
-            label_pprint = label.pprint()
+            label_pprint = label.pprint(
+                hide_all_feats = hide_all_feats,
+                feats_to_print = feats_to_print,
+                verbose_role = verbose_role,
+            )
         else:
             label_pprint = str(label)
 
         children_pprint = " ".join(
-            flatten_tree(child) for child in tree
+            flatten_tree(
+                child,
+                hide_all_feats = hide_all_feats,
+                feats_to_print = feats_to_print,
+                verbose_role = verbose_role,
+            )
+            for child in tree
         )
         return f"({label_pprint} {children_pprint})"
     else:
         return str(tree)
 
-def flatten_tree_with_ID(ID: RecordID, tree: typing.Union[Tree, str]):
+def flatten_tree_with_ID(
+    ID: RecordID, 
+    tree: typing.Union[Tree, str],
+    hide_all_feats: bool = False,
+    feats_to_print: typing.Sequence[str] = tuple(),
+    verbose_role: bool = False,
+):
     '''
     Flatten a tree in the Penn Treebank format with the ID attached to the top node
     
     Parameters
     ----------
     ID
-
+        A tree ID
     tree
-    
+        A tree to flatten.
+
     Returns
     -------
-        An Penn Treebank representation of the tree.
+        An Penn Treebank representation of `tree`.
     
     '''
-    return f"(TOP {flatten_tree(tree)} (ID {ID}))"
+    return f"""(TOP {
+        flatten_tree(
+            tree, 
+            hide_all_feats = hide_all_feats,
+            feats_to_print = feats_to_print, 
+            verbose_role = verbose_role
+        )
+    } (ID {ID}))"""
 
 def dump_ABC_to_psd(
     tb: typing.Iterable[typing.Tuple[Keyaki_ID, Tree]],
     folder: typing.Union[str, pathlib.Path, fs.base.FS],
     prog_stream: typing.Optional[typing.IO[str]] = sys.stderr,
+    hide_all_feats: bool = False,
+    feats_to_print: typing.Sequence[str] = tuple(),
+    verbose_role: bool = False,
 ) -> None:
     
     '''
@@ -371,7 +405,6 @@ def dump_ABC_to_psd(
     prog_stream
         A stream to write progress to (using tqdm).
     '''
-
     bucket = list(tb)
     bucket.sort(key = operator.itemgetter(0, 1))
     bucket_grouped = itertools.groupby(
@@ -390,7 +423,13 @@ def dump_ABC_to_psd(
             with h_folder.open(file_path, "w") as h_file:
                 h_file.write(
                     "\n".join(
-                        flatten_tree_with_ID(ID, tree)
+                        flatten_tree_with_ID(
+                            ID, 
+                            tree, 
+                            hide_all_feats = hide_all_feats,
+                            feats_to_print = feats_to_print,
+                            verbose_role = verbose_role,
+                        )
                         for ID, tree in trees
                     )
                 )

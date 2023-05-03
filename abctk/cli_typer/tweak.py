@@ -637,7 +637,21 @@ def cmd_write(
     force_dir: bool = typer.Option(
         False,
         "--force-dir/--no-force-dir",
-    )
+    ),
+    hide_all_feats: bool = typer.Option(
+        False,
+        "--hide-feats/--no-hide-feats",
+        help = "Hide all meta features. Can be overwritten by `--print-feat`.",
+    ),
+    feats_to_print: typing.List[str] = typer.Option(
+        [],
+        "--print-feat",
+    ),
+    verbose_role: bool = typer.Option(
+        False,
+        "--verbose-role/--no-verbose-role",
+        help = "Verbosely print `#role=none` if set."
+    ),
 ):
     dest_file: typing.Optional[typing.TextIO] = None
     if dest_path.name == "-":
@@ -653,14 +667,23 @@ def cmd_write(
             dest_file.writelines(
                 (
                     nt.flatten_tree_with_ID(
-                        ID, tree
+                        ID, tree,
+                        hide_all_feats = hide_all_feats,
+                        feats_to_print = feats_to_print,
+                        verbose_role = verbose_role,
                     ),
                     "\n",
                 )
             )
     else:
         with fs.open_fs(str(dest_path), create = True) as folder:
-            nt.dump_ABC_to_psd(ctx.obj["treebank"], folder)
+            nt.dump_ABC_to_psd(
+                ctx.obj["treebank"], 
+                folder,
+                hide_all_feats = hide_all_feats,
+                feats_to_print = feats_to_print,
+                verbose_role = verbose_role,
+            )
 
 app_treebank.command(
     "write",
