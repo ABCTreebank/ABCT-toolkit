@@ -75,4 +75,4 @@ def incorporate_all_comps(
 
     # apply the results to the relevant nodes
     for idx_comp, idx_feats in zip(row_ind, col_ind):
-        feats_list[idx_feats]["comp"] = f"{spans[idx_comp].label},1"
+        feats_list[idx_feats]["comp"] = f"1,{spans[idx_comp].label}"
