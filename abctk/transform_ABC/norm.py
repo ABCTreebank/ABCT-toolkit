@@ -106,9 +106,18 @@ def elaborate_cat_annotations(
         self_label_cat = self_label.cat
         self_label_feats = self_label.feats
 
+        if (
+            isinstance(self_label_cat, ABCCatBase) and self_label_cat.name == "COMMENT"
+            or self_label_cat == "COMMENT"
+        ):
+            return None
+
+        # RECURSION
         children_cats = tuple(
-            elaborate_cat_annotations(child, ID)
-            for child in tree
+            filter(
+                None,
+                (elaborate_cat_annotations(child, ID) for child in tree)
+            )
         )
         # NOTE: subtrees tampered
 
@@ -237,7 +246,10 @@ def elaborate_char_spans(
         self_label: Annot[ABCCat] = tree.label()
         
         self_cat = self_label.cat
-        if isinstance(self_cat, ABCCatBase) and self_cat.name == "COMMENT":
+        if (
+            isinstance(self_cat, ABCCatBase) and self_cat.name == "COMMENT"
+            or self_cat == "COMMENT"
+        ):
             return (offset, offset)
         else:
             span_start = offset
