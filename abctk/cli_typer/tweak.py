@@ -96,7 +96,12 @@ def cmd_from_file(
             os.symlink(source_path, dst = source_file_path)
             logger.info(f"File symlinked to {source_file_path}")
 
-        tb = list(nt.load_ABC_psd(str(temp_folder.name), re_filter = ".*"))
+        tb = list(
+            nt.load_Keyaki_Annot_psd(
+                str(temp_folder.name),
+                re_filter = ".*"
+            )
+        )
         
     finally:
         if source_file: source_file.close()
