@@ -10,7 +10,7 @@ import operator
 import pathlib
 import sys
 import typing
-from typing import Tuple
+from typing import Tuple, Union
 
 import fs
 import fs.base
@@ -18,7 +18,7 @@ from nltk import Tree
 from nltk.corpus.reader.bracket_parse import BracketParseCorpusReader
 
 from abctk import ABCTException
-import abctk.obj.ABCCat as abcc
+from abctk.obj.ABCCat import ABCCat, Annot
 from abctk.obj.ID import RecordID, SimpleRecordID
 from abctk.obj.Keyaki import Keyaki_ID
 from abctk.obj.comparative import ABCTComp_BCCWJ_ID
@@ -31,7 +31,7 @@ def split_ID_from_Tree(tree: X) -> Tuple[RecordID, X]:
     
     Returns
     -------
-    ID : :class:`Keyaki_ID` or class:`ABCTComp_BCCWJ_ID`
+    ID : :class:`RecordID`
     tree: :class:`nltk.Tree`
     '''
 
@@ -72,7 +72,7 @@ def parse_all_labels_Keyaki_Annot(
     tree: Tree
 ):
     '''
-    Parses all labels of a tree into `abcc.Annot` objects.
+    Parses all labels of a tree into :class:`Annot` objects.
     The tree is modified in situ.
     
     Parameters
@@ -84,7 +84,7 @@ def parse_all_labels_Keyaki_Annot(
     while stack:
         pointer = stack.pop()
         if isinstance(pointer, Tree):
-            pointer.set_label(abcc.Annot.parse(pointer.label()))
+            pointer.set_label(Annot.parse(pointer.label()))
         else:
             # do nothing
             pass
@@ -93,7 +93,7 @@ def load_Keyaki_Annot_psd(
     folder: typing.Union[str, pathlib.Path], 
     re_filter: str = r".*\.psd$",
     prog_stream: typing.Optional[typing.IO[str]] = sys.stderr,
-) -> typing.Iterator[typing.Tuple[Keyaki_ID, Tree]]:
+) -> typing.Iterator[typing.Tuple[RecordID, Tree]]:
     """
     Utilizing NLTK, load the Keyaki Treebank with additional annotations for the ABC Treebank.
     
@@ -137,7 +137,8 @@ class InvalidABCTreeException(ABCTException):
         super().__init__(f"Failed to parse the ABC tree (ID: {ID})")
 
 def parse_all_labels_ABC(
-    tree: Tree
+    tree: Tree,
+    ID: Union[RecordID, str] = "<UNKNOWN>",
 ):
     '''
     Takes a tree and recursively parses the labels of all the nodes 
@@ -180,7 +181,7 @@ def load_ABC_psd(
     re_filter: typing.Union[str, typing.Pattern] = r".*\.psd$",
     prog_stream: typing.Optional[typing.IO[str]] = sys.stderr,
     skip_ill_trees: bool = True,
-) -> typing.Iterator[typing.Tuple[Keyaki_ID, Tree]]:
+) -> typing.Iterator[typing.Tuple[RecordID, Tree]]:
     """
     Utilizing NLTK, load the ABC Treebank.
     
@@ -270,7 +271,7 @@ def dump_Keyaki_to_psd(
     def _flatten_tree(tree: typing.Union[Tree, str]):
         if isinstance(tree, Tree):
             label = tree.label()
-            if isinstance(label, abcc.Annot):
+            if isinstance(label, Annot):
                 label_pprint = label.pprint()
             else:
                 label_pprint = str(label)
@@ -331,7 +332,7 @@ def flatten_tree(
 
     if isinstance(tree, Tree):
         label = tree.label()
-        if isinstance(label, abcc.Annot):
+        if isinstance(label, Annot):
             label_pprint = label.pprint(
                 hide_all_feats = hide_all_feats,
                 feats_to_print = feats_to_print,
