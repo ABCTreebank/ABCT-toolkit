@@ -56,7 +56,23 @@ def split_ID_from_Tree(tree: X) -> Tuple[RecordID, X]:
             if len(child_body) == 1:
                 tree = child_body[0]
             else:
-                tree = Tree(node = "", children = child_body)
+                children_substantial = tuple(
+                    child for child in child_body 
+                    if child.label() != "COMMENT"
+                )
+                children_comments = tuple(
+                    child for child in child_body 
+                    if child.label() == "COMMENT"
+                )
+
+                if len(children_substantial) == 1:
+                    only_child = children_substantial[0]
+                    tree = tree.__class__(
+                        node = only_child.label(),
+                        children = [*only_child, *children_comments],
+                    )
+                else:
+                    tree = tree.__class__(node = "ROOT", children = child_body)
         else:
             # If no ID node found
             # Create a default ID
