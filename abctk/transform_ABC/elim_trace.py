@@ -1,9 +1,12 @@
 import logging
+from typing import Union
+
 logger = logging.getLogger(__name__)
 
 from nltk.tree import Tree
 
 from abctk import ABCTException
+from abctk.obj.ID import RecordID
 import abctk.obj.ABCCat as abcc
 from abctk.obj.ABCCat import ABCCat, ABCCatFunctor, ABCCatReady, Annot
 
@@ -68,7 +71,7 @@ def elim_trace(
 
 def restore_rel_trace(
     tree,
-    ID: str = "<UNKNOWN>",
+    ID: Union[RecordID, str] = "<UNKNOWN>",
     generous: bool = False
 ) -> None:
     """
@@ -130,11 +133,11 @@ def restore_rel_trace(
                         )
                     else:
                         raise UnexpectedLexicalNodeException(
-                            ID, tree, only_child
+                            str(ID), tree, only_child
                     )
                 elif not isinstance(only_child, Tree):
                     raise IllegalRelativizationSubtreeException(
-                        ID, tree,
+                        str(ID), tree,
                         None,
                     )
                 else:
@@ -193,7 +196,7 @@ def restore_rel_trace(
                             )
                         else:
                             raise IllegalRelativizationSubtreeException(
-                                ID, tree,
+                                str(ID), tree,
                                 child_cat,
                             )
 
