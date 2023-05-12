@@ -118,86 +118,104 @@ def cmd_from_file(
 # ----------------
 # General decorators
 # ----------------
-def lift_func(name: str, bar_desc: str = ""): 
-    '''
-    A decorator that takes in a tree-modifying function 
-    and returns a new function that
-    iterates through a treebank 
-    and applies the input function to each tree, 
-    handling exceptions and logging progress.
+X = typing.TypeVar("X")
+class CommandObject(typing.NamedTuple):
+    callback: typing.Callable[[typer.Context], typing.Any]
+    help_text: str
     
-    Parameters
-    ----------
-    name : str
-        The name of the lift function subcommand.
-    bar_desc : str
-        A string that describes the progress bar for the `tqdm` library.
-    '''
+    @classmethod
+    def wrap_modifier(
+        cls, 
+        function: typing.Callable[[Tree, str], typing.Any],
+        name: str, 
+        bar_desc: str = "",
+        help_text: str = "",
+    ): 
+        '''
+        Parameters
+        ----------
+        function
 
-    def decorate(f: typing.Callable[[Tree, str], typing.Any]):
+        name
+            The name of the subcommand.
+        bar_desc
+            A string that describes the progress bar for the :module:`tqdm` library.
+        help_text
+            A help text for the subcommand.
+        '''
+
         def cmd(ctx: typer.Context):
             skip_ill_trees = ctx.obj["CONFIG"]["skip-ill-trees"]
 
             logger.info(f"Subcommand invoked: {name}")
-            for ID, tree in tqdm(ctx.obj["treebank"], desc = bar_desc):
+            for ID, tree in tqdm(
+                ctx.obj["treebank"], 
+                desc = bar_desc or f"Running {name}",
+            ):
                 try:
-                    f(tree, ID)
+                    function(tree, ID)
                 except Exception as e:
                     if skip_ill_trees:
                         logger.warning(
-                            "An exception was raised by the convertion function. "
+                            "An exception was raised by the conversion function. "
                             "The tree will be abandoned."
                             f"Tree ID: {ID}. "
                             f"Exception: {e}"
                         )
                     else:
                         logger.error(
-                            "An exception was raised by the convertion function. "
+                            "An exception was raised by the conversion function. "
                             "The process has been aborted."
                             f"Tree ID: {ID}. "
                             f"Exception: {e}"
                         )
                         raise
-        return cmd
-    return decorate
+        return cls(cmd, help_text)
 
-def lift_func_newobj(name: str, bar_desc: str = ""):
-    '''
-    A decorator that takes in a tree-generating function 
-    and returns a new function that
-    iterates through a treebank 
-    and applies the input function to each tree, 
-    handling exceptions and logging progress.
-    
-    Parameters
-    ----------
-    name : str
-        The name of the lift function subcommand.
-    bar_desc : str
-        A string that describes the progress bar for the `tqdm` library.
-    '''
+    @classmethod
+    def wrap_creator(
+        cls, 
+        function: typing.Callable[[X, str], X],
+        name: str, 
+        bar_desc: str = "",
+        help_text: str = "",
+    ):
+        '''
+        Parameters
+        ----------
+        function
 
-    def decorate(f: typing.Callable[[Tree, str], typing.Any]):
+        name
+            The name of the subcommand.
+        bar_desc
+            A string that describes the progress bar for the :module:`tqdm` library.
+        help_text
+            A help text for the subcommand.
+        '''
+
         def cmd(ctx: typer.Context):
             skip_ill_trees = ctx.obj["CONFIG"]["skip-ill-trees"]
 
             logger.info(f"Subcommand invoked: {name}")
         
             def _yield(tb):
-                for ID, tree in tqdm(tb, desc = bar_desc):
+                for ID, tree in tqdm(
+                    tb, 
+                    desc = bar_desc or f"Running {name}"
+                ):
                     try:
-                        yield ID, f(tree, ID)
+                        yield ID, function(tree, ID)
                     except Exception as e:
                         if skip_ill_trees:
                             logger.warning(
-                                "An exception was raised by the convertion function. "
+                                "An exception was raised by the conversion function. "
                                 "The tree will be abandoned."
                                 f"Tree ID: {ID}. "
                                 f"Exception: {e}"
                             )
                         else:
                             logger.error(
-                                "An exception was raised by the convertion function. "
+                                "An exception was raised by the conversion function. "
                                 "The process has been aborted."
                                 f"Tree ID: {ID}. "
                                 f"Exception: {e}"
@@ -205,8 +223,8 @@ def lift_func_newobj(name: str, bar_desc: str = ""):
                             raise
 
             ctx.obj["treebank"] = list(_yield(ctx.obj["treebank"]))
-        return cmd 
-    return decorate
+        
+        return cls(cmd, help_text)
 
 # ----------------
 # Particular functions
@@ -503,37 +521,29 @@ def cmd_decrypt_tree(
 
     ctx.obj["treebank"] = list(_yield(tb))
 
-
-_COMMAND_TABLE: typing.Dict[
-    str, 
-    typing.Tuple[
-        typing.Callable[[typer.Context], typing.Any], 
-        str,
-    ]
-] = {
-    "relax": (
-        lambda _: None,
-        "Do nothing (Just load trees and check the annotations therein)."
+_COMMAND_TABLE: typing.Dict[str, CommandObject] = {
+    "relax": CommandObject.wrap_modifier(
+        function = lambda tree, ID: None,
+        name = "relax",
+        bar_desc = "",
+        help_text = "Do nothing (Just load trees and check meta-annotations)."
     ),
-    "parse-ABC-label": (
-        lift_func("parse-ABC-label", "Parse all ABC labels")(
-            lambda tree, ID: (
-                nt.parse_all_labels_ABC(tree),
-                ID
+    "parse-ABC-cats": CommandObject.wrap_modifier(
+        function = nt.parse_all_labels_ABC,
+        name = "parse-ABC-cats",
+        bar_desc = "Parsing ABC cats",
+        help_text = "Parse all ABC categories in given trees."
+    ),
+    "check-comp": CommandObject.wrap_modifier(
+        function = lambda tree, ID: abctk.check_comp_feat.check_comp_feats(
+            abctk.check_comp_feat.collect_comp_feats(
+                tree, ID,
             ),
+            ID,
         ),
-        "Parse all ABC labels in given trees."
-    ),
-    "check-comp": (
-        lift_func("check-comp", "Check #comp feats")(
-            lambda tree, ID: abctk.check_comp_feat.check_comp_feats(
-                abctk.check_comp_feat.collect_comp_feats(
-                    tree, ID,
-                ),
-                ID
-            )
-        ),
-        "Do nothing (but health-check #comp features)."
+        name = "check-comp",
+        bar_desc = "Checking #comp",
+        help_text = "Health-check #comp features."
     ),
     "bin-conj": (
         lift_func_newobj("bin-conj", "Binarize CONJPs")(
@@ -541,77 +551,74 @@ _COMMAND_TABLE: typing.Dict[
         ),
         "Binarize conjunctions.",
     ),
-    "flatten-conj": (
+    "bin-conj": CommandObject.wrap_creator(
+        function = abctk.transform_ABC.binconj.binarize_conj_tree,
+        name = "bin-conj",
+        bar_desc = "Binarizing CONJPs",
+        help_text = "Binarize conjunctions. Expected to be invoked after parse-ABC-label."
+    ),
+    "flatten-conj": CommandObject(
         lambda ctx: NotImplemented,
         "Flatten conjunctions.",
         #"Flattening CONJPs",
     ),
-    "elim-empty": (
-        lift_func("elim-empty", "Eliminate empty nodes")(
-            abctk.transform_ABC.elim_empty.elim_empty_terminals
-        ),
-        "Eliminate nodes of empty categories.",
+    "elim-empty": CommandObject.wrap_modifier(
+        function = abctk.transform_ABC.elim_empty.elim_empty_terminals,
+        name = "elim-empty",
+        bar_desc = "Del'ing * and __",
+        help_text = "Eliminate nodes of empty categories."
     ),
-    "restore-empty": (
+    "restore-empty": CommandObject(
         lambda ctx: NotImplemented,
         "Restore nodes of empty categories.",
         # "Restore empty nodes"
     ),
-    "elim-trace": (
+    "elim-trace": CommandObject(
         lambda ctx: NotImplemented,
         "Eliminate traces of relative clauses.",
         # "Eliminating *T*"
     ),
-    "restore-trace": (
+    "restore-trace": CommandObject(
         cmd_restore_trace,
-        ""
+        "Restore traces of relative clauses."
     ),
-    "restore-trace-in-comp": (
-        lift_func_newobj(
-            "restore-trace-in-comp",
-            "Restore *T* *pro* in #comp"
-        )(
-            abctk.gen_comp.restore_traces_on_demand
-        ),
-        "Restore empty categories in #comp"
+    "restore-trace-in-comp": CommandObject.wrap_creator(
+        function = abctk.gen_comp.restore_traces_on_demand,
+        name = "restore-trace-in-comp",
+        bar_desc = "Restoring *T* and *pro* in #comp",
+        help_text = "Restore *T* and  *pro* in #comp.",
     ),
-    "janome": (
-        lift_func(
-            "janome",
-            "Adding Janome analyses"
-        )(
-            abctk.transform_ABC.morph_janome.add_morph_janome
-        ),
-        "Add Janome morphological analyses",
+    "janome": CommandObject.wrap_modifier(
+        function = abctk.transform_ABC.morph_janome.add_morph_janome,
+        name = "janome",
+        bar_desc = "Adding Janome analyses",
+        help_text = "Add Janome morphological analyses."
     ),
-    "del-janome": (
-        lift_func(
-            "janome",
-            "Removing Janome analyses"
-        )(
-            abctk.transform_ABC.morph_janome.del_morph_janome
-        ),
-        "Delete Janome morphological analyses",
+    "del-janome": CommandObject.wrap_modifier(
+        function = abctk.transform_ABC.morph_janome.del_morph_janome,
+        name = "del-janome",
+        bar_desc = "Del'ing Janome analyses",
+        help_text = "Delete Janome morphological analyses."
     ),
-    "min-nodes": (
+    "min-nodes": CommandObject(
         cmd_minimize_tree,
         "Minimize node annotations",
     ),
-    "elab-cat-annots": (
+    "elab-cat-annots": CommandObject(
         cmd_elaborate_cat_annotations,
-        "Elaborate category annotations on nodes",
+        "Elaborate meta annotations on nodes",
     ),
-    "elab-char-spans": (
+    "elab-char-spans": CommandObject(
         cmd_elaborate_char_spans,
-        "Elaborate char span annotations on nodes",
+        "Elaborate char span annotations on nodes.",
     ),
-    "obfus": (
+    "obfus": CommandObject(
         cmd_obfuscate_tree,
-        "Obfuscate lexical nodes",
+        "Obfuscate lexical nodes.",
     ),
-    "decrypt": (
+    "decrypt": CommandObject(
         cmd_decrypt_tree,
-        "Decrypt lexical nodes",
+        "Decrypt lexical nodes.",
     )
 }
 
