@@ -155,17 +155,25 @@ def parse_all_labels_ABC(
     while stack:
         pointer = stack.pop()
         if isinstance(pointer, Tree):
-            label: str = pointer.label()
-            if not label:
-                label = "EMPTY"
+            label: Union[str, Annot[str]] = pointer.label()
 
-            pointer.set_label(
-                abcc.Annot.parse(
-                    label,
-                    parser_cat = abcc.ABCCat.parse, # NOTE: too slow
-                    pprinter_cat = abcc.ABCCat.pprint,
-                )
-            )
+            try:
+                if isinstance(label, str):
+                    label_parsed: Annot[ABCCat] = Annot.parse(
+                        label,
+                        parser_cat = ABCCat.parse, # NOTE: too slow
+                        pprinter_cat = ABCCat.pprint,
+                    )
+                else:
+                    label_parsed: Annot[ABCCat] = Annot(
+                        cat = ABCCat.parse(label.cat),
+                        feats = {**label.feats},
+                        pprinter_cat = ABCCat.pprint
+                    )
+                pointer.set_label(label_parsed)
+            except Exception as e:
+                logging.error(f"Parsing ABC category \"{label}\" failed in function parse_all_labels_ABC. Tree ID: {ID}. Error: {e}")
+                raise
 
             if len(pointer) == 1 and not isinstance(pointer[0], Tree):
                 continue
