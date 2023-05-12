@@ -21,6 +21,7 @@ import abctk.transform_ABC.binconj
 import abctk.transform_ABC.elim_empty 
 import abctk.transform_ABC.elim_trace 
 import abctk.transform_ABC.morph_janome
+import abctk.transform_ABC.unary
 import abctk.check_comp_feat
 import abctk.obfuscate
 import abctk.gen_comp
@@ -545,11 +546,17 @@ _COMMAND_TABLE: typing.Dict[str, CommandObject] = {
         bar_desc = "Checking #comp",
         help_text = "Health-check #comp features."
     ),
-    "bin-conj": (
-        lift_func_newobj("bin-conj", "Binarize CONJPs")(
-            abctk.transform_ABC.binconj.binarize_conj_tree
-        ),
-        "Binarize conjunctions.",
+    "collapse-unary-nodes": CommandObject.wrap_creator(
+        function = abctk.transform_ABC.unary.collapse_unary_nodes,
+        name = "collapse-unary-nodes",
+        bar_desc = "Collapsing unaries",
+        help_text = "Collaps unary nodes. Must be invoked before parse-ABC-label."
+    ),
+    "restore-unary-nodes": CommandObject.wrap_creator(
+        function = abctk.transform_ABC.unary.restore_unary_nodes,
+        name = "restore-unary-nodes",
+        bar_desc = "Restoring unaries",
+        help_text = "Restore unary nodes. Must be invoked before parse-ABC-label."
     ),
     "bin-conj": CommandObject.wrap_creator(
         function = abctk.transform_ABC.binconj.binarize_conj_tree,
