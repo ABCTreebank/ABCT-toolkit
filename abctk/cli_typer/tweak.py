@@ -489,13 +489,15 @@ def cmd_decrypt_tree(
                     logger.warning(
                         "An exception was raised by the convertion function. "
                         f"Tree ID: {ID}. "
-                        "The tree will be abandoned."
+                        "The tree will be abandoned. "
+                        f"Error: {e}"
                     )
                 else:
                     logger.error(
                         "An exception was raised by the convertion function. "
                         f"Tree ID: {ID}. "
-                        "The process has been aborted."
+                        "The process has been aborted. "
+                        f"Error: {e}"
                     )
                     raise
 
