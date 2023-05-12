@@ -624,7 +624,6 @@ _COMMAND_TABLE: typing.Dict[str, CommandObject] = {
 
 # Register all commands in `_COMMAND_TABLE`
 for name, (command, desc) in _COMMAND_TABLE.items():
-    app = typer.Typer()
     app_treebank.command(
         name,
         help = desc or None
