@@ -101,6 +101,8 @@ def parse_all_labels_Keyaki_Annot(
         pointer = stack.pop()
         if isinstance(pointer, Tree):
             pointer.set_label(Annot.parse(pointer.label()))
+            for child in pointer:
+                parse_all_labels_Keyaki_Annot(child)
         else:
             # do nothing
             pass
