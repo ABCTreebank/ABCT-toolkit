@@ -223,7 +223,6 @@ def elaborate_char_spans(
 ) -> typing.Tuple[int, int]:
     """
     Elaborate the labels of a tree with character span information.
-    Note: 
 
     Arguments
     ---------
@@ -273,3 +272,57 @@ def elaborate_char_spans(
         return (offset, offset + l)
     else:
         return (offset, offset)
+
+def delete_all_feats_with_white_list(
+    tree: typing.Union[str, Tree],
+    ID: str = "<UNKNOWN>",
+    white_list: typing.Set[str] = set(),
+) -> None:
+    """
+    Delete all meta-features in a given tree except for those specified in `white_list`.
+
+    Notes
+    -----
+    This method is destructive in the sense that the given `tree` is modified in situ.
+    """
+    if isinstance(tree, Tree):
+        self_label = tree.label()
+        if isinstance(self_label, Annot):
+            tree.set_label(
+                Annot(
+                    cat = self_label.cat,
+                    feats = {
+                        k:v for k, v in self_label.feats.items()
+                        if k in white_list
+                    }
+                )
+            )
+        for child in tree:
+            delete_all_feats_with_white_list(child, ID, white_list)
+
+def delete_feats(
+    tree: typing.Union[str, Tree],
+    ID: str = "<UNKNOWN>",
+    black_list: typing.Set[str] = set(),
+) -> None:
+    """
+    Delete given features in a given trees.
+
+    Notes
+    -----
+    This method is destructive in the sense that the given `tree` is modified in situ.
+    """
+    if isinstance(tree, Tree):
+        self_label = tree.label()
+        if isinstance(self_label, Annot):
+            tree.set_label(
+                Annot(
+                    cat = self_label.cat,
+                    feats = {
+                        k:v for k, v in self_label.feats.items()
+                        if k not in black_list
+                    }
+                )
+            )
+        for child in tree:
+            delete_feats(child, ID, black_list)

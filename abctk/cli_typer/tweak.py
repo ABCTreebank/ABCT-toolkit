@@ -230,6 +230,75 @@ class CommandObject(typing.NamedTuple):
 # ----------------
 # Particular functions
 # ----------------
+_RE_INSTRUCTION_PLUS = re.compile(r"^\+(?P<feat>.*)$")
+_RE_INSTRUCTION_MINUS = re.compile(r"^0(?P<feat>.*)$")
+def cmd_filter_annots(
+    ctx: typer.Context,
+    instructions: typing.Annotated[
+        str,
+        typer.Argument(
+            help = "Insturctions Separated with SEPARATOR. Available commands: `+{feat}`, `0{feat}`, `+*`, `0*`.",
+        ),
+    ] = "+*",
+    separator: typing.Annotated[
+        str,
+        typer.Option(
+            "--separator", "-s",
+            help = "The separator used in the instructions"
+        )
+    ] = ";"
+):
+    # Build commands
+    instruction_plus: typing.Optional[typing.Set[str]] = None
+    instruction_minus: typing.Optional[typing.Set[str]] = set()
+
+    for instr in instructions.split(separator):
+        if instr == "+*":
+            instruction_plus = None
+            instruction_minus = set()
+        elif instr == "0*":
+            instruction_plus = set()
+            instruction_minus = None
+        elif (match := _RE_INSTRUCTION_PLUS.match(instr)):
+            key = match.group("feat")
+            if isinstance(instruction_plus, set):
+                instruction_plus.add(key)
+            if isinstance(instruction_minus, set):
+                instruction_minus.remove(key)
+        elif (match := _RE_INSTRUCTION_MINUS.match(instr)):
+            key = match.group("feat")
+            if isinstance(instruction_plus, set):
+                instruction_plus.remove(key)
+            if isinstance(instruction_minus, set):
+                instruction_minus.add(key)
+        else:
+            # default as plus
+            if isinstance(instruction_plus, set):
+                instruction_plus.add(instr)
+            if isinstance(instruction_minus, set):
+                instruction_minus.remove(instr)
+    
+    # Exec commands
+    tb: typing.Dict[str, Tree] = ctx.obj["treebank"]
+    if instruction_plus is None:
+        if instruction_minus is None:
+            raise ValueError("Feature sets cannot be both None")
+        else:
+            for ID, tree in tqdm(tb, desc = "Deleting features"):
+                abctk.transform_ABC.norm.delete_feats(
+                    tree, ID,
+                    instruction_minus,
+                )
+    elif instruction_minus is None:
+        for ID, tree in tqdm(tb, desc = "Deleting all features except specified"):
+                abctk.transform_ABC.norm.delete_all_feats_with_white_list(
+                    tree, ID,
+                    instruction_plus,
+                )
+        pass
+    else:
+        raise ValueError("Feature sets cannot be both sets")
+        
 def cmd_minimize_tree(
     ctx: typer.Context,
     discard_trace: bool = typer.Option(
@@ -610,6 +679,10 @@ _COMMAND_TABLE: typing.Dict[str, CommandObject] = {
     "min-nodes": CommandObject(
         cmd_minimize_tree,
         "Minimize node annotations",
+    ),
+    "filter-annots": CommandObject(
+        cmd_filter_annots,
+        "Filter (out) meta annotations",
     ),
     "elab-cat-annots": CommandObject(
         cmd_elaborate_cat_annotations,
