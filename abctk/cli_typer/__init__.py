@@ -179,8 +179,8 @@ def cmd_dic():
     abctk.dic.dump_dic_as_csv(sys.stdout)
 # === END ===
 
-from . import gen_comp
-app.command("gen-comp")(gen_comp.cmd_main)
+from . import comp
+app.add_typer(comp.app, name = "comp")
 
 from . import conv
 app.command("conv")(conv.cmd_main)

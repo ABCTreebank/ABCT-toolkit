@@ -8,11 +8,14 @@ import os
 import pathlib
 import typing
 import sys
+import dataclasses
 
 import fs
 from tqdm import tqdm
 import typer
+from ruamel.yaml import YAML
 
+from abctk.obj.comparative import CompRecord
 from abctk.config import check_runtimes
 import abctk.gen_comp
 
@@ -42,7 +45,55 @@ def _conv_file_wrapper(
     )
 # === END ===
 
+app = typer.Typer()
+
+@app.callback()
 def cmd_main(
+    ctx: typer.Context
+):
+    """
+    Generate and tweak comparative annotations.
+    """
+    pass
+
+@app.command("brYAML2YAML")
+def cmd_brYAML2YAML(
+    ctx: typer.Context,
+    source_path: pathlib.Path = typer.Argument(
+        ...,
+        allow_dash = True,
+    )
+):
+    yaml = YAML()
+    yaml.register_class(CompRecord)
+    yaml.width = 1024
+
+    stream = None
+    try:
+        if str(source_path) == "-":
+            stream = sys.stdin
+        else:
+            stream = open(source_path, "r")
+
+        data = yaml.load(stream)
+        
+        data_modified = list(
+            CompRecord.from_brackets(
+                rec["annot"],
+                ID = rec["ID"],
+                comments = rec.get("comments", []),
+                ID_v1 = rec.get("ID_v1"),
+            )
+            for rec in data
+        )
+
+        yaml.dump(data_modified, sys.stdout)
+    finally:
+        if stream:
+            stream.close()
+
+@app.command("generate")
+def cmd_gen(
     ctx: typer.Context,
     source_path: pathlib.Path = typer.Argument(
         ...,
