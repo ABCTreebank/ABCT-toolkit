@@ -21,7 +21,10 @@ class _ConjunctSpan(typing.NamedTuple):
             return Tree(
                 node = abcc.Annot(
                     cat = abcc.ABCCat.p(surrounding_cat),
-                    feats = {"trace.binconj": "conjunctor"},
+                    feats = {
+                        "trace.binconj": "conjunct"
+                    },
+                    # NOTE: #deriv=conj is unnecessary anymore because the binarized constituent is in complete accordance with ABC rules.
                     pprinter_cat = abcc.ABCCat.pprint,
                 ),
                 children = [
@@ -29,6 +32,10 @@ class _ConjunctSpan(typing.NamedTuple):
                     Tree(
                         node = abcc.Annot(
                             self.conj.label().cat.l(surrounding_cat),
+                            feats = {
+                                "trace.binconj": "head",
+                                "lexspec": "conj-bin-head",
+                            },
                             pprinter_cat = abcc.ABCCat.pprint,
                         ),
                         children = list(self.p)
@@ -41,8 +48,8 @@ class _ConjunctSpan(typing.NamedTuple):
                 node = abcc.Annot(
                     cat = abcc.ABCCat.p(surrounding_cat),
                     feats = {
-                        "deriv": "unary-binconj-conjunctor",
-                        "trace.binconj": "conjunctor"
+                        "deriv": "conj-bin-conjunct-unary",
+                        "trace.binconj": "conjunct",
                     },
                     pprinter_cat = abcc.ABCCat.pprint,
                 ),
@@ -54,7 +61,7 @@ class _ConjunctSpan(typing.NamedTuple):
                 node = abcc.Annot(
                     cat = abcc.ABCCat.p(surrounding_cat),
                     feats = {
-                        "trace.binconj": "orphan-conjunctor"
+                        "deriv": "conj-bin-orphan-head",
                     },
                     pprinter_cat = abcc.ABCCat.pprint,
                 ),
@@ -143,11 +150,16 @@ def __chaining_conjuncts(
         conjunct_leftmost, conjunct_remainder = conjuncts[0], conjuncts[1:]
 
         if is_root:
-            tree_label_feats = dict(**given_label.feats)
-            tree_label_feats["trace.binconj"] = "root"
+            tree_label_feats = {
+                **{
+                    k: v for k, v in given_label.feats.items() 
+                    if not (k == "deriv" and v == "conj")
+                },
+                "trace.binconj": "root"
+            }
         else:
             tree_label_feats = {
-                "trace.binconj": "interm"
+                "trace.binconj": "intermediate"
             }
 
         tree_label: abcc.Annot[abcc.ABCCat] = abcc.Annot(
